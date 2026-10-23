@@ -1,0 +1,356 @@
+import React, { useRef, useState } from 'react';
+import { FamilyMember } from '../types/family';
+import { exportToJSON, exportToCSV, exportStandaloneHTML } from '../utils/exportUtils';
+import {
+  X,
+  Download,
+  Upload,
+  FileSpreadsheet,
+  FileCode,
+  RotateCcw,
+  Globe,
+  CheckCircle2,
+  AlertTriangle,
+  Database,
+  ExternalLink,
+  Lock,
+  ShieldCheck,
+  LogOut
+} from 'lucide-react';
+
+interface AdminPanelModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  members: FamilyMember[];
+  onImportJSON: (jsonString: string) => { success: boolean; count?: number; error?: string };
+  onResetToDefault: () => void;
+  isAdmin: boolean;
+  onRequireLogin: () => void;
+  onLogout: () => void;
+}
+
+export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
+  isOpen,
+  onClose,
+  members,
+  onImportJSON,
+  onResetToDefault,
+  isAdmin,
+  onRequireLogin,
+  onLogout
+}) => {
+  if (!isOpen) return null;
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+
+  const showNotification = (type: 'success' | 'error', message: string) => {
+    setNotification({ type, message });
+    setTimeout(() => setNotification(null), 4000);
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const content = event.target?.result as string;
+      if (content) {
+        const result = onImportJSON(content);
+        if (result.success) {
+          showNotification('success', `تم استيراد ${result.count} فرداً بنجاح في قاعدة البيانات المحلية!`);
+        } else {
+          showNotification('error', result.error || 'فشل استيراد الملف. يرجى التأكد من صيغة JSON.');
+        }
+      }
+    };
+    reader.onerror = () => {
+      showNotification('error', 'حدث خطأ أثناء قراءة الملف من جهازك.');
+    };
+    reader.readAsText(file);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const handleReset = () => {
+    if (window.confirm('هل أنت متأكد من إعادة ضبط الشجرة للأصل التراثي التاريخي؟ ستتم استعادة البيانات المعتمدة لجميع الفروع.')) {
+      onResetToDefault();
+      showNotification('success', 'تمت استعادة البيانات التراثية الأساسية بنجاح.');
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
+      <div className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto glass-panel rounded-3xl p-6 md:p-8 border border-emerald-500/30 shadow-2xl text-right">
+        
+        {/* Close Button */}
+        <button
+          onClick={onClose}
+          className="absolute top-5 left-5 w-9 h-9 rounded-full glass-btn flex items-center justify-center text-slate-300 hover:text-white"
+        >
+          <X className="w-5 h-5" />
+        </button>
+
+        {/* Modal Header */}
+        <div className="flex items-center gap-3 border-b border-white/10 pb-4 mb-4">
+          <div className="w-10 h-10 rounded-xl bg-emerald-950/80 border border-emerald-500/30 flex items-center justify-center text-emerald-300">
+            <Database className="w-5 h-5" />
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-white">
+              لوحة الإدارة، النسخ الاحتياطي، ونشر GitHub Pages
+            </h2>
+            <p className="text-xs text-emerald-400">
+              تصدير واستيراد قاعدة البيانات ومزامنة الشجرة التفاعلية
+            </p>
+          </div>
+        </div>
+
+        {/* Admin Login Status Banner */}
+        <div className="mb-6 p-4 rounded-2xl bg-slate-900/90 border border-emerald-500/25 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${
+              isAdmin
+                ? 'bg-emerald-950 text-emerald-300 border border-emerald-400/30'
+                : 'bg-amber-950 text-amber-300 border border-amber-400/30'
+            }`}>
+              {isAdmin ? <ShieldCheck className="w-5 h-5" /> : <Lock className="w-5 h-5" />}
+            </div>
+            <div>
+              <span className="text-xs font-bold text-white block">
+                {isAdmin ? 'جلسة المدير نشطة (saad)' : 'صلاحيات المدير مغلقة'}
+              </span>
+              <span className="text-[11px] text-slate-400">
+                {isAdmin
+                  ? 'لديك كامل الصلاحيات لإضافة، تعديل، وحذف السجلات واستيراد البيانات.'
+                  : 'يتطلب إدخال اسم المستخدم وكلمة المرور لتعديل وحفظ البيانات.'}
+              </span>
+            </div>
+          </div>
+
+          <div>
+            {isAdmin ? (
+              <button
+                onClick={onLogout}
+                className="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 text-xs font-semibold flex items-center gap-1.5 transition-colors"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span>تسجيل الخروج</span>
+              </button>
+            ) : (
+              <button
+                onClick={onRequireLogin}
+                className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 text-emerald-950 text-xs font-bold shadow-md hover:from-emerald-400 hover:to-teal-300 transition-all"
+              >
+                تسجيل دخول المدير (saad)
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Toast Notification */}
+        {notification && (
+          <div
+            className={`mb-6 p-3.5 rounded-2xl flex items-center gap-2.5 text-xs font-semibold ${
+              notification.type === 'success'
+                ? 'bg-emerald-950/90 border border-emerald-400/40 text-emerald-200'
+                : 'bg-rose-950/90 border border-rose-400/40 text-rose-200'
+            }`}
+          >
+            {notification.type === 'success' ? (
+              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+            ) : (
+              <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
+            )}
+            <span>{notification.message}</span>
+          </div>
+        )}
+
+        {/* Action Grid */}
+        <div className="space-y-6 text-xs md:text-sm">
+          
+          {/* Section 1: Backup & Exports */}
+          <div>
+            <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
+              <Download className="w-4 h-4 text-emerald-400" />
+              <span>تصدير البيانات والنسخ الاحتياطي:</span>
+            </h3>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {/* Export JSON */}
+              <button
+                onClick={() => {
+                  exportToJSON(members);
+                  showNotification('success', 'تم تصدير ملف النسخة الاحتياطية JSON بنجاح.');
+                }}
+                className="glass-panel p-4 rounded-2xl border border-emerald-500/20 hover:border-emerald-400/50 text-right group transition-all"
+              >
+                <div className="w-8 h-8 rounded-lg bg-emerald-950/80 border border-emerald-500/30 flex items-center justify-center text-emerald-400 mb-2 group-hover:scale-105 transition-transform">
+                  <FileCode className="w-4 h-4" />
+                </div>
+                <h4 className="font-bold text-white text-xs mb-1">نسخة احتياطية (JSON)</h4>
+                <p className="text-[11px] text-slate-400 leading-normal">
+                  حفظ نسخة كاملة من قاعدة بيانات الشجرة لاستعادتها لاحقاً.
+                </p>
+              </button>
+
+              {/* Export CSV / Excel */}
+              <button
+                onClick={() => {
+                  exportToCSV(members);
+                  showNotification('success', 'تم تصدير ملف Excel/CSV المرمز باللغة العربية بنجاح.');
+                }}
+                className="glass-panel p-4 rounded-2xl border border-emerald-500/20 hover:border-emerald-400/50 text-right group transition-all"
+              >
+                <div className="w-8 h-8 rounded-lg bg-emerald-950/80 border border-emerald-500/30 flex items-center justify-center text-emerald-400 mb-2 group-hover:scale-105 transition-transform">
+                  <FileSpreadsheet className="w-4 h-4" />
+                </div>
+                <h4 className="font-bold text-white text-xs mb-1">جداول إكسل (CSV)</h4>
+                <p className="text-[11px] text-slate-400 leading-normal">
+                  تصدير السجلات إلى جدول إكسل متوافق تماماً مع الحروف العربية.
+                </p>
+              </button>
+
+              {/* Export Standalone HTML (GitHub Pages Ready) */}
+              <button
+                onClick={() => {
+                  exportStandaloneHTML(members);
+                  showNotification('success', 'تم تنزيل ملف index.html الجاهز للاستضافة على GitHub Pages بنجاح!');
+                }}
+                className="glass-panel p-4 rounded-2xl border border-amber-500/30 hover:border-amber-400/60 bg-amber-950/20 text-right group transition-all"
+              >
+                <div className="w-8 h-8 rounded-lg bg-amber-950/80 border border-amber-500/40 flex items-center justify-center text-amber-300 mb-2 group-hover:scale-105 transition-transform">
+                  <Globe className="w-4 h-4" />
+                </div>
+                <h4 className="font-bold text-amber-300 text-xs mb-1">تجهيز GitHub Pages</h4>
+                <p className="text-[11px] text-slate-300 leading-normal">
+                  تحميل ملف منفرد self-contained (`index.html`) جاهز للرفع المباشر.
+                </p>
+              </button>
+            </div>
+          </div>
+
+          {/* Section 2: Import & Restore */}
+          <div className="pt-2 border-t border-white/10">
+            <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
+              <Upload className="w-4 h-4 text-emerald-400" />
+              <span>استيراد واستعادة البيانات:</span>
+            </h3>
+
+            {isAdmin ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* Import JSON File */}
+                <div className="bg-slate-900/60 p-4 rounded-2xl border border-white/10 flex flex-col justify-between">
+                  <div>
+                    <h4 className="font-bold text-white text-xs mb-1">استيراد ملف JSON احتياطي</h4>
+                    <p className="text-[11px] text-slate-400 leading-normal mb-3">
+                      ارفع ملف JSON محفوظاً مسبقاً لاستبدال أو تحديث قاعدة البيانات المحلية.
+                    </p>
+                  </div>
+                  <div>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept=".json"
+                      onChange={handleFileUpload}
+                      className="hidden"
+                      id="jsonFileInput"
+                    />
+                    <label
+                      htmlFor="jsonFileInput"
+                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl glass-btn text-xs font-semibold text-emerald-300 hover:text-white cursor-pointer"
+                    >
+                      <Upload className="w-3.5 h-3.5" />
+                      <span>اختيار ملف JSON من الجهاز</span>
+                    </label>
+                  </div>
+                </div>
+
+                {/* Reset to Seed Data */}
+                <div className="bg-slate-900/60 p-4 rounded-2xl border border-white/10 flex flex-col justify-between">
+                  <div>
+                    <h4 className="font-bold text-white text-xs mb-1">استعادة الشجرة التراثية الأصلية</h4>
+                    <p className="text-[11px] text-slate-400 leading-normal mb-3">
+                      إعادة ضبط البيانات للأصل الموثق (5 أجيال كاملة من الجد المؤسس حسن بن محمد آل بوعينين).
+                    </p>
+                  </div>
+                  <div>
+                    <button
+                      onClick={handleReset}
+                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5 text-amber-400" />
+                      <span>إعادة ضبط للأصل التاريخي</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="bg-slate-900/60 p-5 rounded-2xl border border-amber-500/20 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-amber-950/80 border border-amber-500/30 flex items-center justify-center text-amber-300 shrink-0">
+                    <Lock className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-white mb-0.5">
+                      عمليات استيراد وتعديل قاعدة البيانات مقفلة
+                    </h4>
+                    <p className="text-[11px] text-slate-400">
+                      يقتصر استيراد الملفات واستعادة السجلات على مدير النظام (saad) فقط.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={onRequireLogin}
+                  className="px-4 py-2 rounded-xl glass-btn text-xs font-semibold text-amber-300 hover:text-white shrink-0"
+                >
+                  تسجيل الدخول لتفعيل الاستيراد
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Section 3: GitHub Pages Deployment Quick Guide */}
+          <div className="pt-2 border-t border-white/10">
+            <div className="bg-gradient-to-br from-emerald-950/60 to-slate-900/90 p-5 rounded-2xl border border-emerald-500/20 space-y-3">
+              <h3 className="text-xs md:text-sm font-bold text-white flex items-center gap-2">
+                <Globe className="w-4 h-4 text-emerald-400" />
+                <span>دليل نشر التطبيق على GitHub Pages (في دقيقة واحدة):</span>
+              </h3>
+              
+              <ol className="text-xs text-slate-300 space-y-2 list-decimal list-inside leading-relaxed">
+                <li>
+                  قم بالنقر على زر <strong className="text-amber-300">"تجهيز GitHub Pages"</strong> أعلاه لتحميل ملف <code className="bg-slate-950 px-1.5 py-0.5 rounded text-emerald-400 font-mono">index.html</code> المستقل والمحتوي على كل البيانات والأنماط.
+                </li>
+                <li>
+                  أنشئ مستودعاً جديداً (New Repository) على حسابك في GitHub، مثلاً باسم <code className="bg-slate-950 px-1.5 py-0.5 rounded text-emerald-400 font-mono">albuhasson-family-tree</code>.
+                </li>
+                <li>
+                  ارفع الملف إلى الفرع الرئيسي <code className="bg-slate-950 px-1.5 py-0.5 rounded text-emerald-400 font-mono">main</code>، ثم ادخل إلى:
+                  <br />
+                  <span className="text-slate-400 font-mono mr-5">Settings ➔ Pages ➔ Source: Deploy from branch (main) ➔ Save</span>
+                </li>
+                <li>
+                  سيصبح موقع شجرة عائلة البوحسون متاحاً للعموم مباشرة على رابط مجاني مثل:
+                  <br />
+                  <span className="text-emerald-300 font-mono mr-5">https://yourusername.github.io/albuhasson-family-tree</span>
+                </li>
+              </ol>
+            </div>
+          </div>
+
+        </div>
+
+        {/* Footer Close */}
+        <div className="pt-5 mt-6 border-t border-white/10 flex justify-end">
+          <button
+            onClick={onClose}
+            className="px-6 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold"
+          >
+            إغلاق النافذة
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};

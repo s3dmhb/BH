@@ -1,0 +1,124 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-heading: 'Amiri', 'Cairo', serif;
+    --font-sans: 'Cairo', 'Tajawal', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    direction: rtl;
+    background-color: #03130c;
+    color: #f1f5f9;
+    overflow-x: hidden;
+  }
+}
+
+/* Custom Apple Liquid Glass Effects */
+.glass-panel {
+  background: rgba(4, 30, 18, 0.65);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(16, 185, 129, 0.18);
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.glass-panel-light {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  box-shadow: 0 12px 30px -10px rgba(0, 77, 38, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.glass-card {
+  background: rgba(6, 44, 26, 0.55);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(52, 211, 153, 0.16);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-card:hover {
+  background: rgba(8, 55, 33, 0.7);
+  border-color: rgba(52, 211, 153, 0.35);
+  box-shadow: 0 16px 36px -10px rgba(0, 0, 0, 0.6), 0 0 20px rgba(16, 185, 129, 0.15);
+}
+
+.glass-card-female {
+  background: rgba(40, 20, 30, 0.45);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(244, 114, 182, 0.2);
+}
+
+.glass-card-female:hover {
+  background: rgba(50, 25, 38, 0.6);
+  border-color: rgba(244, 114, 182, 0.4);
+  box-shadow: 0 16px 36px -10px rgba(0, 0, 0, 0.6), 0 0 20px rgba(244, 114, 182, 0.12);
+}
+
+/* Glass Buttons */
+.glass-btn {
+  background: rgba(16, 185, 129, 0.15);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(52, 211, 153, 0.25);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-btn:hover {
+  background: rgba(16, 185, 129, 0.25);
+  border-color: rgba(52, 211, 153, 0.5);
+  transform: translateY(-1px);
+}
+
+.glass-btn:active {
+  transform: translateY(0);
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(2, 20, 12, 0.7);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(16, 185, 129, 0.3);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(16, 185, 129, 0.55);
+}
+
+/* Print Stylesheet for High-Resolution PDF Export */
+@media print {
+  body {
+    background-color: #ffffff !important;
+    color: #111827 !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+  .glass-panel, .glass-card, .glass-card-female {
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    box-shadow: none !important;
+    color: #111827 !important;
+    page-break-inside: avoid;
+  }
+  .text-white, .text-slate-100, .text-slate-200, .text-emerald-300, .text-emerald-400 {
+    color: #0f172a !important;
+  }
+  .text-slate-400, .text-emerald-500 {
+    color: #475569 !important;
+  }
+  .bg-emerald-950, .bg-slate-950, .bg-slate-900 {
+    background: #ffffff !important;
+  }
+}
