@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>شجرة عائلة البوحسون - GitHub Pages Edition</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Cairo', system-ui, sans-serif; background-color: #03130c; color: #f1f5f9; }
+    .glass { background: rgba(4, 30, 18, 0.65); backdrop-filter: blur(16px); border: 1px solid rgba(16, 185, 129, 0.2); }
+    .glass-card { background: rgba(6, 44, 26, 0.55); backdrop-filter: blur(12px); border: 1px solid rgba(52, 211, 153, 0.18); transition: all 0.2s; }
+    .glass-card:hover { transform: translateY(-2px); border-color: rgba(52, 211, 153, 0.4); }
+  </style>
+</head>
+<body class="min-h-screen p-3 sm:p-6 md:p-8">
+  <div class="max-w-7xl mx-auto">
+    <!-- Header -->
+    <header class="glass rounded-2xl p-4 sm:p-6 mb-6 sm:mb-8 text-center shadow-2xl relative">
+      <div class="flex flex-wrap items-center justify-between gap-2 mb-3 sm:mb-0 sm:absolute sm:top-4 sm:left-4">
+        <button id="adminLoginBtn" class="text-xs px-3 py-1.5 rounded-lg bg-emerald-950 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-900 transition-colors">
+          دخول المدير (saad)
+        </button>
+        <button id="addMemberBtn" class="hidden text-xs px-3 py-1.5 rounded-lg bg-emerald-600 text-white font-bold hover:bg-emerald-500 transition-colors">
+          + إضافة فرد
+        </button>
+      </div>
+
+      <div class="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-emerald-900/60 border border-emerald-500/30 text-emerald-300 text-xl sm:text-2xl font-bold mb-2 shadow-inner">
+        ب
+      </div>
+      <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-white tracking-wide mb-1 sm:mb-2">شجرة عائلة البوحسون</h1>
+      <p class="text-emerald-400 font-medium text-xs sm:text-sm md:text-base">فخذ النواصر · آل جابر · قبيلة آل بوعينين</p>
+      <div class="mt-3 flex flex-wrap justify-center gap-2 text-xs text-slate-300">
+        <span class="px-3 py-1 rounded-full bg-emerald-950/60 border border-emerald-500/20">نسخة جاهزة ومستضافة على GitHub Pages</span>
+        <span class="px-3 py-1 rounded-full bg-emerald-950/60 border border-emerald-500/20" id="totalMembersBadge">جاري التحميل...</span>
+      </div>
+    </header>
+
+    <!-- Search Bar -->
+    <div class="glass rounded-xl p-3 sm:p-4 mb-6">
+      <input type="text" id="searchInput" placeholder="ابحث بالاسم الكامل أو اسم الشهرة (مثال: الوجيه، أبو حسن، النوخذة)..." 
+        class="w-full bg-slate-900/80 border border-emerald-500/30 rounded-lg px-3.5 py-2.5 sm:py-3 text-white placeholder-slate-400 focus:outline-none focus:border-emerald-400 text-xs sm:text-sm">
+    </div>
+
+    <!-- Cards Grid -->
+    <div id="membersGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      <!-- Injected via JavaScript -->
+    </div>
+  </div>
+
+  <!-- Admin Login Modal -->
+  <div id="loginModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="glass max-w-sm w-full p-6 rounded-2xl border border-emerald-500/30 text-right">
+      <h3 class="text-lg font-bold text-white mb-2">تسجيل دخول المدير</h3>
+      <p class="text-xs text-emerald-400 mb-4">صلاحيات إدارة وتعديل أفراد العائلة</p>
+      <input type="text" id="loginUser" placeholder="اسم المستخدم (saad)" class="w-full bg-slate-900 border border-emerald-500/30 rounded-lg p-2.5 text-xs text-white mb-2.5">
+      <input type="password" id="loginPass" placeholder="كلمة المرور (33740)" class="w-full bg-slate-900 border border-emerald-500/30 rounded-lg p-2.5 text-xs text-white mb-4">
+      <div id="loginError" class="text-rose-400 text-xs mb-3 hidden">بيانات الدخول غير صحيحة.</div>
+      <div class="flex gap-2">
+        <button id="doLoginBtn" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded-lg text-xs">تسجيل الدخول</button>
+        <button id="closeLoginBtn" class="px-4 bg-slate-800 hover:bg-slate-700 text-slate-300 py-2 rounded-lg text-xs">إلغاء</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let members = [{"id":"albuhasson-1","full_name":"حسن بن محمد بن جابر آل بوعينين","nickname":"الجد المؤسس (البوحسون)","gender":"male","father_id":null,"birth_date":"1880","death_date":"1952","is_living":false,"branch":"الفرع الرئيسي والمؤسس","generation":1,"spouse_info":"مريم بنت راشد آل بوعينين، فاطمة بنت ناصر","bio":"الجد المؤسس لفرع البوحسون من فخذ النواصر - آل جابر من قبيلة آل بوعينين الكريمة. كان وجيهاً مشهوداً له بالحكمة والكرم وإصلاح ذات البين في ساحل الخليج العربي.","avatar_url":""},{"id":"albuhasson-2","full_name":"محمد بن حسن بن محمد البوحسون","nickname":"الوجيه أبو حسن","gender":"male","father_id":"albuhasson-1","birth_date":"1905","death_date":"1980","is_living":false,"branch":"فرع محمد","generation":2,"spouse_info":"نورة بنت عبد العزيز، حصة بنت جابر","bio":"كبير العائلة في عصره، وأحد وجهاء تجار اللؤلؤ والملاحة البحرية. اشتهر بمجلسه العامر وقضاء حوائج الناس ومساعدته للمحتاجين.","avatar_url":""},{"id":"albuhasson-3","full_name":"علي بن حسن بن محمد البوحسون","nickname":"النوخذة أبو عبد العزيز","gender":"male","father_id":"albuhasson-1","birth_date":"1910","death_date":"1986","is_living":false,"branch":"فرع علي","generation":2,"spouse_info":"سارة بنت راشد آل بوعينين","bio":"نوخذة وقائد بحري بارز عُرف بدرايته الواسعة بمسارات وسواحل الخليج العربي، وشجاعته وكرمه المأثور.","avatar_url":""},{"id":"albuhasson-4","full_name":"إبراهيم بن حسن بن محمد البوحسون","nickname":"الأديب أبو فهد","gender":"male","father_id":"albuhasson-1","birth_date":"1916","death_date":"1993","is_living":false,"branch":"فرع إبراهيم","generation":2,"spouse_info":"هيا بنت عبد الله الخاطر","bio":"أديب وشاعر ومؤرخ نبطي، عُرف بحفظه لأنساب قبيلة آل بوعينين وقصائده الوطنية وتوثيقه لأيام الغوص وتاريخ المنطقة.","avatar_url":""},{"id":"albuhasson-5","full_name":"مريم بنت حسن بن محمد البوحسون","nickname":"أم عبد الله","gender":"female","father_id":"albuhasson-1","birth_date":"1912","death_date":"1988","is_living":false,"branch":"الفرع الرئيسي والمؤسس","generation":2,"spouse_info":"الشيخ عبد الله بن ناصر آل بوعينين","children_summary":"عبد الله، ناصر، شيخة، فاطمة","notes":"عُرفت بالورع والتقوى وجود اليد ومساندة الأسر المتعففة ورعاية الأيتام، وكانت صاحبة رأي ومشورة في شؤون الأسرة."},{"id":"albuhasson-6","full_name":"شيخة بنت حسن بن محمد البوحسون","nickname":"أم جابر","gender":"female","father_id":"albuhasson-1","birth_date":"1918","death_date":"1995","is_living":false,"branch":"الفرع الرئيسي والمؤسس","generation":2,"spouse_info":"جابر بن مبارك آل بوعينين","children_summary":"مبارك، حصة، مريم، نورة","notes":"إحدى سيدات العائلة الفاضلات التي اشتهرت برجاحة العقل وإصلاح ذات البين والكرم وحفظ الأنساب."},{"id":"albuhasson-7","full_name":"حسن بن محمد بن حسن البوحسون","nickname":"أبو محمد (الوجيه)","gender":"male","father_id":"albuhasson-2","birth_date":"1932","death_date":"2010","is_living":false,"branch":"فرع محمد","generation":3,"spouse_info":"عائشة بنت علي البوحسون","bio":"رجل أعمال ومسؤول بارز أسهم في دعم المشاريع التنموية والخيرية بالمنطقة الشرقية، وكان من أوائل الداعمين للتعليم الحديث.","avatar_url":""},{"id":"albuhasson-8","full_name":"جابر بن محمد بن حسن البوحسون","nickname":"أبو نايف (المربي الفاضل)","gender":"male","father_id":"albuhasson-2","birth_date":"1938","death_date":"2018","is_living":false,"branch":"فرع محمد","generation":3,"spouse_info":"موزة بنت عبد الرحمن","bio":"رائد تعليمي وتربوي أفنى عقوداً في سلك التدريس والإدارة التعليمية، وخرّج أجيالاً من الكفاءات الوطنية المخلصة.","avatar_url":""},{"id":"albuhasson-9","full_name":"سارة بنت محمد بن حسن البوحسون","nickname":"أم فيصل","gender":"female","father_id":"albuhasson-2","birth_date":"1940","is_living":true,"branch":"فرع محمد","generation":3,"spouse_info":"عبد العزيز بن فهد آل بوعينين","children_summary":"فيصل، سلطان، منيرة، نورة","notes":"مربية فاضلة ومرجع أصيل في تاريخ الأسرة ومصاهراتها وأواصر القربى والتواصل الاجتماعي."},{"id":"albuhasson-10","full_name":"عبد العزيز بن علي بن حسن البوحسون","nickname":"أبو فيصل (رجل الأعمال)","gender":"male","father_id":"albuhasson-3","birth_date":"1935","death_date":"2014","is_living":false,"branch":"فرع علي","generation":3,"spouse_info":"لطيفة بنت عبد الله الماجد","bio":"مستثمر وريادي أسس شركات رائدة في التجارة البحرية واللوجستية، وله أيادٍ بيضاء في دعم الجمعيات الخيرية ورعاية الموهوبين.","avatar_url":""},{"id":"albuhasson-11","full_name":"مبارك بن علي بن حسن البوحسون","nickname":"أبو راشد (المهندس)","gender":"male","father_id":"albuhasson-3","birth_date":"1942","is_living":true,"branch":"فرع علي","generation":3,"spouse_info":"منيرة بنت سعد آل بوعينين","bio":"مهندس بترول وخبير صناعي سابق في قطاع الطاقة، ساهم في تطوير المنشآت الوطنية وله نشاط اجتماعي وثقافي واسع.","avatar_url":""},{"id":"albuhasson-12","full_name":"عائشة بنت علي بن حسن البوحسون","nickname":"أم خالد","gender":"female","father_id":"albuhasson-3","birth_date":"1945","is_living":true,"branch":"فرع علي","generation":3,"spouse_info":"خالد بن حمد آل بوعينين","children_summary":"حمد، عبد العزيز، ريم، مها","notes":"ناشطة في العمل التطوعي والخيري، وعضو فخري في لجان التكافل الأسري وتوثيق الصلات."},{"id":"albuhasson-13","full_name":"فهد بن إبراهيم بن حسن البوحسون","nickname":"أبو سلطان (المستشار)","gender":"male","father_id":"albuhasson-4","birth_date":"1944","is_living":true,"branch":"فرع إبراهيم","generation":3,"spouse_info":"هند بنت ناصر السبيعي","bio":"مستشار قانوني ودبلوماسي متقاعد مثّل المملكة في محافل وهيئات دولية عدة، عُرف بحنكته ورؤيته الاستراتيجية.","avatar_url":""},{"id":"albuhasson-14","full_name":"ناصر بن إبراهيم بن حسن البوحسون","nickname":"أبو سعود (الباحث والمؤرخ)","gender":"male","father_id":"albuhasson-4","birth_date":"1948","is_living":true,"branch":"فرع إبراهيم","generation":3,"spouse_info":"بدرية بنت إبراهيم الخاطر","bio":"أستاذ التاريخ والتراث الشعبي، نشر أبحاثاً ووثائق تاريخية هامة عن تاريخ النواصر وقبيلة آل بوعينين بالخليج العربي.","avatar_url":""},{"id":"albuhasson-15","full_name":"فاطمة بنت إبراهيم بن حسن البوحسون","nickname":"أم وليد","gender":"female","father_id":"albuhasson-4","birth_date":"1950","is_living":true,"branch":"فرع إبراهيم","generation":3,"spouse_info":"وليد بن صالح آل بوعينين","children_summary":"صالح، إبراهيم، ليلى، ندى","notes":"تربوية قديرة وكاتبة مقالات مهتمة بشؤون الأسرة وتعزيز قيم الترابط والمحبة بين الأجيال."},{"id":"albuhasson-16","full_name":"د. محمد بن حسن بن محمد البوحسون","nickname":"استشاري القلب (أبو حسن)","gender":"male","father_id":"albuhasson-7","birth_date":"1965","is_living":true,"branch":"فرع محمد","generation":4,"spouse_info":"د. لمياء بنت راشد آل بوعينين","bio":"استشاري جراحة وقسطرة قلب للأطفال بمستشفى الملك فيصل التخصصي، زميل الكلية الملكية للأطباء، ومشارك في قوافل علاجية خيرية.","avatar_url":""},{"id":"albuhasson-17","full_name":"م. طارق بن حسن بن محمد البوحسون","nickname":"المهندس المعماري (أبو عبد الله)","gender":"male","father_id":"albuhasson-7","birth_date":"1970","is_living":true,"branch":"فرع محمد","generation":4,"spouse_info":"هدى بنت عبد العزيز الفايز","bio":"مهندس معماري ورئيس مكتب استشاري هندسي صمم مشاريع كبرى تراعي الطراز الخليجي الأصيل والعمارة المستدامة الحديثة.","avatar_url":""},{"id":"albuhasson-18","full_name":"لولوة بنت حسن بن محمد البوحسون","nickname":"أم عبد الرحمن","gender":"female","father_id":"albuhasson-7","birth_date":"1973","is_living":true,"branch":"فرع محمد","generation":4,"spouse_info":"عبد الرحمن بن فهد الخاطر","children_summary":"فهد، حسن، عائشة","notes":"رائدة أعمال في قطاع التقنية والتحول الرقمي، مهتمة بتمكين الكفاءات الوطنية الشابة."},{"id":"albuhasson-19","full_name":"نايف بن جابر بن محمد البوحسون","nickname":"أبو جابر (المصرفي)","gender":"male","father_id":"albuhasson-8","birth_date":"1968","is_living":true,"branch":"فرع محمد","generation":4,"spouse_info":"مريم بنت أحمد آل بوعينين","bio":"قيادي مصرفي ورئيس تنفيذي لقطاع الاستثمار وإدارة الأصول في أحد البنوك الكبرى، خبير أسواق المال.","avatar_url":""},{"id":"albuhasson-20","full_name":"هند بنت جابر بن محمد البوحسون","nickname":"أم سعود","gender":"female","father_id":"albuhasson-8","birth_date":"1972","is_living":true,"branch":"فرع محمد","generation":4,"spouse_info":"سعود بن عبد الله آل بوعينين","children_summary":"عبد الله، جابر، ديمة","notes":"مستشارة إدارة المواهب والمسؤولية الاجتماعية، أشرفت على مبادرات مجتمعية حائزة على جوائز تميز."},{"id":"albuhasson-21","full_name":"فيصل بن عبد العزيز بن علي البوحسون","nickname":"أبو عبد العزيز (الرئيس التنفيذي)","gender":"male","father_id":"albuhasson-10","birth_date":"1969","is_living":true,"branch":"فرع علي","generation":4,"spouse_info":"نوف بنت منصور السعدون","bio":"رئيس مجلس إدارة شركات تجارية واستثمارية قابضة، ناشط في دعم رواد الأعمال والشركات الناشئة وسباقات الفروسية العربية.","avatar_url":""},{"id":"albuhasson-22","full_name":"ريم بنت عبد العزيز بن علي البوحسون","nickname":"أم خالد","gender":"female","father_id":"albuhasson-10","birth_date":"1975","is_living":true,"branch":"فرع علي","generation":4,"spouse_info":"خالد بن مساعد آل بوعينين","children_summary":"مساعد، عبد العزيز، شهد","notes":"أكاديمية وباحثة دكتوراه في العلوم الإنسانية ودراسات التراث والتاريخ الشفهي لساحل الخليج."},{"id":"albuhasson-23","full_name":"راشد بن مبارك بن علي البوحسون","nickname":"أبو مبارك (خبير الأمن السيبراني)","gender":"male","father_id":"albuhasson-11","birth_date":"1978","is_living":true,"branch":"فرع علي","generation":4,"spouse_info":"غادة بنت حمد الناصر","bio":"مستشار في الأمن السيبراني والذكاء الاصطناعي، حاصل على براءات اختراع في حماية البنى التحتية الرقمية.","avatar_url":""},{"id":"albuhasson-24","full_name":"سلطان بن فهد بن إبراهيم البوحسون","nickname":"أبو تركي (المحلل المالي)","gender":"male","father_id":"albuhasson-13","birth_date":"1976","is_living":true,"branch":"فرع إبراهيم","generation":4,"spouse_info":"نورة بنت فيصل آل بوعينين","bio":"محلل مالي واستراتيجي معتمد (CFA)، شريك في صندوق استثماري خليجي، مهتم بالحوكمة العائلية واستدامة الأوقاف.","avatar_url":""},{"id":"albuhasson-25","full_name":"دلال بنت فهد بن إبراهيم البوحسون","nickname":"أم ريان","gender":"female","father_id":"albuhasson-13","birth_date":"1980","is_living":true,"branch":"فرع إبراهيم","generation":4,"spouse_info":"ريان بن صالح آل بوعينين","children_summary":"صالح، فهد، مريم","notes":"أستاذة مشاركة في علم البيانات والذكاء الاصطناعي بجامعة الإمام عبد الرحمن بن فيصل."},{"id":"albuhasson-26","full_name":"حسن بن محمد بن حسن بن محمد البوحسون","nickname":"حسن الحفيد (المهندس)","gender":"male","father_id":"albuhasson-16","birth_date":"1995","is_living":true,"branch":"فرع محمد","generation":5,"spouse_info":"أعزب","bio":"مهندس ذكاء اصطناعي وحاصل على درجة الماجستير مع مرتبة الشرف، يعمل في تطوير خوارزميات الرعاية الصحية الذكية.","avatar_url":""},{"id":"albuhasson-27","full_name":"نورة بنت محمد بن حسن بن محمد البوحسون","nickname":"أم محمد (المهندسة)","gender":"female","father_id":"albuhasson-16","birth_date":"1998","is_living":true,"branch":"فرع محمد","generation":5,"spouse_info":"طارق بن عبد العزيز الخاطر","children_summary":"محمد","notes":"مهندسة برمجيات متخصصة في واجهات وتجربة المستخدم السحابية ومصممة منتجات رقمية."},{"id":"albuhasson-28","full_name":"عبد الله بن فيصل بن عبد العزيز البوحسون","nickname":"عبد الله (فارس العائلة)","gender":"male","father_id":"albuhasson-21","birth_date":"2000","is_living":true,"branch":"فرع علي","generation":5,"spouse_info":"أعزب","bio":"طالب دراسات عليا في الاقتصاد والعلوم السياسية، ولاعب فروسية قفز حواجز مثل المملكة في بطولات إقليمية ودولية.","avatar_url":""},{"id":"albuhasson-29","full_name":"سارة بنت فيصل بن عبد العزيز البوحسون","nickname":"سارة (طبيبة المستقبل)","gender":"female","father_id":"albuhasson-21","birth_date":"2003","is_living":true,"branch":"فرع علي","generation":5,"spouse_info":"غير متزوجة","children_summary":"لا يوجد","notes":"طالبة طب وجراحة متميزة، رئيسة النادي العلمي لطلاب الطب وناشطة في حملات التوعية الصحية."},{"id":"albuhasson-30","full_name":"تركي بن سلطان بن فهد البوحسون","nickname":"تركي (المبتكر الصاعد)","gender":"male","father_id":"albuhasson-24","birth_date":"2005","is_living":true,"branch":"فرع إبراهيم","generation":5,"spouse_info":"أعزب","bio":"طالب علوم حاسب وروبوتات حاصل على ميدالية أولمبياد المعلوماتية الوطني، مهتم بعلوم الفضاء والابتكار التقني.","avatar_url":""}];
+    const saved = localStorage.getItem('albuhasson_family_tree_v1');
+    if (saved) {
+      try { members = JSON.parse(saved); } catch(e){}
+    }
+    let isAdmin = localStorage.getItem('albuhasson_admin_auth_v1') === 'true';
+
+    const grid = document.getElementById('membersGrid');
+    const searchInput = document.getElementById('searchInput');
+    const badge = document.getElementById('totalMembersBadge');
+    const adminBtn = document.getElementById('adminLoginBtn');
+    const addBtn = document.getElementById('addMemberBtn');
+    const loginModal = document.getElementById('loginModal');
+
+    function updateAdminUI() {
+      if (isAdmin) {
+        adminBtn.textContent = 'خروج المدير (سعد)';
+        adminBtn.className = 'text-xs px-3 py-1.5 rounded-lg bg-amber-950 border border-amber-500/30 text-amber-300 hover:bg-amber-900';
+        addBtn.classList.remove('hidden');
+      } else {
+        adminBtn.textContent = 'دخول المدير (saad)';
+        adminBtn.className = 'text-xs px-3 py-1.5 rounded-lg bg-emerald-950 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-900';
+        addBtn.classList.add('hidden');
+      }
+    }
+    updateAdminUI();
+
+    adminBtn.onclick = () => {
+      if (isAdmin) {
+        isAdmin = false;
+        localStorage.removeItem('albuhasson_admin_auth_v1');
+        updateAdminUI();
+        render(members);
+      } else {
+        loginModal.classList.remove('hidden');
+      }
+    };
+    document.getElementById('closeLoginBtn').onclick = () => loginModal.classList.add('hidden');
+    document.getElementById('doLoginBtn').onclick = () => {
+      const u = document.getElementById('loginUser').value.trim().toLowerCase();
+      const p = document.getElementById('loginPass').value.trim();
+      const err = document.getElementById('loginError');
+      if (u === 'saad' && p === '33740') {
+        isAdmin = true;
+        localStorage.setItem('albuhasson_admin_auth_v1', 'true');
+        loginModal.classList.add('hidden');
+        err.classList.add('hidden');
+        updateAdminUI();
+        render(members);
+      } else {
+        err.classList.remove('hidden');
+      }
+    };
+
+    addBtn.onclick = () => {
+      if (!isAdmin) return alert('يتطلب تسجيل دخول المدير.');
+      const name = prompt('أدخل الاسم الكامل للفرد:');
+      if (!name) return;
+      const nick = prompt('اسم الشهرة / اللقب:') || '';
+      const gender = confirm('هل الفرد ذكر؟ (موافق = ذكر / إلغاء = أنثى)') ? 'male' : 'female';
+      const newM = {
+        id: 'albuhasson-' + Date.now(),
+        full_name: name,
+        nickname: nick,
+        gender: gender,
+        father_id: null,
+        birth_date: prompt('سنة الميلاد (مثال 1980):') || '',
+        is_living: true,
+        branch: 'الفرع العام',
+        generation: 5
+      };
+      members.push(newM);
+      localStorage.setItem('albuhasson_family_tree_v1', JSON.stringify(members));
+      render(members);
+    };
+
+    badge.textContent = 'إجمالي الأفراد: ' + members.length;
+
+    function render(list) {
+      grid.innerHTML = '';
+      badge.textContent = 'إجمالي الأفراد: ' + members.length;
+      if (list.length === 0) {
+        grid.innerHTML = '<div class="col-span-full text-center py-12 text-slate-400">لا توجد نتائج مطابقة للبحث.</div>';
+        return;
+      }
+      list.forEach(m => {
+        const isMale = m.gender === 'male';
+        const card = document.createElement('div');
+        card.className = 'glass-card rounded-xl p-5 flex flex-col justify-between';
+        
+        let details = '';
+        if (isMale) {
+          details = `
+            <div class="text-xs text-emerald-300/80 mb-2">
+              <span class="font-semibold text-slate-300">الزوجات:</span> ${m.spouse_info || 'غير مدون'}
+            </div>
+            ${m.bio ? `<p class="text-xs text-slate-300 leading-relaxed border-t border-emerald-500/10 pt-2 line-clamp-3">${m.bio}</p>` : ''}
+          `;
+        } else {
+          details = `
+            <div class="text-xs text-pink-300/80 mb-1">
+              <span class="font-semibold text-slate-300">الزوج:</span> ${m.spouse_info || 'غير مدون'}
+            </div>
+            <div class="text-xs text-slate-300 mb-2">
+              <span class="font-semibold text-slate-300">الأبناء:</span> ${m.children_summary || 'غير مدون'}
+            </div>
+            ${m.notes ? `<p class="text-xs text-slate-400 leading-relaxed border-t border-pink-500/10 pt-2">${m.notes}</p>` : ''}
+          `;
+        }
+
+        let adminActions = '';
+        if (isAdmin) {
+          adminActions = `
+            <div class="pt-2 mt-2 border-t border-white/10 flex justify-end">
+              <button onclick="deleteMember('${m.id}')" class="text-[10px] text-rose-400 hover:underline">حذف السجل</button>
+            </div>
+          `;
+        }
+
+        card.innerHTML = `
+          <div>
+            <div class="flex items-start justify-between gap-2 mb-3">
+              <div>
+                <h3 class="text-base font-bold text-white">${m.full_name}</h3>
+                <span class="text-xs text-emerald-400 font-medium">${m.nickname || ''}</span>
+              </div>
+              <span class="text-xs px-2 py-0.5 rounded-full ${m.is_living ? 'bg-emerald-950/80 text-emerald-300 border border-emerald-500/30' : 'bg-slate-800 text-slate-400 border border-slate-700'}">
+                ${m.is_living ? 'حي يرزق' : 'رحمه الله'}
+              </span>
+            </div>
+            <div class="text-xs text-slate-400 mb-3 flex items-center gap-2">
+              <span>الجيل: ${m.generation || 1}</span>
+              <span>·</span>
+              <span>الميلاد: ${m.birth_date || '-'}</span>
+              ${m.death_date ? `<span>- الوفاة: ${m.death_date}</span>` : ''}
+            </div>
+            ${details}
+            ${adminActions}
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    window.deleteMember = (id) => {
+      if (!isAdmin) return alert('غير مصرح لك.');
+      if (confirm('هل أنت متأكد من حذف هذا السجل؟')) {
+        members = members.filter(m => m.id !== id);
+        localStorage.setItem('albuhasson_family_tree_v1', JSON.stringify(members));
+        render(members);
+      }
+    };
+
+    render(members);
+
+    searchInput.addEventListener('input', (e) => {
+      const q = e.target.value.trim().toLowerCase();
+      if (!q) return render(members);
+      const filtered = members.filter(m => 
+        (m.full_name && m.full_name.toLowerCase().includes(q)) ||
+        (m.nickname && m.nickname.toLowerCase().includes(q)) ||
+        (m.bio && m.bio.toLowerCase().includes(q))
+      );
+      render(filtered);
+    });
+  </script>
+</body>
+</html>
