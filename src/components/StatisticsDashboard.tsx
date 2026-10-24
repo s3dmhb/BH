@@ -77,9 +77,9 @@ export const StatisticsDashboard: React.FC<StatisticsDashboardProps> = ({ stats,
   const deceasedPercent = 100 - livingPercent;
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 py-8 space-y-8">
+    <div className="w-full max-w-7xl 2xl:max-w-[1700px] mx-auto px-3 sm:px-6 py-6 pb-24 md:pb-10 space-y-6 sm:space-y-8">
       {/* Header Banner */}
-      <div className="glass-panel rounded-3xl p-6 md:p-8 border border-emerald-500/25 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6">
+      <div className="glass-panel rounded-3xl p-5 sm:p-6 md:p-8 border border-emerald-500/25 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-4 md:gap-6">
         <div className="flex items-center gap-4">
           <HeritageCrest size={56} className="shrink-0 drop-shadow-md" />
           <div>

@@ -35,12 +35,12 @@ export const MemberNode: React.FC<MemberNodeProps> = ({
       {/* Node Card */}
       <div
         onClick={() => onSelect(member)}
-        className={`w-64 md:w-72 rounded-2xl p-3.5 cursor-pointer text-right transition-all duration-300 relative ${
+        className={`w-[260px] sm:w-[272px] md:w-72 rounded-2xl p-3 sm:p-3.5 cursor-pointer text-right transition-all duration-300 relative ${
           isMale ? 'glass-card' : 'glass-card-female'
         } ${
           isHighlighted
             ? 'ring-2 ring-emerald-400 shadow-[0_0_25px_rgba(16,185,129,0.4)] scale-105'
-            : 'hover:scale-[1.02]'
+            : 'hover:scale-[1.02] active:scale-[0.98]'
         }`}
       >
         {/* Header row: Avatar / Badge + Name + Status */}

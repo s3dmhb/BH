@@ -138,8 +138,8 @@ export default function App() {
         </main>
 
         {/* Global Footer */}
-        <footer className="w-full border-t border-emerald-500/15 py-6 px-4 md:px-8 text-center text-xs text-slate-400 glass-panel">
-          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+        <footer className="w-full border-t border-emerald-500/15 py-6 pb-20 md:pb-6 px-4 md:px-8 text-center text-xs text-slate-400 glass-panel">
+          <div className="max-w-7xl 2xl:max-w-[1700px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-400" />
               <span className="font-semibold text-slate-200">

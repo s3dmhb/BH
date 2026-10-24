@@ -105,11 +105,11 @@ export function generateStandaloneHTML(members: FamilyMember[]): string {
     .glass-card:hover { transform: translateY(-2px); border-color: rgba(52, 211, 153, 0.4); }
   </style>
 </head>
-<body class="min-h-screen p-4 md:p-8">
-  <div class="max-w-6xl mx-auto">
+<body class="min-h-screen p-3 sm:p-6 md:p-8">
+  <div class="max-w-7xl mx-auto">
     <!-- Header -->
-    <header class="glass rounded-2xl p-6 mb-8 text-center shadow-2xl relative">
-      <div class="absolute top-4 left-4 flex items-center gap-2">
+    <header class="glass rounded-2xl p-4 sm:p-6 mb-6 sm:mb-8 text-center shadow-2xl relative">
+      <div class="flex flex-wrap items-center justify-between gap-2 mb-3 sm:mb-0 sm:absolute sm:top-4 sm:left-4">
         <button id="adminLoginBtn" class="text-xs px-3 py-1.5 rounded-lg bg-emerald-950 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-900 transition-colors">
           دخول المدير (saad)
         </button>
@@ -118,25 +118,25 @@ export function generateStandaloneHTML(members: FamilyMember[]): string {
         </button>
       </div>
 
-      <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-900/60 border border-emerald-500/30 text-emerald-300 text-2xl font-bold mb-3 shadow-inner">
+      <div class="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-emerald-900/60 border border-emerald-500/30 text-emerald-300 text-xl sm:text-2xl font-bold mb-2 shadow-inner">
         ب
       </div>
-      <h1 class="text-3xl md:text-4xl font-bold text-white tracking-wide mb-2">شجرة عائلة البوحسون</h1>
-      <p class="text-emerald-400 font-medium text-sm md:text-base">فخذ النواصر · آل جابر · قبيلة آل بوعينين</p>
-      <div class="mt-4 flex flex-wrap justify-center gap-3 text-xs text-slate-300">
+      <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-white tracking-wide mb-1 sm:mb-2">شجرة عائلة البوحسون</h1>
+      <p class="text-emerald-400 font-medium text-xs sm:text-sm md:text-base">فخذ النواصر · آل جابر · قبيلة آل بوعينين</p>
+      <div class="mt-3 flex flex-wrap justify-center gap-2 text-xs text-slate-300">
         <span class="px-3 py-1 rounded-full bg-emerald-950/60 border border-emerald-500/20">نسخة جاهزة ومستضافة على GitHub Pages</span>
         <span class="px-3 py-1 rounded-full bg-emerald-950/60 border border-emerald-500/20" id="totalMembersBadge">جاري التحميل...</span>
       </div>
     </header>
 
     <!-- Search Bar -->
-    <div class="glass rounded-xl p-4 mb-6">
+    <div class="glass rounded-xl p-3 sm:p-4 mb-6">
       <input type="text" id="searchInput" placeholder="ابحث بالاسم الكامل أو اسم الشهرة (مثال: الوجيه، أبو حسن، النوخذة)..." 
-        class="w-full bg-slate-900/80 border border-emerald-500/30 rounded-lg px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:border-emerald-400 text-sm">
+        class="w-full bg-slate-900/80 border border-emerald-500/30 rounded-lg px-3.5 py-2.5 sm:py-3 text-white placeholder-slate-400 focus:outline-none focus:border-emerald-400 text-xs sm:text-sm">
     </div>
 
     <!-- Cards Grid -->
-    <div id="membersGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div id="membersGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
       <!-- Injected via JavaScript -->
     </div>
   </div>

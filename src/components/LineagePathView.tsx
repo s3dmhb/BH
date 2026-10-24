@@ -73,19 +73,19 @@ export const LineagePathView: React.FC<LineagePathViewProps> = ({
   };
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-4 py-8">
+    <div className="w-full max-w-5xl 2xl:max-w-6xl mx-auto px-3 sm:px-6 py-6 pb-24 md:pb-10">
       {/* Top Banner / Selection */}
-      <div className="glass-panel rounded-3xl p-6 md:p-8 mb-8 border border-emerald-500/25 shadow-2xl">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6">
+      <div className="glass-panel rounded-3xl p-4 sm:p-6 md:p-8 mb-6 sm:mb-8 border border-emerald-500/25 shadow-2xl">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-6 mb-4 sm:mb-6">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-emerald-950/80 border border-emerald-500/30 flex items-center justify-center text-emerald-300">
-              <GitFork className="w-6 h-6" />
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-emerald-950/80 border border-emerald-500/30 flex items-center justify-center text-emerald-300 shrink-0">
+              <GitFork className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
             <div>
-              <h2 className="text-xl md:text-2xl font-bold text-white tracking-tight">
+              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-white tracking-tight">
                 مسار النسب وسلسلة الأجداد
               </h2>
-              <p className="text-xs md:text-sm text-emerald-400">
+              <p className="text-[11px] sm:text-xs md:text-sm text-emerald-400">
                 تتبّع السلسلة الأبوية المتصلة صعوداً من أي فرد حتى الجد المؤسس
               </p>
             </div>

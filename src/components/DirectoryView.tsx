@@ -100,18 +100,18 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
   }, [members, memberMap, genderFilter, statusFilter, selectedBranch, selectedGen, searchQuery, sortBy]);
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 py-8">
+    <div className="w-full max-w-7xl 2xl:max-w-[1700px] mx-auto px-3 sm:px-6 py-6 pb-24 md:pb-10">
       {/* Control & Search Bar */}
-      <div className="glass-panel rounded-3xl p-6 mb-8 border border-emerald-500/20 shadow-xl space-y-4">
+      <div className="glass-panel rounded-3xl p-4 sm:p-6 mb-6 sm:mb-8 border border-emerald-500/20 shadow-xl space-y-4">
         
         {/* Title & Live Counter */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
           <div>
-            <h2 className="text-xl md:text-2xl font-bold text-white tracking-tight flex items-center gap-2">
-              <Users className="w-6 h-6 text-emerald-400" />
+            <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-white tracking-tight flex items-center gap-2">
+              <Users className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-400" />
               <span>دليل أفراد عائلة البوحسون</span>
             </h2>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5">
               بحث متقدم وتصفية شاملة لجميع السجلات والبيانات الأسرية
             </p>
           </div>
@@ -126,20 +126,20 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
 
         {/* Search input with live clear */}
         <div className="relative">
-          <Search className="w-5 h-5 text-emerald-400 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <Search className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="ابحث بالاسم الكامل أو اسم الشهرة أو الأب أو الزوجة (مثال: الوجيه، أبو حسن، النوخذة، استشاري)..."
-            className="w-full bg-slate-900/90 border border-emerald-500/30 rounded-2xl pr-12 pl-4 py-3 text-sm text-white placeholder-slate-400 focus:outline-none focus:border-emerald-400 shadow-inner"
+            placeholder="ابحث بالاسم الكامل أو اسم الشهرة أو الأب أو الزوجة (مثال: الوجيه، أبو حسن، النوخذة)..."
+            className="w-full bg-slate-900/90 border border-emerald-500/30 rounded-2xl pr-10 sm:pr-12 pl-4 py-2.5 sm:py-3 text-xs sm:text-sm text-white placeholder-slate-400 focus:outline-none focus:border-emerald-400 shadow-inner"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white text-xs bg-slate-800 px-2 py-1 rounded-lg"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white text-xs bg-slate-800 px-2 py-1 rounded-lg"
             >
-              مسح البحث
+              مسح
             </button>
           )}
         </div>
@@ -150,7 +150,7 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
           <div className="flex items-center gap-1 bg-slate-900/70 p-1 rounded-xl border border-emerald-500/15">
             <button
               onClick={() => setGenderFilter('all')}
-              className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
+              className={`px-2.5 sm:px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
                 genderFilter === 'all' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'
               }`}
             >
@@ -158,7 +158,7 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
             </button>
             <button
               onClick={() => setGenderFilter('male')}
-              className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
+              className={`px-2.5 sm:px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
                 genderFilter === 'male' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'
               }`}
             >
@@ -166,7 +166,7 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
             </button>
             <button
               onClick={() => setGenderFilter('female')}
-              className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
+              className={`px-2.5 sm:px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
                 genderFilter === 'female' ? 'bg-rose-600 text-white' : 'text-slate-400 hover:text-white'
               }`}
             >
@@ -178,7 +178,7 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
           <div className="flex items-center gap-1 bg-slate-900/70 p-1 rounded-xl border border-emerald-500/15">
             <button
               onClick={() => setStatusFilter('all')}
-              className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
+              className={`px-2.5 sm:px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
                 statusFilter === 'all' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'
               }`}
             >
@@ -186,7 +186,7 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
             </button>
             <button
               onClick={() => setStatusFilter('living')}
-              className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
+              className={`px-2.5 sm:px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
                 statusFilter === 'living' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'
               }`}
             >
@@ -194,7 +194,7 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
             </button>
             <button
               onClick={() => setStatusFilter('deceased')}
-              className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
+              className={`px-2.5 sm:px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
                 statusFilter === 'deceased' ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-white'
               }`}
             >
@@ -207,7 +207,7 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
             <select
               value={selectedBranch}
               onChange={(e) => setSelectedBranch(e.target.value)}
-              className="bg-slate-900/90 border border-emerald-500/20 text-slate-200 text-xs rounded-xl px-3 py-2 focus:outline-none focus:border-emerald-400"
+              className="bg-slate-900/90 border border-emerald-500/20 text-slate-200 text-xs rounded-xl px-2.5 sm:px-3 py-2 focus:outline-none focus:border-emerald-400"
             >
               <option value="all">كافة الفروع</option>
               {branches.map(b => (
@@ -218,7 +218,7 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
             <select
               value={selectedGen}
               onChange={(e) => setSelectedGen(e.target.value)}
-              className="bg-slate-900/90 border border-emerald-500/20 text-slate-200 text-xs rounded-xl px-3 py-2 focus:outline-none focus:border-emerald-400"
+              className="bg-slate-900/90 border border-emerald-500/20 text-slate-200 text-xs rounded-xl px-2.5 sm:px-3 py-2 focus:outline-none focus:border-emerald-400"
             >
               <option value="all">كافة الأجيال</option>
               {generations.map(g => (
@@ -233,9 +233,9 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
                 onChange={(e) => setSortBy(e.target.value as any)}
                 className="bg-transparent text-slate-200 text-xs focus:outline-none"
               >
-                <option value="generation">ترتيب بالأجيال</option>
-                <option value="birth">ترتيب بسنة الميلاد</option>
-                <option value="name">ترتيب أبجدي</option>
+                <option value="generation">الأجيال</option>
+                <option value="birth">الميلاد</option>
+                <option value="name">أبجدي</option>
               </select>
             </div>
           </div>
@@ -244,7 +244,7 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
 
       {/* Members Cards Grid */}
       {filteredMembers.length === 0 ? (
-        <div className="glass-panel rounded-3xl p-16 text-center text-slate-400 border border-emerald-500/15">
+        <div className="glass-panel rounded-3xl p-12 sm:p-16 text-center text-slate-400 border border-emerald-500/15">
           <p className="text-base text-slate-300 mb-2">لا توجد نتائج مطابقة لمعايير البحث الحالية.</p>
           <button
             onClick={() => {
@@ -260,7 +260,7 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-4 sm:gap-5">
           {filteredMembers.map(member => {
             const isMale = member.gender === 'male';
             const father = member.father_id ? memberMap.get(member.father_id) : null;
