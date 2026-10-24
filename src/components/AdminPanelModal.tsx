@@ -315,27 +315,24 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
             <div className="bg-gradient-to-br from-emerald-950/60 to-slate-900/90 p-5 rounded-2xl border border-emerald-500/20 space-y-3">
               <h3 className="text-xs md:text-sm font-bold text-white flex items-center gap-2">
                 <Globe className="w-4 h-4 text-emerald-400" />
-                <span>دليل نشر التطبيق على GitHub Pages (في دقيقة واحدة):</span>
+                <span>النشر التلقائي المباشر على GitHub Pages (CI/CD):</span>
               </h3>
               
-              <ol className="text-xs text-slate-300 space-y-2 list-decimal list-inside leading-relaxed">
-                <li>
-                  قم بالنقر على زر <strong className="text-amber-300">"تجهيز GitHub Pages"</strong> أعلاه لتحميل ملف <code className="bg-slate-950 px-1.5 py-0.5 rounded text-emerald-400 font-mono">index.html</code> المستقل والمحتوي على كل البيانات والأنماط.
-                </li>
-                <li>
-                  أنشئ مستودعاً جديداً (New Repository) على حسابك في GitHub، مثلاً باسم <code className="bg-slate-950 px-1.5 py-0.5 rounded text-emerald-400 font-mono">albuhasson-family-tree</code>.
-                </li>
-                <li>
-                  ارفع الملف إلى الفرع الرئيسي <code className="bg-slate-950 px-1.5 py-0.5 rounded text-emerald-400 font-mono">main</code>، ثم ادخل إلى:
-                  <br />
-                  <span className="text-slate-400 font-mono mr-5">Settings ➔ Pages ➔ Source: Deploy from branch (main) ➔ Save</span>
-                </li>
-                <li>
-                  سيصبح موقع شجرة عائلة البوحسون متاحاً للعموم مباشرة على رابط مجاني مثل:
-                  <br />
-                  <span className="text-emerald-300 font-mono mr-5">https://yourusername.github.io/albuhasson-family-tree</span>
-                </li>
-              </ol>
+              <div className="text-xs text-slate-300 space-y-2 leading-relaxed">
+                <p>
+                  تم تجهيز المشروع بملف سير العمل التلقائي <code className="bg-slate-950 px-1.5 py-0.5 rounded text-emerald-400 font-mono">.github/workflows/deploy.yml</code> وضبط مسارات الحزم بنظام المسار النسبي <code className="bg-slate-950 px-1.5 py-0.5 rounded text-emerald-400 font-mono">base: './'</code>، بحيث يتم بناء ونشر أي تعديل تقوم به هنا تلقائياً فور مزامنتها مع مستودع GitHub الخاص بك.
+                </p>
+
+                <div className="bg-slate-950/70 p-3 rounded-xl border border-emerald-500/15 space-y-1.5">
+                  <span className="text-[11px] font-semibold text-emerald-300 block">خطوة تفعيل النشر لمرة واحدة في مستودع GitHub:</span>
+                  <ol className="list-decimal list-inside text-[11px] text-slate-300 space-y-1">
+                    <li>افتح مستودع المشروع في حسابك على GitHub.</li>
+                    <li>انتقل إلى التبويب: <code className="text-amber-300 font-mono">Settings</code> ➔ <code className="text-amber-300 font-mono">Pages</code>.</li>
+                    <li>تحت قسم <code className="text-amber-300 font-mono">Build and deployment</code>، اختر في خانة <code className="text-emerald-300 font-mono">Source</code>: <strong className="text-white">GitHub Actions</strong>.</li>
+                    <li>انتهى! ستتولى المنصة بناء ونشر الموقع تلقائياً عند كل مزامنة في غضون ثوانٍ.</li>
+                  </ol>
+                </div>
+              </div>
             </div>
           </div>
 
