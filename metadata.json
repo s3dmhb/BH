@@ -1,0 +1,6 @@
+{
+  "name": "شجرة عائلة البوحسون - Albuhasson Family Tree",
+  "description": "المنصة الرقمية التفاعلية لشجرة وأنساب عائلة البوحسون (فخذ النواصر - آل جابر - قبيلة آل بوعينين) بتصميم آبل الزجاجي ولون الزمرد السعودي.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
