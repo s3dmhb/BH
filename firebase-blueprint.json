@@ -1,0 +1,87 @@
+{
+  "entities": {
+    "FamilyMember": {
+      "title": "FamilyMember",
+      "description": "سجل فرد في شجرة عائلة البوحسون",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "معرف السجل الفريد"
+        },
+        "full_name": {
+          "type": "string",
+          "description": "الاسم الكامل"
+        },
+        "nickname": {
+          "type": "string",
+          "description": "اسم الشهرة أو اللقب"
+        },
+        "gender": {
+          "type": "string",
+          "enum": ["male", "female"],
+          "description": "الجنس"
+        },
+        "father_id": {
+          "type": "string",
+          "description": "معرف الأب للربط بالأنساب"
+        },
+        "birth_date": {
+          "type": "string",
+          "description": "سنة الميلاد"
+        },
+        "death_date": {
+          "type": "string",
+          "description": "سنة الوفاة"
+        },
+        "is_living": {
+          "type": "boolean",
+          "description": "على قيد الحياة"
+        },
+        "branch": {
+          "type": "string",
+          "description": "الفرع العائلي"
+        },
+        "sub_family": {
+          "type": "string",
+          "description": "وسم العائلة الفرعية"
+        },
+        "generation": {
+          "type": "number",
+          "description": "رقم الجيل"
+        },
+        "spouse_info": {
+          "type": "string",
+          "description": "بيانات الزوج أو الزوجات"
+        },
+        "bio": {
+          "type": "string",
+          "description": "السيرة الذاتية (للذكور)"
+        },
+        "avatar_url": {
+          "type": "string",
+          "description": "رابط الصورة المصغرة (للذكور فقط)"
+        },
+        "children_summary": {
+          "type": "string",
+          "description": "ملخص الأبناء (للإناث)"
+        },
+        "notes": {
+          "type": "string",
+          "description": "ملاحظات خاصة (للإناث)"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "تاريخ آخر تعديل"
+        }
+      },
+      "required": ["full_name", "gender", "is_living"]
+    }
+  },
+  "firestore": {
+    "/members/{memberId}": {
+      "schema": "FamilyMember",
+      "description": "مجموعة أفراد شجرة عائلة البوحسون المزامنة سحابياً"
+    }
+  }
+}

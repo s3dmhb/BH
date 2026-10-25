@@ -1,0 +1,83 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerified() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isBootstrappedAdmin() {
+      return isVerified() && (
+        request.auth.token.email == 'buainainsm@gmail.com'
+      );
+    }
+
+    // Validation blueprint for FamilyMember entity
+    function isValidFamilyMember(data) {
+      return data.keys().hasAll(['full_name', 'gender', 'is_living']) &&
+             data.keys().hasOnly([
+               'id', 'full_name', 'nickname', 'gender', 'father_id',
+               'birth_date', 'death_date', 'is_living', 'branch',
+               'sub_family', 'sub_tags', 'generation', 'spouse_info',
+               'bio', 'avatar_url', 'children_summary', 'notes', 'updatedAt'
+             ]) &&
+             data.full_name is string && data.full_name.size() > 0 && data.full_name.size() <= 200 &&
+             data.gender in ['male', 'female'] &&
+             data.is_living is bool &&
+             (!('id' in data) || (data.id is string && data.id.size() <= 128)) &&
+             (!('nickname' in data) || (data.nickname is string && data.nickname.size() <= 100)) &&
+             (!('father_id' in data) || data.father_id == null || (data.father_id is string && data.father_id.size() <= 128)) &&
+             (!('birth_date' in data) || (data.birth_date is string && data.birth_date.size() <= 50)) &&
+             (!('death_date' in data) || (data.death_date is string && data.death_date.size() <= 50)) &&
+             (!('branch' in data) || (data.branch is string && data.branch.size() <= 100)) &&
+             (!('sub_family' in data) || (data.sub_family is string && data.sub_family.size() <= 100)) &&
+             (!('generation' in data) || (data.generation is number && data.generation >= 1 && data.generation <= 20)) &&
+             (!('spouse_info' in data) || (data.spouse_info is string && data.spouse_info.size() <= 500)) &&
+             (!('bio' in data) || (data.bio is string && data.bio.size() <= 2000)) &&
+             (!('avatar_url' in data) || (data.avatar_url is string && data.avatar_url.size() <= 1000)) &&
+             (!('children_summary' in data) || (data.children_summary is string && data.children_summary.size() <= 1000)) &&
+             (!('notes' in data) || (data.notes is string && data.notes.size() <= 1000)) &&
+             (!('updatedAt' in data) || (data.updatedAt is string && data.updatedAt.size() <= 50));
+    }
+
+    // Family Members Collection:
+    // Public read for everyone (family tree is a public community heritage resource)
+    // Write permitted for authenticated verified users with schema validation
+    match /members/{memberId} {
+      allow get, list: if true;
+
+      allow create: if (isVerified() || isBootstrappedAdmin()) &&
+                       isValidId(memberId) &&
+                       isValidFamilyMember(incoming());
+
+      allow update: if (isVerified() || isBootstrappedAdmin()) &&
+                       isValidId(memberId) &&
+                       isValidFamilyMember(incoming());
+
+      allow delete: if (isVerified() || isBootstrappedAdmin()) &&
+                       isValidId(memberId);
+    }
+  }
+}

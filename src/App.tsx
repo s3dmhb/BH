@@ -18,6 +18,10 @@ export default function App() {
     members,
     memberMap,
     stats,
+    isCloudConnected,
+    cloudSyncStatus,
+    isSeeding,
+    seedDatabaseToCloud,
     addMember,
     updateMember,
     deleteMember,
@@ -28,7 +32,7 @@ export default function App() {
     getChildren
   } = useFamilyStorage();
 
-  const { isAdmin, login, logout } = useAdminAuth();
+  const { isAdmin, currentUser, login, loginWithGoogle, logout } = useAdminAuth();
 
   const [currentView, setCurrentView] = useState<ViewMode>('tree');
 
@@ -99,6 +103,9 @@ export default function App() {
           onOpenAdminPanel={() => setIsAdminPanelOpen(true)}
           onPrint={handlePrint}
           isAdmin={isAdmin}
+          currentUser={currentUser}
+          isCloudConnected={isCloudConnected}
+          cloudSyncStatus={cloudSyncStatus}
           onOpenLoginModal={() => setIsLoginModalOpen(true)}
           onLogout={logout}
         />
@@ -208,16 +215,21 @@ export default function App() {
         onImportJSON={importJSON}
         onResetToDefault={resetToDefault}
         onExportTypeScriptCode={exportTypeScriptCode}
+        onSeedDatabaseToCloud={seedDatabaseToCloud}
+        isCloudConnected={isCloudConnected}
+        isSeeding={isSeeding}
+        currentUser={currentUser}
         isAdmin={isAdmin}
         onRequireLogin={() => setIsLoginModalOpen(true)}
         onLogout={logout}
       />
 
-      {/* Admin Login Modal (saad / 33740) */}
+      {/* Admin Login Modal (Google Auth / saad) */}
       <AdminLoginModal
         isOpen={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
         onLogin={login}
+        onLoginWithGoogle={loginWithGoogle}
       />
     </div>
   );

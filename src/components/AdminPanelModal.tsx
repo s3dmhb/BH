@@ -20,13 +20,19 @@ import {
   GitBranch
 } from 'lucide-react';
 
+import { User } from 'firebase/auth';
+
 interface AdminPanelModalProps {
   isOpen: boolean;
   onClose: () => void;
   members: FamilyMember[];
-  onImportJSON: (jsonString: string) => { success: boolean; count?: number; error?: string };
+  onImportJSON: (jsonString: string) => Promise<{ success: boolean; count?: number; error?: string }> | { success: boolean; count?: number; error?: string };
   onResetToDefault: () => void;
   onExportTypeScriptCode?: () => string;
+  onSeedDatabaseToCloud?: () => Promise<{ success: boolean; count?: number; error?: string }>;
+  isCloudConnected?: boolean;
+  isSeeding?: boolean;
+  currentUser?: User | null;
   isAdmin: boolean;
   onRequireLogin: () => void;
   onLogout: () => void;
@@ -39,6 +45,10 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
   onImportJSON,
   onResetToDefault,
   onExportTypeScriptCode,
+  onSeedDatabaseToCloud,
+  isCloudConnected = true,
+  isSeeding = false,
+  currentUser,
   isAdmin,
   onRequireLogin,
   onLogout
@@ -58,12 +68,12 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = (event) => {
+    reader.onload = async (event) => {
       const content = event.target?.result as string;
       if (content) {
-        const result = onImportJSON(content);
+        const result = await onImportJSON(content);
         if (result.success) {
-          showNotification('success', `تم استيراد ${result.count} فرداً بنجاح في قاعدة البيانات المحلية!`);
+          showNotification('success', `تم استيراد ${result.count} فرداً بنجاح في قاعدة البيانات السحابية!`);
         } else {
           showNotification('error', result.error || 'فشل استيراد الملف. يرجى التأكد من صيغة JSON.');
         }
@@ -110,6 +120,46 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
           </div>
         </div>
 
+        {/* Firebase Live Cloud Sync Banner */}
+        <div className="mb-4 p-4 rounded-2xl bg-gradient-to-r from-emerald-950/80 via-teal-950/60 to-slate-900 border border-emerald-500/40 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-emerald-900/80 border border-emerald-400/50 flex items-center justify-center text-emerald-300 shrink-0">
+              <Database className="w-5 h-5 text-emerald-400" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-white block">
+                  المزامنة السحابية الحية (Firebase Firestore)
+                </span>
+                <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-bold flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <span>متصلة ولحظية</span>
+                </span>
+              </div>
+              <span className="text-[11px] text-slate-300">
+                كل تعديل أو إضافة يتم حفظه في السحابة فوراً ويظهر لجميع الأفراد والمتصفحات في نفس الثانية.
+              </span>
+            </div>
+          </div>
+
+          {onSeedDatabaseToCloud && (
+            <button
+              onClick={async () => {
+                const res = await onSeedDatabaseToCloud();
+                if (res.success) {
+                  showNotification('success', `تمت مزامنة ورفع ${res.count} فرداً من الشجرة التراثية إلى سحابة Firestore بنجاح! تظهر للجميع فوراً.`);
+                } else {
+                  showNotification('error', res.error || 'فشلت المزامنة السحابية');
+                }
+              }}
+              disabled={isSeeding}
+              className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-md transition-all whitespace-nowrap active:scale-95 disabled:opacity-50"
+            >
+              {isSeeding ? 'جاري المزامنة...' : 'مزامنة وتثبيت الشجرة في السحابة'}
+            </button>
+          )}
+        </div>
+
         {/* Admin Login Status Banner */}
         <div className="mb-6 p-4 rounded-2xl bg-slate-900/90 border border-emerald-500/25 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-3">
@@ -122,12 +172,14 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
             </div>
             <div>
               <span className="text-xs font-bold text-white block">
-                {isAdmin ? 'جلسة المدير نشطة (saad)' : 'صلاحيات المدير مغلقة'}
+                {isAdmin
+                  ? `جلسة المدير نشطة (${currentUser?.email || 'saad'})`
+                  : 'صلاحيات المدير مغلقة'}
               </span>
               <span className="text-[11px] text-slate-400">
                 {isAdmin
-                  ? 'لديك كامل الصلاحيات لإضافة، تعديل، وحذف السجلات واستيراد البيانات.'
-                  : 'يتطلب إدخال اسم المستخدم وكلمة المرور لتعديل وحفظ البيانات.'}
+                  ? 'لديك كامل الصلاحيات لإضافة، تعديل، وحذف السجلات وتنعكس سحابياً فوراً.'
+                  : 'سجل الدخول بحساب Google أو كلمة المرور لإجراء التعديلات وحفظها سحابياً.'}
               </span>
             </div>
           </div>
@@ -146,7 +198,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
                 onClick={onRequireLogin}
                 className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 text-emerald-950 text-xs font-bold shadow-md hover:from-emerald-400 hover:to-teal-300 transition-all"
               >
-                تسجيل دخول المدير (saad)
+                تسجيل الدخول (Google / saad)
               </button>
             )}
           </div>
