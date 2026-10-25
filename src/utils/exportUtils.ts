@@ -156,8 +156,8 @@ export function generateStandaloneHTML(members: FamilyMember[]): string {
     <div class="glass max-w-sm w-full p-6 rounded-2xl border border-emerald-500/30 text-right">
       <h3 class="text-lg font-bold text-white mb-2">تسجيل دخول المدير</h3>
       <p class="text-xs text-emerald-400 mb-4">صلاحيات إدارة وتعديل أفراد العائلة</p>
-      <input type="text" id="loginUser" placeholder="اسم المستخدم (saad)" class="w-full bg-slate-900 border border-emerald-500/30 rounded-lg p-2.5 text-xs text-white mb-2.5">
-      <input type="password" id="loginPass" placeholder="كلمة المرور (33740)" class="w-full bg-slate-900 border border-emerald-500/30 rounded-lg p-2.5 text-xs text-white mb-4">
+      <input type="text" id="loginUser" placeholder="اسم المستخدم" class="w-full bg-slate-900 border border-emerald-500/30 rounded-lg p-2.5 text-xs text-white mb-2.5">
+      <input type="password" id="loginPass" placeholder="كلمة المرور" class="w-full bg-slate-900 border border-emerald-500/30 rounded-lg p-2.5 text-xs text-white mb-4">
       <div id="loginError" class="text-rose-400 text-xs mb-3 hidden">بيانات الدخول غير صحيحة.</div>
       <div class="flex gap-2">
         <button id="doLoginBtn" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded-lg text-xs">تسجيل الدخول</button>

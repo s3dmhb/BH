@@ -140,7 +140,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="saad"
+              placeholder="اسم المستخدم..."
               required
               className="w-full bg-slate-900/90 border border-emerald-500/30 rounded-xl px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400 font-mono text-sm"
             />
@@ -177,7 +177,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
               className="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-emerald-950 font-bold text-xs md:text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-950/50 transition-all active:scale-[0.99]"
             >
               <ShieldCheck className="w-4 h-4" />
-              <span>دخول بكلمة المرور (saad)</span>
+              <span>دخول بكلمة المرور</span>
             </button>
           </div>
         </form>

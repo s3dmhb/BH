@@ -40,27 +40,15 @@ export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({
   onRequireLogin
 }) => {
   const [confirmDelete, setConfirmDelete] = React.useState(false);
-  const [deletePasscode, setDeletePasscode] = React.useState('');
-  const [deleteError, setDeleteError] = React.useState('');
 
   if (!member) return null;
 
   const isMale = member.gender === 'male';
 
   const handleConfirmDelete = () => {
-    // If already admin, delete immediately
     if (isAdmin) {
       onDelete(member.id);
       onClose();
-      return;
-    }
-
-    // If not admin, check quick passcode (33740)
-    if (deletePasscode === '33740') {
-      onDelete(member.id);
-      onClose();
-    } else {
-      setDeleteError('رمز الإدارة غير صحيح. يرجى إدخال 33740 أو تسجيل الدخول.');
     }
   };
 
@@ -281,8 +269,8 @@ export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({
           )}
         </div>
 
-        {/* Delete Confirmation Box (In-UI, no window.confirm) */}
-        {confirmDelete && (
+        {/* Delete Confirmation Box (In-UI, only for admin) */}
+        {isAdmin && confirmDelete && (
           <div className="mt-6 p-4 rounded-2xl bg-rose-950/80 border-2 border-rose-500/50 text-right animate-in fade-in duration-150">
             <div className="flex items-start gap-3 mb-3">
               <ShieldAlert className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
@@ -301,49 +289,10 @@ export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({
               </div>
             </div>
 
-            {/* If not logged in as admin, provide quick password check */}
-            {!isAdmin && (
-              <div className="my-3 p-3 rounded-xl bg-slate-900/80 border border-white/10">
-                <label className="block text-[11px] text-slate-300 font-semibold mb-1 flex items-center gap-1.5">
-                  <Lock className="w-3.5 h-3.5 text-amber-400" />
-                  <span>خاص بالمدير: أدخل رمز المرور (33740) لتأكيد الحذف الفوري:</span>
-                </label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="password"
-                    value={deletePasscode}
-                    onChange={(e) => {
-                      setDeletePasscode(e.target.value);
-                      setDeleteError('');
-                    }}
-                    placeholder="رمز المرور (33740)..."
-                    className="flex-1 bg-slate-950 border border-emerald-500/30 rounded-xl px-3 py-1.5 text-white text-xs focus:outline-none focus:border-rose-400"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onClose();
-                      onRequireLogin();
-                    }}
-                    className="text-[11px] text-emerald-400 hover:underline px-2"
-                  >
-                    أو سجّل الدخول كـ saad
-                  </button>
-                </div>
-                {deleteError && (
-                  <p className="text-[11px] text-rose-400 mt-1 font-medium">{deleteError}</p>
-                )}
-              </div>
-            )}
-
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-rose-500/30">
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-rose-500/30">
               <button
                 type="button"
-                onClick={() => {
-                  setConfirmDelete(false);
-                  setDeleteError('');
-                  setDeletePasscode('');
-                }}
+                onClick={() => setConfirmDelete(false)}
                 className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold"
               >
                 إلغاء التراجع
@@ -381,14 +330,16 @@ export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({
                 <span>{isAdmin ? 'تعديل السجل' : 'تعديل (إذن المدير)'}</span>
               </button>
 
-              <button
-                onClick={() => setConfirmDelete(true)}
-                className="px-3.5 py-2 rounded-xl text-xs font-semibold text-rose-300 hover:text-white hover:bg-rose-950/80 border border-rose-500/30 flex items-center gap-1.5 transition-colors"
-                title="حذف هذا السجل نهائياً"
-              >
-                <Trash2 className="w-4 h-4" />
-                <span>حذف السجل</span>
-              </button>
+              {isAdmin && (
+                <button
+                  onClick={() => setConfirmDelete(true)}
+                  className="px-3.5 py-2 rounded-xl text-xs font-semibold text-rose-300 hover:text-white hover:bg-rose-950/80 border border-rose-500/30 flex items-center gap-1.5 transition-colors"
+                  title="حذف هذا السجل نهائياً"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  <span>حذف السجل</span>
+                </button>
+              )}
             </div>
 
             <button
