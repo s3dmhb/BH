@@ -2,7 +2,7 @@ import React from 'react';
 import { ViewMode } from '../types/family';
 import { HeritageCrest } from './HeritageCrest';
 import { User } from 'firebase/auth';
-import { Network, GitFork, Users, BarChart3, Plus, Settings2, Printer, Lock, LogOut, Cloud, Sparkles } from 'lucide-react';
+import { Network, GitFork, Users, BarChart3, Plus, Settings2, Printer, Lock, LogOut, Cloud, Sparkles, FileImage } from 'lucide-react';
 
 interface HeaderProps {
   currentView: ViewMode;
@@ -10,6 +10,7 @@ interface HeaderProps {
   onOpenAddModal: () => void;
   onOpenAdminPanel: () => void;
   onPrint: () => void;
+  onOpenExportImage?: () => void;
   isAdmin: boolean;
   currentUser?: User | null;
   isCloudConnected?: boolean;
@@ -24,6 +25,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenAddModal,
   onOpenAdminPanel,
   onPrint,
+  onOpenExportImage,
   isAdmin,
   currentUser,
   isCloudConnected = true,
@@ -113,6 +115,18 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Zone 3: Primary Action & Tools */}
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            {/* Export as Image Button */}
+            {onOpenExportImage && (
+              <button
+                onClick={onOpenExportImage}
+                title="تصدير شجرة العائلة كصورة (PNG) عالية الجودة"
+                className="p-2 sm:px-2.5 sm:py-2 text-xs font-medium text-emerald-300 glass-btn rounded-xl flex items-center gap-1.5 hover:text-white bg-emerald-950/40 border border-emerald-500/30"
+              >
+                <FileImage className="w-4 h-4 text-emerald-400" />
+                <span className="hidden xl:inline whitespace-nowrap">تصدير كصورة</span>
+              </button>
+            )}
+
             {/* Print button (desktop) */}
             <button
               onClick={onPrint}

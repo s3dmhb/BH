@@ -12,6 +12,7 @@ import { MemberFormModal } from './components/MemberFormModal';
 import { AdminPanelModal } from './components/AdminPanelModal';
 import { AdminLoginModal } from './components/AdminLoginModal';
 import { PrintReportView } from './components/PrintReportView';
+import { ExportTreeImageModal } from './components/ExportTreeImageModal';
 
 export default function App() {
   const {
@@ -42,6 +43,7 @@ export default function App() {
   const [editingMember, setEditingMember] = useState<FamilyMember | null>(null);
   const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isExportImageModalOpen, setIsExportImageModalOpen] = useState(false);
 
   // Quick switch to Lineage view with specific member selected
   const handleViewLineage = (member: FamilyMember) => {
@@ -102,6 +104,7 @@ export default function App() {
           onOpenAddModal={handleOpenAddModal}
           onOpenAdminPanel={() => setIsAdminPanelOpen(true)}
           onPrint={handlePrint}
+          onOpenExportImage={() => setIsExportImageModalOpen(true)}
           isAdmin={isAdmin}
           currentUser={currentUser}
           isCloudConnected={isCloudConnected}
@@ -116,6 +119,7 @@ export default function App() {
             <TreeView
               members={members}
               onSelectMember={(m) => setSelectedMember(m)}
+              onOpenExportImage={() => setIsExportImageModalOpen(true)}
             />
           )}
 
@@ -195,42 +199,57 @@ export default function App() {
       )}
 
       {/* Add / Edit Member CRUD Modal */}
-      <MemberFormModal
-        isOpen={isFormModalOpen}
-        onClose={() => {
-          setIsFormModalOpen(false);
-          setEditingMember(null);
-        }}
-        onSubmit={handleFormSubmit}
-        onDelete={deleteMember}
-        initialData={editingMember}
-        members={members}
-      />
+      {isFormModalOpen && (
+        <MemberFormModal
+          isOpen={isFormModalOpen}
+          onClose={() => {
+            setIsFormModalOpen(false);
+            setEditingMember(null);
+          }}
+          onSubmit={handleFormSubmit}
+          onDelete={deleteMember}
+          initialData={editingMember}
+          members={members}
+        />
+      )}
 
       {/* Admin, Backup, and GitHub Pages Panel */}
-      <AdminPanelModal
-        isOpen={isAdminPanelOpen}
-        onClose={() => setIsAdminPanelOpen(false)}
-        members={members}
-        onImportJSON={importJSON}
-        onResetToDefault={resetToDefault}
-        onExportTypeScriptCode={exportTypeScriptCode}
-        onSeedDatabaseToCloud={seedDatabaseToCloud}
-        isCloudConnected={isCloudConnected}
-        isSeeding={isSeeding}
-        currentUser={currentUser}
-        isAdmin={isAdmin}
-        onRequireLogin={() => setIsLoginModalOpen(true)}
-        onLogout={logout}
-      />
+      {isAdminPanelOpen && (
+        <AdminPanelModal
+          isOpen={isAdminPanelOpen}
+          onClose={() => setIsAdminPanelOpen(false)}
+          members={members}
+          onImportJSON={importJSON}
+          onResetToDefault={resetToDefault}
+          onExportTypeScriptCode={exportTypeScriptCode}
+          onSeedDatabaseToCloud={seedDatabaseToCloud}
+          isCloudConnected={isCloudConnected}
+          isSeeding={isSeeding}
+          currentUser={currentUser}
+          isAdmin={isAdmin}
+          onRequireLogin={() => setIsLoginModalOpen(true)}
+          onLogout={logout}
+        />
+      )}
 
       {/* Admin Login Modal (Google Auth / saad) */}
-      <AdminLoginModal
-        isOpen={isLoginModalOpen}
-        onClose={() => setIsLoginModalOpen(false)}
-        onLogin={login}
-        onLoginWithGoogle={loginWithGoogle}
-      />
+      {isLoginModalOpen && (
+        <AdminLoginModal
+          isOpen={isLoginModalOpen}
+          onClose={() => setIsLoginModalOpen(false)}
+          onLogin={login}
+          onLoginWithGoogle={loginWithGoogle}
+        />
+      )}
+
+      {/* Export as High-Resolution Image Modal */}
+      {isExportImageModalOpen && (
+        <ExportTreeImageModal
+          isOpen={isExportImageModalOpen}
+          onClose={() => setIsExportImageModalOpen(false)}
+          members={members}
+        />
+      )}
     </div>
   );
 }

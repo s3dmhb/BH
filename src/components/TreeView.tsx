@@ -33,12 +33,14 @@ import {
   Award,
   Gem,
   Flame,
-  Waves
+  Waves,
+  FileImage
 } from 'lucide-react';
 
 interface TreeViewProps {
   members: FamilyMember[];
   onSelectMember: (member: FamilyMember) => void;
+  onOpenExportImage?: () => void;
 }
 
 // Tree node structure for d3-hierarchy
@@ -48,7 +50,7 @@ interface TreeNodeData {
   children?: TreeNodeData[];
 }
 
-export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember }) => {
+export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onOpenExportImage }) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Diagram Layout Mode:
@@ -749,6 +751,18 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember }) =
             >
               {isFullscreen ? <Shrink className="w-3.5 h-3.5 text-amber-400" /> : <Expand className="w-3.5 h-3.5" />}
             </button>
+
+            {/* Export as Image Button */}
+            {onOpenExportImage && (
+              <button
+                onClick={onOpenExportImage}
+                title="تصدير شجرة العائلة كصورة (PNG) عالي الجودة للطباعة أو المشاركة"
+                className="h-8 px-2.5 rounded-xl glass-btn text-xs font-semibold text-emerald-300 hover:text-white flex items-center gap-1.5 transition-all active:scale-95 shadow-md shadow-emerald-950/40 bg-emerald-950/60 border border-emerald-500/40"
+              >
+                <FileImage className="w-3.5 h-3.5 text-emerald-400" />
+                <span className="hidden sm:inline">تصدير كصورة</span>
+              </button>
+            )}
           </div>
         </div>
 

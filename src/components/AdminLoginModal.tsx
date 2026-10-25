@@ -16,8 +16,6 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
   onLoginWithGoogle,
   onSuccess
 }) => {
-  if (!isOpen) return null;
-
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -62,6 +60,8 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
       setIsGoogleLoading(false);
     }
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">

@@ -19,8 +19,6 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
   initialData,
   members
 }) => {
-  if (!isOpen) return null;
-
   const isEditing = Boolean(initialData);
 
   // Form State
@@ -82,6 +80,8 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
     onSubmit(payload);
     onClose();
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">

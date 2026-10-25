@@ -53,8 +53,6 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
   onRequireLogin,
   onLogout
 }) => {
-  if (!isOpen) return null;
-
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
@@ -92,6 +90,8 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
       showNotification('success', 'تمت استعادة البيانات التراثية الأساسية بنجاح.');
     }
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
