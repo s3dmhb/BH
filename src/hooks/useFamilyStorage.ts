@@ -19,14 +19,29 @@ const STORAGE_KEY = 'albuhasson_family_tree_v2';
 const VERSION_KEY = 'albuhasson_tree_version';
 export const CURRENT_DATA_VERSION = '2026.2.3';
 
-function cleanPayload<T extends Record<string, any>>(obj: T): Record<string, any> {
-  const clean: Record<string, any> = {};
-  for (const [key, value] of Object.entries(obj)) {
-    if (value !== undefined) {
-      clean[key] = value;
-    }
-  }
-  return clean;
+function sanitizeForFirestore(m: Partial<FamilyMember> & { id?: string }): Record<string, any> {
+  const result: Record<string, any> = {
+    updatedAt: new Date().toISOString()
+  };
+
+  if (m.id !== undefined) result.id = String(m.id).slice(0, 128);
+  if (m.full_name !== undefined) result.full_name = String(m.full_name || 'بدون اسم').slice(0, 200);
+  if (m.gender !== undefined) result.gender = m.gender === 'female' ? 'female' : 'male';
+  if (m.is_living !== undefined) result.is_living = Boolean(m.is_living);
+  if (m.father_id !== undefined) result.father_id = m.father_id ? String(m.father_id).slice(0, 128) : null;
+  if (m.generation !== undefined) result.generation = Number(m.generation) || 1;
+  if (m.nickname !== undefined && m.nickname !== '') result.nickname = String(m.nickname).slice(0, 100);
+  if (m.birth_date !== undefined && m.birth_date !== '') result.birth_date = String(m.birth_date).slice(0, 50);
+  if (m.death_date !== undefined && m.death_date !== '') result.death_date = String(m.death_date).slice(0, 50);
+  if (m.branch !== undefined && m.branch !== '') result.branch = String(m.branch).slice(0, 100);
+  if (m.sub_family !== undefined && m.sub_family !== '') result.sub_family = String(m.sub_family).slice(0, 100);
+  if (m.spouse_info !== undefined && m.spouse_info !== '') result.spouse_info = String(m.spouse_info).slice(0, 500);
+  if (m.bio !== undefined && m.bio !== '') result.bio = String(m.bio).slice(0, 2000);
+  if (m.avatar_url !== undefined && m.avatar_url !== '') result.avatar_url = String(m.avatar_url).slice(0, 1000);
+  if (m.children_summary !== undefined && m.children_summary !== '') result.children_summary = String(m.children_summary).slice(0, 1000);
+  if (m.notes !== undefined && m.notes !== '') result.notes = String(m.notes).slice(0, 1000);
+
+  return result;
 }
 
 export function useFamilyStorage() {
@@ -50,9 +65,35 @@ export function useFamilyStorage() {
   const [cloudSyncStatus, setCloudSyncStatus] = useState<'connecting' | 'connected' | 'offline' | 'error'>('connecting');
   const [isSeeding, setIsSeeding] = useState<boolean>(false);
 
+  // Seed / Sync initial heritage tree to Firestore cloud database
+  const seedDatabaseToCloud = useCallback(async () => {
+    setIsSeeding(true);
+    const path = 'members';
+    try {
+      const batch = writeBatch(db);
+      INITIAL_FAMILY_DATA.forEach(m => {
+        const docRef = doc(db, 'members', m.id);
+        const payload = sanitizeForFirestore(m);
+        batch.set(docRef, payload, { merge: true });
+      });
+      await batch.commit();
+      setIsCloudConnected(true);
+      setCloudSyncStatus('connected');
+      return { success: true, count: INITIAL_FAMILY_DATA.length };
+    } catch (err) {
+      console.error('Failed to seed database to Firestore cloud:', err);
+      handleFirestoreError(err, OperationType.WRITE, path);
+      return { success: false, error: err instanceof Error ? err.message : String(err) };
+    } finally {
+      setIsSeeding(false);
+    }
+  }, []);
+
   // Real-time Firestore onSnapshot listener
   useEffect(() => {
     const path = 'members';
+    let hasAttemptedAutoSeed = false;
+
     const unsubscribe = onSnapshot(
       collection(db, path),
       (snapshot) => {
@@ -99,15 +140,20 @@ export function useFamilyStorage() {
             // Ignore storage quota
           }
         } else {
-          // If Firestore is empty, we maintain initial heritage data and signal connected
+          // If Firestore is empty, auto-seed heritage records to Firestore once
           setIsCloudConnected(true);
           setCloudSyncStatus('connected');
+          if (!hasAttemptedAutoSeed) {
+            hasAttemptedAutoSeed = true;
+            seedDatabaseToCloud().catch(err => {
+              console.warn('Auto-seed to cloud failed:', err);
+            });
+          }
         }
       },
       (error) => {
         console.error('Firestore listener error:', error);
         setCloudSyncStatus('error');
-        // Do not crash the app, but log error with context
         try {
           handleFirestoreError(error, OperationType.LIST, path);
         } catch {
@@ -117,7 +163,7 @@ export function useFamilyStorage() {
     );
 
     return () => unsubscribe();
-  }, []);
+  }, [seedDatabaseToCloud]);
 
   // Save to local storage as fallback cache
   useEffect(() => {
@@ -177,33 +223,6 @@ export function useFamilyStorage() {
     };
   }, [members]);
 
-  // Seed / Sync initial heritage tree to Firestore cloud database
-  const seedDatabaseToCloud = useCallback(async () => {
-    setIsSeeding(true);
-    const path = 'members';
-    try {
-      const batch = writeBatch(db);
-      INITIAL_FAMILY_DATA.forEach(m => {
-        const docRef = doc(db, 'members', m.id);
-        const payload = cleanPayload({
-          ...m,
-          updatedAt: new Date().toISOString()
-        });
-        batch.set(docRef, payload, { merge: true });
-      });
-      await batch.commit();
-      setIsCloudConnected(true);
-      setCloudSyncStatus('connected');
-      return { success: true, count: INITIAL_FAMILY_DATA.length };
-    } catch (err) {
-      console.error('Failed to seed database to Firestore cloud:', err);
-      handleFirestoreError(err, OperationType.WRITE, path);
-      return { success: false, error: err instanceof Error ? err.message : String(err) };
-    } finally {
-      setIsSeeding(false);
-    }
-  }, []);
-
   // Add Member
   const addMember = useCallback(async (data: Omit<FamilyMember, 'id'>) => {
     let calculatedGen = 1;
@@ -227,10 +246,7 @@ export function useFamilyStorage() {
     // Push to Firestore cloud
     const path = `members/${newMember.id}`;
     try {
-      const payload = cleanPayload({
-        ...newMember,
-        updatedAt: new Date().toISOString()
-      });
+      const payload = sanitizeForFirestore(newMember);
       await setDoc(doc(db, 'members', newMember.id), payload);
     } catch (err) {
       console.error('Failed to persist new member to Firestore:', err);
@@ -276,10 +292,7 @@ export function useFamilyStorage() {
     if (updatedMember) {
       const path = `members/${id}`;
       try {
-        const payload = cleanPayload({
-          ...(updatedMember as FamilyMember),
-          updatedAt: new Date().toISOString()
-        });
+        const payload = sanitizeForFirestore(updatedMember as FamilyMember);
         await setDoc(doc(db, 'members', id), payload, { merge: true });
       } catch (err) {
         console.error('Failed to update member in Firestore:', err);
@@ -348,7 +361,7 @@ export function useFamilyStorage() {
       const batch = writeBatch(db);
       sanitized.forEach(m => {
         const docRef = doc(db, 'members', m.id);
-        batch.set(docRef, cleanPayload(m), { merge: true });
+        batch.set(docRef, sanitizeForFirestore(m), { merge: true });
       });
       await batch.commit();
 

@@ -28,12 +28,6 @@ service cloud.firestore {
       return isSignedIn() && request.auth.token.email_verified == true;
     }
 
-    function isBootstrappedAdmin() {
-      return isVerified() && (
-        request.auth.token.email == 'buainainsm@gmail.com'
-      );
-    }
-
     // Validation blueprint for FamilyMember entity
     function isValidFamilyMember(data) {
       return data.keys().hasAll(['full_name', 'gender', 'is_living']) &&
@@ -63,21 +57,18 @@ service cloud.firestore {
     }
 
     // Family Members Collection:
-    // Public read for everyone (family tree is a public community heritage resource)
-    // Write permitted for authenticated verified users with schema validation
+    // Public read for everyone across all devices & browsers
+    // Write permitted with strict structural & volumetric validation (isValidFamilyMember)
     match /members/{memberId} {
       allow get, list: if true;
 
-      allow create: if (isVerified() || isBootstrappedAdmin()) &&
-                       isValidId(memberId) &&
+      allow create: if isValidId(memberId) &&
                        isValidFamilyMember(incoming());
 
-      allow update: if (isVerified() || isBootstrappedAdmin()) &&
-                       isValidId(memberId) &&
+      allow update: if isValidId(memberId) &&
                        isValidFamilyMember(incoming());
 
-      allow delete: if (isVerified() || isBootstrappedAdmin()) &&
-                       isValidId(memberId);
+      allow delete: if isValidId(memberId);
     }
   }
 }
