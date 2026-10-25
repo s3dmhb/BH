@@ -4,6 +4,15 @@
 
 export type Gender = 'male' | 'female';
 
+export type SubFamilyName =
+  | 'البوحسون'
+  | 'النصف'
+  | 'الدرويش'
+  | 'الأزرق'
+  | 'آل جابر'
+  | 'النواصر'
+  | 'آل جابر والنواصر';
+
 export interface FamilyMember {
   id: string;
   full_name: string;
@@ -14,7 +23,7 @@ export interface FamilyMember {
   death_date?: string; // Optional year or date
   is_living: boolean;
   branch?: string; // e.g. "فرع محمد", "فرع علي", "فرع مبارك"
-  sub_family?: 'آل جابر' | 'النواصر' | 'آل جابر والنواصر' | string; // وسم العائلة الفرعية
+  sub_family?: SubFamilyName | string; // وسم العائلة الفرعية (البوحسون، النصف، الدرويش، الأزرق، آل جابر، النواصر)
   sub_tags?: string[]; // وسوم إضافية مخصصة
   generation?: number; // 1 for founding patriarch, 2 for sons/daughters, etc.
 

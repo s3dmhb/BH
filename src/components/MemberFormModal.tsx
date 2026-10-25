@@ -223,6 +223,10 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                 className="w-full bg-slate-900/90 border border-emerald-500/30 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-emerald-400"
               >
                 <option value="auto">تلقائي (حسب شجرة النسب والفرع)</option>
+                <option value="البوحسون">البوحسون (الفرع والنسب الأصيل)</option>
+                <option value="النصف">النصف (وسم الياقوت النيلي)</option>
+                <option value="الدرويش">الدرويش (وسم التراث النحاسي)</option>
+                <option value="الأزرق">الأزرق (وسم الفيروز السماوي)</option>
                 <option value="آل جابر">آل جابر (وسم ذهبي فاخر)</option>
                 <option value="النواصر">النواصر (وسم زمردي فاخر)</option>
                 <option value="آل جابر والنواصر">آل جابر والنواصر (الجامع)</option>

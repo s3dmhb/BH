@@ -29,7 +29,11 @@ import {
   CornerDownLeft,
   Navigation,
   Crown,
-  Shield
+  Shield,
+  Award,
+  Gem,
+  Flame,
+  Waves
 } from 'lucide-react';
 
 interface TreeViewProps {
@@ -599,43 +603,21 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember }) =
 
             {/* Desktop Filters */}
             <div className="hidden sm:flex items-center gap-1.5">
-              {/* Sub-Family Lineage Pills */}
-              <div className="flex items-center bg-slate-900/90 rounded-xl p-0.5 border border-emerald-500/20">
-                <button
-                  onClick={() => setSubFamilyFilter('all')}
-                  className={`px-2 py-1 text-xs rounded-lg transition-all ${
-                    subFamilyFilter === 'all'
-                      ? 'bg-emerald-600 text-white font-bold'
-                      : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  الكل
-                </button>
-                <button
-                  onClick={() => setSubFamilyFilter('jaber')}
-                  className={`flex items-center gap-1 px-2 py-1 text-xs rounded-lg transition-all ${
-                    subFamilyFilter === 'jaber'
-                      ? 'bg-amber-500 text-slate-950 font-bold shadow-md'
-                      : 'text-amber-300 hover:text-white'
-                  }`}
-                  title="تصفية حسب وسم آل جابر"
-                >
-                  <Crown className="w-3 h-3 text-amber-400" />
-                  <span>آل جابر</span>
-                </button>
-                <button
-                  onClick={() => setSubFamilyFilter('nawasir')}
-                  className={`flex items-center gap-1 px-2 py-1 text-xs rounded-lg transition-all ${
-                    subFamilyFilter === 'nawasir'
-                      ? 'bg-emerald-500 text-slate-950 font-bold shadow-md'
-                      : 'text-emerald-300 hover:text-white'
-                  }`}
-                  title="تصفية حسب وسم النواصر"
-                >
-                  <Shield className="w-3 h-3 text-emerald-400" />
-                  <span>النواصر</span>
-                </button>
-              </div>
+              {/* Sub-Family Lineage Selector */}
+              <select
+                value={subFamilyFilter}
+                onChange={(e) => setSubFamilyFilter(e.target.value)}
+                className="bg-slate-900/90 border border-emerald-500/25 text-emerald-300 text-xs rounded-xl px-2.5 py-1.5 focus:outline-none font-semibold cursor-pointer shadow-inner"
+                title="تصفية حسب وسم العائلة الفرعية"
+              >
+                <option value="all">كافة الوسوم الفرعية</option>
+                <option value="albuhasson">وسم: البوحسون</option>
+                <option value="alnesf">وسم: النصف</option>
+                <option value="aldarwish">وسم: الدرويش</option>
+                <option value="alazraq">وسم: الأزرق</option>
+                <option value="jaber">وسم: آل جابر</option>
+                <option value="nawasir">وسم: النواصر</option>
+              </select>
 
               <select
                 value={selectedBranch}
@@ -1289,12 +1271,28 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember }) =
               <span className="text-cyan-300">سلسلة الذرية النازلة</span>
             </span>
             <span className="flex items-center gap-1.5 hidden lg:flex border-r border-white/10 pr-3">
-              <Crown className="w-3 h-3 text-amber-400" />
-              <span className="text-amber-300 font-medium">وسم آل جابر</span>
+              <Award className="w-3 h-3 text-emerald-300" />
+              <span className="text-emerald-300 font-medium">البوحسون</span>
             </span>
             <span className="flex items-center gap-1.5 hidden lg:flex">
+              <Gem className="w-3 h-3 text-indigo-300" />
+              <span className="text-indigo-300 font-medium">النصف</span>
+            </span>
+            <span className="flex items-center gap-1.5 hidden lg:flex">
+              <Flame className="w-3 h-3 text-orange-400" />
+              <span className="text-orange-300 font-medium">الدرويش</span>
+            </span>
+            <span className="flex items-center gap-1.5 hidden lg:flex">
+              <Waves className="w-3 h-3 text-cyan-300" />
+              <span className="text-cyan-300 font-medium">الأزرق</span>
+            </span>
+            <span className="flex items-center gap-1.5 hidden xl:flex">
+              <Crown className="w-3 h-3 text-amber-400" />
+              <span className="text-amber-300 font-medium">آل جابر</span>
+            </span>
+            <span className="flex items-center gap-1.5 hidden xl:flex">
               <Shield className="w-3 h-3 text-emerald-400" />
-              <span className="text-emerald-300 font-medium">وسم النواصر</span>
+              <span className="text-emerald-300 font-medium">النواصر</span>
             </span>
           </div>
 

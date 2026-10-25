@@ -1,7 +1,7 @@
 import React from 'react';
 import { FamilyMember } from '../types/family';
 import { getSubFamilyTags, SubFamilyTag } from '../utils/subFamilyUtils';
-import { Crown, Shield, Sparkles, Compass } from 'lucide-react';
+import { Crown, Shield, Sparkles, Compass, Award, Gem, Flame, Waves } from 'lucide-react';
 
 interface SubFamilyBadgeProps {
   member?: FamilyMember;
@@ -42,6 +42,10 @@ export const SubFamilyBadge: React.FC<SubFamilyBadgeProps> = ({
         const isJaber = tag.category === 'jaber';
         const isNawasir = tag.category === 'nawasir';
         const isBoth = tag.category === 'both';
+        const isAlbuhasson = tag.category === 'albuhasson';
+        const isAlnesf = tag.category === 'alnesf';
+        const isAldarwish = tag.category === 'aldarwish';
+        const isAlazraq = tag.category === 'alazraq';
 
         return (
           <span
@@ -58,10 +62,14 @@ export const SubFamilyBadge: React.FC<SubFamilyBadgeProps> = ({
             }`}
           >
             {/* Visual Icon according to lineage */}
+            {isAlbuhasson && <Award className={`${iconSizes} text-emerald-300 shrink-0`} />}
+            {isAlnesf && <Gem className={`${iconSizes} text-indigo-300 shrink-0`} />}
+            {isAldarwish && <Flame className={`${iconSizes} text-orange-400 shrink-0`} />}
+            {isAlazraq && <Waves className={`${iconSizes} text-cyan-300 shrink-0`} />}
             {isJaber && <Crown className={`${iconSizes} text-amber-400 shrink-0`} />}
             {isNawasir && <Shield className={`${iconSizes} text-emerald-400 shrink-0`} />}
             {isBoth && <Sparkles className={`${iconSizes} text-amber-300 shrink-0`} />}
-            {!isJaber && !isNawasir && !isBoth && (
+            {!isAlbuhasson && !isAlnesf && !isAldarwish && !isAlazraq && !isJaber && !isNawasir && !isBoth && (
               <Compass className={`${iconSizes} text-cyan-300 shrink-0`} />
             )}
 

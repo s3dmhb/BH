@@ -16,7 +16,11 @@ import {
   Layers,
   ArrowUpDown,
   Crown,
-  Shield
+  Shield,
+  Award,
+  Gem,
+  Flame,
+  Waves
 } from 'lucide-react';
 
 interface DirectoryViewProps {
@@ -161,10 +165,10 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
         {/* Filter Strip (Apple Style Segmented Controls) */}
         <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-white/5">
           {/* Sub-Family Lineage Filter */}
-          <div className="flex items-center gap-1 bg-slate-900/80 p-1 rounded-xl border border-emerald-500/20 shadow-inner">
+          <div className="flex items-center gap-1 bg-slate-900/80 p-1 rounded-xl border border-emerald-500/20 shadow-inner overflow-x-auto max-w-full">
             <button
               onClick={() => setSubFamilyFilter('all')}
-              className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
+              className={`px-2.5 py-1.5 text-xs font-medium rounded-lg transition-all whitespace-nowrap ${
                 subFamilyFilter === 'all'
                   ? 'bg-emerald-600 text-white font-bold'
                   : 'text-slate-400 hover:text-white'
@@ -173,8 +177,56 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
               كافة الوسوم
             </button>
             <button
+              onClick={() => setSubFamilyFilter('albuhasson')}
+              className={`flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold rounded-lg transition-all whitespace-nowrap ${
+                subFamilyFilter === 'albuhasson'
+                  ? 'bg-emerald-500 text-slate-950 font-bold shadow-md'
+                  : 'text-emerald-300 hover:text-white'
+              }`}
+              title="تصفية حسب وسم البوحسون"
+            >
+              <Award className="w-3.5 h-3.5 text-emerald-300" />
+              <span>البوحسون</span>
+            </button>
+            <button
+              onClick={() => setSubFamilyFilter('alnesf')}
+              className={`flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold rounded-lg transition-all whitespace-nowrap ${
+                subFamilyFilter === 'alnesf'
+                  ? 'bg-indigo-500 text-white font-bold shadow-md'
+                  : 'text-indigo-300 hover:text-white'
+              }`}
+              title="تصفية حسب وسم النصف"
+            >
+              <Gem className="w-3.5 h-3.5 text-indigo-300" />
+              <span>النصف</span>
+            </button>
+            <button
+              onClick={() => setSubFamilyFilter('aldarwish')}
+              className={`flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold rounded-lg transition-all whitespace-nowrap ${
+                subFamilyFilter === 'aldarwish'
+                  ? 'bg-orange-500 text-slate-950 font-bold shadow-md'
+                  : 'text-orange-300 hover:text-white'
+              }`}
+              title="تصفية حسب وسم الدرويش"
+            >
+              <Flame className="w-3.5 h-3.5 text-orange-400" />
+              <span>الدرويش</span>
+            </button>
+            <button
+              onClick={() => setSubFamilyFilter('alazraq')}
+              className={`flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold rounded-lg transition-all whitespace-nowrap ${
+                subFamilyFilter === 'alazraq'
+                  ? 'bg-cyan-500 text-slate-950 font-bold shadow-md'
+                  : 'text-cyan-300 hover:text-white'
+              }`}
+              title="تصفية حسب وسم الأزرق"
+            >
+              <Waves className="w-3.5 h-3.5 text-cyan-300" />
+              <span>الأزرق</span>
+            </button>
+            <button
               onClick={() => setSubFamilyFilter('jaber')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
+              className={`flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold rounded-lg transition-all whitespace-nowrap ${
                 subFamilyFilter === 'jaber'
                   ? 'bg-amber-500 text-slate-950 font-bold shadow-md'
                   : 'text-amber-300 hover:text-white'
@@ -186,10 +238,10 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
             </button>
             <button
               onClick={() => setSubFamilyFilter('nawasir')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
+              className={`flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold rounded-lg transition-all whitespace-nowrap ${
                 subFamilyFilter === 'nawasir'
-                  ? 'bg-emerald-500 text-slate-950 font-bold shadow-md'
-                  : 'text-emerald-300 hover:text-white'
+                  ? 'bg-teal-500 text-slate-950 font-bold shadow-md'
+                  : 'text-teal-300 hover:text-white'
               }`}
               title="تصفية حسب وسم النواصر"
             >

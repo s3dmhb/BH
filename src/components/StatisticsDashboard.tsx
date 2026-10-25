@@ -13,7 +13,10 @@ import {
   Calendar,
   Percent,
   Crown,
-  Shield
+  Shield,
+  Gem,
+  Flame,
+  Waves
 } from 'lucide-react';
 
 interface StatisticsDashboardProps {
@@ -26,16 +29,23 @@ export const StatisticsDashboard: React.FC<StatisticsDashboardProps> = ({ stats,
   const detailedStats = useMemo(() => {
     const genCounts: Record<number, { total: number; males: number; females: number; living: number }> = {};
     const marriageAlliances: Record<string, number> = {};
+    let albuhassonCount = 0;
+    let alnesfCount = 0;
+    let aldarwishCount = 0;
+    let alazraqCount = 0;
     let jaberCount = 0;
     let nawasirCount = 0;
     let bothCount = 0;
 
     members.forEach(m => {
       const tags = getSubFamilyTags(m);
+      if (tags.some(t => t.category === 'albuhasson')) albuhassonCount++;
+      if (tags.some(t => t.category === 'alnesf')) alnesfCount++;
+      if (tags.some(t => t.category === 'aldarwish')) aldarwishCount++;
+      if (tags.some(t => t.category === 'alazraq')) alazraqCount++;
+      if (tags.some(t => t.category === 'jaber')) jaberCount++;
+      if (tags.some(t => t.category === 'nawasir')) nawasirCount++;
       if (tags.some(t => t.category === 'both')) bothCount++;
-      else if (tags.some(t => t.category === 'jaber')) jaberCount++;
-      else if (tags.some(t => t.category === 'nawasir')) nawasirCount++;
-      else bothCount++;
 
       const g = m.generation || 1;
       if (!genCounts[g]) {
@@ -80,7 +90,17 @@ export const StatisticsDashboard: React.FC<StatisticsDashboardProps> = ({ stats,
       .map(([family, count]) => ({ family, count }))
       .sort((a, b) => b.count - a.count);
 
-    return { genCounts, alliances, jaberCount, nawasirCount, bothCount };
+    return {
+      genCounts,
+      alliances,
+      albuhassonCount,
+      alnesfCount,
+      aldarwishCount,
+      alazraqCount,
+      jaberCount,
+      nawasirCount,
+      bothCount
+    };
   }, [members]);
 
   const malePercent = Math.round((stats.males / (stats.total || 1)) * 100);
@@ -258,21 +278,117 @@ export const StatisticsDashboard: React.FC<StatisticsDashboardProps> = ({ stats,
 
       </div>
 
-      {/* Sub-Families Lineage Distribution (آل جابر والنواصر) */}
+      {/* Sub-Families Lineage Distribution (البوحسون، النصف، الدرويش، الأزرق، آل جابر، النواصر) */}
       <div className="glass-panel rounded-3xl p-6 border border-emerald-500/25 shadow-xl space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/5 pb-3">
           <div className="flex items-center gap-2.5">
             <Sparkles className="w-5 h-5 text-amber-400" />
             <h3 className="text-base font-bold text-white">
-              وسم وتوزيع العائلات الفرعية (فخذ النواصر وتفرعات آل جابر)
+              وسم وتوزيع العائلات الفرعية (البوحسون · النصف · الدرويش · الأزرق · آل جابر · النواصر)
             </h3>
           </div>
           <span className="text-xs text-slate-400">
-            تصنيف تلقائي متصل بنسب وشجرة عائلة البوحسون
+            تصنيف تلقائي متصل بنسب وتفرعات عائلة البوحسون
           </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 pt-1">
+          {/* Albuhasson Card */}
+          <div className="bg-gradient-to-br from-emerald-950/40 via-slate-900/80 to-emerald-900/20 rounded-2xl p-4 border border-emerald-400/40 shadow-lg relative overflow-hidden">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-bold text-emerald-300 flex items-center gap-1.5">
+                <Award className="w-4 h-4 text-emerald-400" />
+                <span>عائلة البوحسون</span>
+              </span>
+              <span className="text-[10px] font-mono font-bold bg-emerald-400/20 text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-400/30">
+                الأصل المعتمد
+              </span>
+            </div>
+            <div className="flex items-baseline justify-between mt-2">
+              <span className="text-3xl font-bold font-mono text-white">
+                {detailedStats.albuhassonCount}
+              </span>
+              <span className="text-xs font-bold text-emerald-300 font-mono">
+                {Math.round((detailedStats.albuhassonCount / (stats.total || 1)) * 100)}%
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-400 mt-2 leading-relaxed">
+              سلالة وأبناء الجد المؤسس حسن بن محمد البوحسون.
+            </p>
+          </div>
+
+          {/* Al-Nesf Card */}
+          <div className="bg-gradient-to-br from-indigo-950/40 via-slate-900/80 to-blue-900/20 rounded-2xl p-4 border border-indigo-400/40 shadow-lg relative overflow-hidden">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-bold text-indigo-300 flex items-center gap-1.5">
+                <Gem className="w-4 h-4 text-indigo-400" />
+                <span>عائلة النصف</span>
+              </span>
+              <span className="text-[10px] font-mono font-bold bg-indigo-400/20 text-indigo-300 px-2 py-0.5 rounded-full border border-indigo-400/30">
+                وسم نيلي
+              </span>
+            </div>
+            <div className="flex items-baseline justify-between mt-2">
+              <span className="text-3xl font-bold font-mono text-white">
+                {detailedStats.alnesfCount}
+              </span>
+              <span className="text-xs font-bold text-indigo-300 font-mono">
+                {Math.round((detailedStats.alnesfCount / (stats.total || 1)) * 100)}%
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-400 mt-2 leading-relaxed">
+              تفرعات وأنساب عائلة النصف الكريمة من قبيلة آل بوعينين.
+            </p>
+          </div>
+
+          {/* Al-Darwish Card */}
+          <div className="bg-gradient-to-br from-orange-950/40 via-slate-900/80 to-amber-900/20 rounded-2xl p-4 border border-orange-400/40 shadow-lg relative overflow-hidden">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-bold text-orange-300 flex items-center gap-1.5">
+                <Flame className="w-4 h-4 text-orange-400" />
+                <span>عائلة الدرويش</span>
+              </span>
+              <span className="text-[10px] font-mono font-bold bg-orange-400/20 text-orange-300 px-2 py-0.5 rounded-full border border-orange-400/30">
+                وسم نحاسي
+              </span>
+            </div>
+            <div className="flex items-baseline justify-between mt-2">
+              <span className="text-3xl font-bold font-mono text-white">
+                {detailedStats.aldarwishCount}
+              </span>
+              <span className="text-xs font-bold text-orange-300 font-mono">
+                {Math.round((detailedStats.aldarwishCount / (stats.total || 1)) * 100)}%
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-400 mt-2 leading-relaxed">
+              تفرعات وأنساب عائلة الدرويش الكريمة من قبيلة آل بوعينين.
+            </p>
+          </div>
+
+          {/* Al-Azraq Card */}
+          <div className="bg-gradient-to-br from-cyan-950/40 via-slate-900/80 to-sky-900/20 rounded-2xl p-4 border border-cyan-400/40 shadow-lg relative overflow-hidden">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-bold text-cyan-300 flex items-center gap-1.5">
+                <Waves className="w-4 h-4 text-cyan-400" />
+                <span>عائلة الأزرق</span>
+              </span>
+              <span className="text-[10px] font-mono font-bold bg-cyan-400/20 text-cyan-300 px-2 py-0.5 rounded-full border border-cyan-400/30">
+                وسم سماوي
+              </span>
+            </div>
+            <div className="flex items-baseline justify-between mt-2">
+              <span className="text-3xl font-bold font-mono text-white">
+                {detailedStats.alazraqCount}
+              </span>
+              <span className="text-xs font-bold text-cyan-300 font-mono">
+                {Math.round((detailedStats.alazraqCount / (stats.total || 1)) * 100)}%
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-400 mt-2 leading-relaxed">
+              تفرعات وأنساب عائلة الأزرق الكريمة من قبيلة آل بوعينين.
+            </p>
+          </div>
+
           {/* Al-Jaber Card */}
           <div className="bg-gradient-to-br from-amber-950/40 via-slate-900/80 to-amber-900/20 rounded-2xl p-4 border border-amber-400/40 shadow-lg relative overflow-hidden">
             <div className="flex items-center justify-between mb-2">
@@ -298,13 +414,13 @@ export const StatisticsDashboard: React.FC<StatisticsDashboardProps> = ({ stats,
           </div>
 
           {/* Al-Nawasir Card */}
-          <div className="bg-gradient-to-br from-emerald-950/40 via-slate-900/80 to-emerald-900/20 rounded-2xl p-4 border border-emerald-400/40 shadow-lg relative overflow-hidden">
+          <div className="bg-gradient-to-br from-emerald-950/40 via-slate-900/80 to-teal-900/20 rounded-2xl p-4 border border-teal-400/40 shadow-lg relative overflow-hidden">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-bold text-emerald-300 flex items-center gap-1.5">
                 <Shield className="w-4 h-4 text-emerald-400" />
                 <span>فخذ النواصر</span>
               </span>
-              <span className="text-[10px] font-mono font-bold bg-emerald-400/20 text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-400/30">
+              <span className="text-[10px] font-mono font-bold bg-teal-400/20 text-emerald-300 px-2 py-0.5 rounded-full border border-teal-400/30">
                 وسم زمردي
               </span>
             </div>
@@ -322,11 +438,11 @@ export const StatisticsDashboard: React.FC<StatisticsDashboardProps> = ({ stats,
           </div>
 
           {/* Both/Founding Card */}
-          <div className="bg-gradient-to-br from-slate-900/90 via-slate-900/70 to-teal-950/40 rounded-2xl p-4 border border-teal-400/30 shadow-lg relative overflow-hidden">
+          <div className="bg-gradient-to-br from-slate-900/90 via-slate-900/70 to-teal-950/40 rounded-2xl p-4 border border-teal-400/30 shadow-lg relative overflow-hidden sm:col-span-2 lg:col-span-2">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-bold text-teal-300 flex items-center gap-1.5">
                 <Sparkles className="w-4 h-4 text-amber-300" />
-                <span>النسب الجامع والمؤسس</span>
+                <span>النسب الجامع والمؤسس (آل جابر والنواصر)</span>
               </span>
               <span className="text-[10px] font-mono font-bold bg-teal-400/20 text-teal-300 px-2 py-0.5 rounded-full border border-teal-400/30">
                 العمود الجامع
@@ -341,7 +457,7 @@ export const StatisticsDashboard: React.FC<StatisticsDashboardProps> = ({ stats,
               </span>
             </div>
             <p className="text-[11px] text-slate-400 mt-2 leading-relaxed">
-              الجد المؤسس والأصول الجامعة بين فخذ النواصر وتفرعات آل جابر.
+              الجد المؤسس والأصول الجامعة بين فخذ النواصر وتفرعات آل جابر وقبيلة آل بوعينين.
             </p>
           </div>
         </div>

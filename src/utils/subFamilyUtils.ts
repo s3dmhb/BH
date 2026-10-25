@@ -2,8 +2,8 @@ import { FamilyMember } from '../types/family';
 
 export interface SubFamilyTag {
   id: string;
-  label: string; // e.g. "آل جابر", "النواصر"
-  category: 'jaber' | 'nawasir' | 'both' | 'house';
+  label: string; // e.g. "البوحسون", "النصف", "الدرويش", "الأزرق", "آل جابر", "النواصر"
+  category: 'albuhasson' | 'alnesf' | 'aldarwish' | 'alazraq' | 'jaber' | 'nawasir' | 'both' | 'house';
   bgClass: string;
   borderClass: string;
   textClass: string;
@@ -14,6 +14,50 @@ export interface SubFamilyTag {
 
 // Preset visual configurations for distinctive luxury tags
 export const SUB_FAMILY_PRESETS: Record<string, SubFamilyTag> = {
+  albuhasson: {
+    id: 'albuhasson',
+    label: 'البوحسون',
+    category: 'albuhasson',
+    bgClass: 'bg-gradient-to-r from-emerald-600/25 via-teal-700/20 to-emerald-700/25',
+    borderClass: 'border-emerald-400/50 hover:border-emerald-300',
+    textClass: 'text-emerald-200 font-bold',
+    dotColor: '#34d399',
+    glowClass: 'shadow-[0_0_12px_rgba(52,211,153,0.3)]',
+    description: 'ينتسب إلى فرع وعائلة البوحسون من قبيلة آل بوعينين'
+  },
+  alnesf: {
+    id: 'alnesf',
+    label: 'النصف',
+    category: 'alnesf',
+    bgClass: 'bg-gradient-to-r from-indigo-500/20 via-blue-600/15 to-indigo-600/20',
+    borderClass: 'border-indigo-400/50 hover:border-indigo-300',
+    textClass: 'text-indigo-200 font-bold',
+    dotColor: '#818cf8',
+    glowClass: 'shadow-[0_0_12px_rgba(129,140,248,0.3)]',
+    description: 'ينتسب إلى تفرع عائلة النصف من قبيلة آل بوعينين'
+  },
+  aldarwish: {
+    id: 'aldarwish',
+    label: 'الدرويش',
+    category: 'aldarwish',
+    bgClass: 'bg-gradient-to-r from-orange-500/20 via-amber-600/15 to-orange-600/20',
+    borderClass: 'border-orange-400/50 hover:border-orange-300',
+    textClass: 'text-orange-200 font-bold',
+    dotColor: '#fb923c',
+    glowClass: 'shadow-[0_0_12px_rgba(251,146,60,0.3)]',
+    description: 'ينتسب إلى تفرع عائلة الدرويش من قبيلة آل بوعينين'
+  },
+  alazraq: {
+    id: 'alazraq',
+    label: 'الأزرق',
+    category: 'alazraq',
+    bgClass: 'bg-gradient-to-r from-cyan-500/20 via-sky-600/15 to-blue-500/20',
+    borderClass: 'border-cyan-400/50 hover:border-cyan-300',
+    textClass: 'text-cyan-200 font-bold',
+    dotColor: '#22d3ee',
+    glowClass: 'shadow-[0_0_12px_rgba(34,211,238,0.3)]',
+    description: 'ينتسب إلى تفرع عائلة الأزرق من قبيلة آل بوعينين'
+  },
   jaber: {
     id: 'jaber',
     label: 'آل جابر',
@@ -58,34 +102,58 @@ export function getSubFamilyTags(
 ): SubFamilyTag[] {
   const tags: SubFamilyTag[] = [];
 
+  // Helper to resolve string to preset or custom tag
+  const resolveTag = (val: string): SubFamilyTag => {
+    const norm = val.trim();
+    if (norm === 'البوحسون' || norm.includes('بوحسون')) return SUB_FAMILY_PRESETS.albuhasson;
+    if (norm === 'النصف' || norm.includes('نصف')) return SUB_FAMILY_PRESETS.alnesf;
+    if (norm === 'الدرويش' || norm.includes('درويش')) return SUB_FAMILY_PRESETS.aldarwish;
+    if (norm === 'الأزرق' || norm.includes('أزرق') || norm.includes('ازرق')) return SUB_FAMILY_PRESETS.alazraq;
+    if (norm === 'آل جابر' || norm === 'جابر') return SUB_FAMILY_PRESETS.jaber;
+    if (norm === 'النواصر' || norm === 'نواصر') return SUB_FAMILY_PRESETS.nawasir;
+    if (norm.includes('جابر') && norm.includes('نواصر')) return SUB_FAMILY_PRESETS.both;
+
+    return {
+      id: `custom-${norm}`,
+      label: norm,
+      category: 'house',
+      bgClass: 'bg-cyan-950/60',
+      borderClass: 'border-cyan-400/40',
+      textClass: 'text-cyan-300 font-semibold',
+      dotColor: '#22d3ee',
+      glowClass: 'shadow-sm',
+      description: `وسم فرعي: ${norm}`
+    };
+  };
+
   // 1. Explicit sub_family assignment
   if (member.sub_family) {
-    const norm = member.sub_family.trim();
-    if (norm === 'آل جابر' || norm === 'جابر') {
-      tags.push(SUB_FAMILY_PRESETS.jaber);
-    } else if (norm === 'النواصر' || norm === 'نواصر') {
-      tags.push(SUB_FAMILY_PRESETS.nawasir);
-    } else if (norm.includes('جابر') && norm.includes('نواصر')) {
-      tags.push(SUB_FAMILY_PRESETS.both);
-    } else {
-      // Custom tag
-      tags.push({
-        id: `custom-${norm}`,
-        label: norm,
-        category: 'house',
-        bgClass: 'bg-cyan-950/60',
-        borderClass: 'border-cyan-400/40',
-        textClass: 'text-cyan-300 font-semibold',
-        dotColor: '#22d3ee',
-        glowClass: 'shadow-sm',
-        description: `وسم فرعي: ${norm}`
-      });
+    const explicitTag = resolveTag(member.sub_family);
+    if (!tags.some(t => t.id === explicitTag.id)) {
+      tags.push(explicitTag);
     }
   }
 
-  // If already found explicit tag(s), also append any custom sub_tags
+  // 2. Check for mentions in nickname, branch or bio
+  const bio = member.bio || '';
+  const nickname = member.nickname || '';
+  const branch = member.branch || '';
+
+  if (nickname.includes('النصف') || bio.includes('النصف')) {
+    if (!tags.some(t => t.id === 'alnesf')) tags.push(SUB_FAMILY_PRESETS.alnesf);
+  }
+  if (nickname.includes('الدرويش') || bio.includes('الدرويش')) {
+    if (!tags.some(t => t.id === 'aldarwish')) tags.push(SUB_FAMILY_PRESETS.aldarwish);
+  }
+  if (nickname.includes('الأزرق') || nickname.includes('الازرق') || bio.includes('الأزرق') || bio.includes('الازرق')) {
+    if (!tags.some(t => t.id === 'alazraq')) tags.push(SUB_FAMILY_PRESETS.alazraq);
+  }
+  if ((nickname.includes('البوحسون') || branch.includes('البوحسون')) && !tags.some(t => t.id === 'albuhasson')) {
+    tags.push(SUB_FAMILY_PRESETS.albuhasson);
+  }
+
+  // 3. If no tags found yet, run automatic lineage inference
   if (tags.length === 0) {
-    // 2. Automatic inference based on member lineage and branch
     const detected = inferSubFamily(member, memberMap);
     if (detected === 'both') {
       tags.push(SUB_FAMILY_PRESETS.both);
@@ -96,29 +164,22 @@ export function getSubFamilyTags(
     }
   }
 
-  // 3. Append custom sub_tags if specified
+  // 4. Append custom sub_tags if specified
   if (member.sub_tags && member.sub_tags.length > 0) {
     member.sub_tags.forEach((st, idx) => {
       const clean = st.trim();
       if (clean && !tags.some(t => t.label === clean)) {
-        tags.push({
-          id: `subtag-${idx}-${clean}`,
-          label: clean,
-          category: 'house',
-          bgClass: 'bg-slate-800/80',
-          borderClass: 'border-white/20',
-          textClass: 'text-slate-300 font-medium',
-          dotColor: '#94a3b8',
-          glowClass: 'shadow-sm',
-          description: clean
-        });
+        const resolved = resolveTag(clean);
+        if (!tags.some(t => t.id === resolved.id)) {
+          tags.push(resolved);
+        }
       }
     });
   }
 
-  // Fallback: If no tags resolved, default to ancestral 'آل جابر' or 'النواصر' based on generation / default
+  // Fallback: If no tags resolved, default to ancestral Al-Buhasson / Al-Jaber and Al-Nawasir
   if (tags.length === 0) {
-    tags.push(SUB_FAMILY_PRESETS.both);
+    tags.push(SUB_FAMILY_PRESETS.albuhasson);
   }
 
   return tags;
@@ -212,6 +273,18 @@ export function matchesSubFamilyFilter(
   if (!filter || filter === 'all') return true;
   const tags = getSubFamilyTags(member, memberMap);
 
+  if (filter === 'albuhasson') {
+    return tags.some(t => t.category === 'albuhasson' || t.label.includes('بوحسون'));
+  }
+  if (filter === 'alnesf') {
+    return tags.some(t => t.category === 'alnesf' || t.label.includes('نصف'));
+  }
+  if (filter === 'aldarwish') {
+    return tags.some(t => t.category === 'aldarwish' || t.label.includes('درويش'));
+  }
+  if (filter === 'alazraq') {
+    return tags.some(t => t.category === 'alazraq' || t.label.includes('أزرق') || t.label.includes('ازرق'));
+  }
   if (filter === 'jaber') {
     return tags.some(t => t.category === 'jaber' || t.category === 'both' || t.label.includes('جابر'));
   }

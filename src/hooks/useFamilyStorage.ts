@@ -4,7 +4,7 @@ import { INITIAL_FAMILY_DATA } from '../data/initialFamilyData';
 
 const STORAGE_KEY = 'albuhasson_family_tree_v2';
 const VERSION_KEY = 'albuhasson_tree_version';
-export const CURRENT_DATA_VERSION = '2026.2.2';
+export const CURRENT_DATA_VERSION = '2026.2.3';
 
 export function useFamilyStorage() {
   const [members, setMembers] = useState<FamilyMember[]>(() => {
