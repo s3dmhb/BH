@@ -2,6 +2,8 @@ import React, { useState, useMemo } from 'react';
 import { FamilyMember } from '../types/family';
 import { FemaleHeritageBadge } from './HeritageCrest';
 import { matchesArabic } from '../utils/arabicUtils';
+import { SubFamilyBadge } from './SubFamilyBadge';
+import { matchesSubFamilyFilter } from '../utils/subFamilyUtils';
 import {
   Search,
   Users,
@@ -12,7 +14,9 @@ import {
   Users2,
   Calendar,
   Layers,
-  ArrowUpDown
+  ArrowUpDown,
+  Crown,
+  Shield
 } from 'lucide-react';
 
 interface DirectoryViewProps {
@@ -20,18 +24,23 @@ interface DirectoryViewProps {
   memberMap: Map<string, FamilyMember>;
   onSelectMember: (member: FamilyMember) => void;
   onViewLineage: (member: FamilyMember) => void;
+  onDelete?: (id: string) => void;
+  isAdmin?: boolean;
 }
 
 export const DirectoryView: React.FC<DirectoryViewProps> = ({
   members,
   memberMap,
   onSelectMember,
-  onViewLineage
+  onViewLineage,
+  onDelete,
+  isAdmin
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [genderFilter, setGenderFilter] = useState<'all' | 'male' | 'female'>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'living' | 'deceased'>('all');
   const [selectedBranch, setSelectedBranch] = useState<string>('all');
+  const [subFamilyFilter, setSubFamilyFilter] = useState<string>('all');
   const [selectedGen, setSelectedGen] = useState<string>('all');
   const [sortBy, setSortBy] = useState<'generation' | 'birth' | 'name'>('generation');
 
@@ -61,6 +70,11 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
         // Status filter
         if (statusFilter === 'living' && !m.is_living) return false;
         if (statusFilter === 'deceased' && m.is_living) return false;
+
+        // Sub-Family tag filter
+        if (subFamilyFilter !== 'all' && !matchesSubFamilyFilter(m, subFamilyFilter, memberMap)) {
+          return false;
+        }
 
         // Branch filter
         if (selectedBranch !== 'all' && m.branch !== selectedBranch) return false;
@@ -97,7 +111,7 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
         }
         return 0;
       });
-  }, [members, memberMap, genderFilter, statusFilter, selectedBranch, selectedGen, searchQuery, sortBy]);
+  }, [members, memberMap, genderFilter, statusFilter, subFamilyFilter, selectedBranch, selectedGen, searchQuery, sortBy]);
 
   return (
     <div className="w-full max-w-7xl 2xl:max-w-[1700px] mx-auto px-3 sm:px-6 py-6 pb-24 md:pb-10">
@@ -146,6 +160,44 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
 
         {/* Filter Strip (Apple Style Segmented Controls) */}
         <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-white/5">
+          {/* Sub-Family Lineage Filter */}
+          <div className="flex items-center gap-1 bg-slate-900/80 p-1 rounded-xl border border-emerald-500/20 shadow-inner">
+            <button
+              onClick={() => setSubFamilyFilter('all')}
+              className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
+                subFamilyFilter === 'all'
+                  ? 'bg-emerald-600 text-white font-bold'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              كافة الوسوم
+            </button>
+            <button
+              onClick={() => setSubFamilyFilter('jaber')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                subFamilyFilter === 'jaber'
+                  ? 'bg-amber-500 text-slate-950 font-bold shadow-md'
+                  : 'text-amber-300 hover:text-white'
+              }`}
+              title="تصفية حسب وسم آل جابر"
+            >
+              <Crown className="w-3.5 h-3.5 text-amber-400" />
+              <span>آل جابر</span>
+            </button>
+            <button
+              onClick={() => setSubFamilyFilter('nawasir')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                subFamilyFilter === 'nawasir'
+                  ? 'bg-emerald-500 text-slate-950 font-bold shadow-md'
+                  : 'text-emerald-300 hover:text-white'
+              }`}
+              title="تصفية حسب وسم النواصر"
+            >
+              <Shield className="w-3.5 h-3.5 text-emerald-400" />
+              <span>النواصر</span>
+            </button>
+          </div>
+
           {/* Gender filters */}
           <div className="flex items-center gap-1 bg-slate-900/70 p-1 rounded-xl border border-emerald-500/15">
             <button
@@ -327,6 +379,10 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
                           {member.nickname}
                         </p>
                       )}
+
+                      <div className="mt-1.5">
+                        <SubFamilyBadge member={member} memberMap={memberMap} size="xs" />
+                      </div>
                     </div>
                   </div>
 
@@ -342,6 +398,11 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
                     <div className="flex items-center justify-between text-[11px]">
                       <span className="text-slate-400">الفرع العائلي:</span>
                       <span className="text-emerald-300 font-medium">{member.branch || 'الفرع العام'}</span>
+                    </div>
+
+                    <div className="flex items-center justify-between text-[11px]">
+                      <span className="text-slate-400">وسم النسب:</span>
+                      <SubFamilyBadge member={member} memberMap={memberMap} size="xs" />
                     </div>
 
                     {isMale ? (

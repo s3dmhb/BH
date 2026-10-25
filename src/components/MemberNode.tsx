@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { FamilyMember } from '../types/family';
 import { FemaleHeritageBadge } from './HeritageCrest';
+import { SubFamilyBadge } from './SubFamilyBadge';
 import { ChevronDown, ChevronUp, User, Heart, Users2, Sparkles, Eye } from 'lucide-react';
 
 interface MemberNodeProps {
@@ -115,6 +116,11 @@ export const MemberNode: React.FC<MemberNodeProps> = ({
                 {member.nickname}
               </p>
             )}
+
+            {/* Sub-Family Tag Badge */}
+            <div className="mt-1">
+              <SubFamilyBadge member={member} size="xs" />
+            </div>
           </div>
         </div>
 
@@ -194,6 +200,9 @@ export const MemberNode: React.FC<MemberNodeProps> = ({
               <p className={`text-xs font-medium ${isMale ? 'text-emerald-400' : 'text-pink-300'}`}>
                 {member.nickname || 'عائلة البوحسون'}
               </p>
+              <div className="mt-1">
+                <SubFamilyBadge member={member} size="xs" />
+              </div>
             </div>
             <span
               className={`text-[10px] px-2 py-0.5 rounded-full ${

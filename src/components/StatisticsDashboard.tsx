@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { FamilyMember, FamilyStats } from '../types/family';
 import { HeritageCrest } from './HeritageCrest';
+import { getSubFamilyTags } from '../utils/subFamilyUtils';
 import {
   Users,
   UserCheck,
@@ -10,7 +11,9 @@ import {
   Award,
   GitBranch,
   Calendar,
-  Percent
+  Percent,
+  Crown,
+  Shield
 } from 'lucide-react';
 
 interface StatisticsDashboardProps {
@@ -23,8 +26,17 @@ export const StatisticsDashboard: React.FC<StatisticsDashboardProps> = ({ stats,
   const detailedStats = useMemo(() => {
     const genCounts: Record<number, { total: number; males: number; females: number; living: number }> = {};
     const marriageAlliances: Record<string, number> = {};
+    let jaberCount = 0;
+    let nawasirCount = 0;
+    let bothCount = 0;
 
     members.forEach(m => {
+      const tags = getSubFamilyTags(m);
+      if (tags.some(t => t.category === 'both')) bothCount++;
+      else if (tags.some(t => t.category === 'jaber')) jaberCount++;
+      else if (tags.some(t => t.category === 'nawasir')) nawasirCount++;
+      else bothCount++;
+
       const g = m.generation || 1;
       if (!genCounts[g]) {
         genCounts[g] = { total: 0, males: 0, females: 0, living: 0 };
@@ -68,7 +80,7 @@ export const StatisticsDashboard: React.FC<StatisticsDashboardProps> = ({ stats,
       .map(([family, count]) => ({ family, count }))
       .sort((a, b) => b.count - a.count);
 
-    return { genCounts, alliances };
+    return { genCounts, alliances, jaberCount, nawasirCount, bothCount };
   }, [members]);
 
   const malePercent = Math.round((stats.males / (stats.total || 1)) * 100);
@@ -244,6 +256,95 @@ export const StatisticsDashboard: React.FC<StatisticsDashboardProps> = ({ stats,
           </div>
         </div>
 
+      </div>
+
+      {/* Sub-Families Lineage Distribution (آل جابر والنواصر) */}
+      <div className="glass-panel rounded-3xl p-6 border border-emerald-500/25 shadow-xl space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/5 pb-3">
+          <div className="flex items-center gap-2.5">
+            <Sparkles className="w-5 h-5 text-amber-400" />
+            <h3 className="text-base font-bold text-white">
+              وسم وتوزيع العائلات الفرعية (فخذ النواصر وتفرعات آل جابر)
+            </h3>
+          </div>
+          <span className="text-xs text-slate-400">
+            تصنيف تلقائي متصل بنسب وشجرة عائلة البوحسون
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
+          {/* Al-Jaber Card */}
+          <div className="bg-gradient-to-br from-amber-950/40 via-slate-900/80 to-amber-900/20 rounded-2xl p-4 border border-amber-400/40 shadow-lg relative overflow-hidden">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-bold text-amber-300 flex items-center gap-1.5">
+                <Crown className="w-4 h-4 text-amber-400" />
+                <span>تفرعات آل جابر</span>
+              </span>
+              <span className="text-[10px] font-mono font-bold bg-amber-400/20 text-amber-300 px-2 py-0.5 rounded-full border border-amber-400/30">
+                وسم ذهبي
+              </span>
+            </div>
+            <div className="flex items-baseline justify-between mt-2">
+              <span className="text-3xl font-bold font-mono text-white">
+                {detailedStats.jaberCount}
+              </span>
+              <span className="text-xs font-bold text-amber-300 font-mono">
+                {Math.round((detailedStats.jaberCount / (stats.total || 1)) * 100)}%
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-400 mt-2 leading-relaxed">
+              أفراد العائلة المنتسبون عبر فروع آل جابر ومحمد وعلي البوحسون.
+            </p>
+          </div>
+
+          {/* Al-Nawasir Card */}
+          <div className="bg-gradient-to-br from-emerald-950/40 via-slate-900/80 to-emerald-900/20 rounded-2xl p-4 border border-emerald-400/40 shadow-lg relative overflow-hidden">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-bold text-emerald-300 flex items-center gap-1.5">
+                <Shield className="w-4 h-4 text-emerald-400" />
+                <span>فخذ النواصر</span>
+              </span>
+              <span className="text-[10px] font-mono font-bold bg-emerald-400/20 text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-400/30">
+                وسم زمردي
+              </span>
+            </div>
+            <div className="flex items-baseline justify-between mt-2">
+              <span className="text-3xl font-bold font-mono text-white">
+                {detailedStats.nawasirCount}
+              </span>
+              <span className="text-xs font-bold text-emerald-300 font-mono">
+                {Math.round((detailedStats.nawasirCount / (stats.total || 1)) * 100)}%
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-400 mt-2 leading-relaxed">
+              أفراد العائلة المنتسبون عبر فروع النواصر وإبراهيم وناصر البوحسون.
+            </p>
+          </div>
+
+          {/* Both/Founding Card */}
+          <div className="bg-gradient-to-br from-slate-900/90 via-slate-900/70 to-teal-950/40 rounded-2xl p-4 border border-teal-400/30 shadow-lg relative overflow-hidden">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-bold text-teal-300 flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4 text-amber-300" />
+                <span>النسب الجامع والمؤسس</span>
+              </span>
+              <span className="text-[10px] font-mono font-bold bg-teal-400/20 text-teal-300 px-2 py-0.5 rounded-full border border-teal-400/30">
+                العمود الجامع
+              </span>
+            </div>
+            <div className="flex items-baseline justify-between mt-2">
+              <span className="text-3xl font-bold font-mono text-white">
+                {detailedStats.bothCount}
+              </span>
+              <span className="text-xs font-bold text-teal-300 font-mono">
+                {Math.round((detailedStats.bothCount / (stats.total || 1)) * 100)}%
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-400 mt-2 leading-relaxed">
+              الجد المؤسس والأصول الجامعة بين فخذ النواصر وتفرعات آل جابر.
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Generations & Branches Distribution */}

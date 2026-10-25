@@ -2,13 +2,18 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { FamilyMember, FamilyStats } from '../types/family';
 import { INITIAL_FAMILY_DATA } from '../data/initialFamilyData';
 
-const STORAGE_KEY = 'albuhasson_family_tree_v1';
+const STORAGE_KEY = 'albuhasson_family_tree_v2';
+const VERSION_KEY = 'albuhasson_tree_version';
+export const CURRENT_DATA_VERSION = '2026.2.2';
 
 export function useFamilyStorage() {
   const [members, setMembers] = useState<FamilyMember[]>(() => {
     try {
+      const storedVersion = localStorage.getItem(VERSION_KEY);
       const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
+      
+      // If version matches and stored data exists, load user data
+      if (stored && storedVersion === CURRENT_DATA_VERSION) {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed) && parsed.length > 0) {
           return parsed;
@@ -17,6 +22,13 @@ export function useFamilyStorage() {
     } catch (err) {
       console.error('Error loading family data from localStorage', err);
     }
+    // Default to the official repository seed data
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_FAMILY_DATA));
+      localStorage.setItem(VERSION_KEY, CURRENT_DATA_VERSION);
+    } catch {
+      // Ignore localStorage write failures (e.g. private mode)
+    }
     return INITIAL_FAMILY_DATA;
   });
 
@@ -24,6 +36,7 @@ export function useFamilyStorage() {
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(members));
+      localStorage.setItem(VERSION_KEY, CURRENT_DATA_VERSION);
     } catch (err) {
       console.error('Failed to save to localStorage', err);
     }
@@ -184,11 +197,17 @@ export function useFamilyStorage() {
     }
   }, []);
 
-  // Reset to initial heritage seed data
+  // Reset to initial heritage seed data from codebase
   const resetToDefault = useCallback(() => {
     setMembers(INITIAL_FAMILY_DATA);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_FAMILY_DATA));
+    localStorage.setItem(VERSION_KEY, CURRENT_DATA_VERSION);
   }, []);
+
+  // Generate full TypeScript code to update src/data/initialFamilyData.ts permanently
+  const exportTypeScriptCode = useCallback(() => {
+    return `import { FamilyMember } from '../types/family';\n\nexport const INITIAL_FAMILY_DATA: FamilyMember[] = ${JSON.stringify(members, null, 2)};\n`;
+  }, [members]);
 
   // Compute paternal lineage chain for a member up to the root ancestor
   const getPaternalLineage = useCallback((memberId: string): FamilyMember[] => {
@@ -220,6 +239,7 @@ export function useFamilyStorage() {
     deleteMember,
     importJSON,
     resetToDefault,
+    exportTypeScriptCode,
     getPaternalLineage,
     getChildren
   };

@@ -14,6 +14,8 @@ export interface FamilyMember {
   death_date?: string; // Optional year or date
   is_living: boolean;
   branch?: string; // e.g. "فرع محمد", "فرع علي", "فرع مبارك"
+  sub_family?: 'آل جابر' | 'النواصر' | 'آل جابر والنواصر' | string; // وسم العائلة الفرعية
+  sub_tags?: string[]; // وسوم إضافية مخصصة
   generation?: number; // 1 for founding patriarch, 2 for sons/daughters, etc.
 
   // Male-specific fields
@@ -44,5 +46,6 @@ export interface FilterOptions {
   gender: 'all' | 'male' | 'female';
   status: 'all' | 'living' | 'deceased';
   branch: string;
+  subFamily: string; // 'all' | 'آل جابر' | 'النواصر' | string
   generation: number | 'all';
 }

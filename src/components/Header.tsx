@@ -54,7 +54,7 @@ export const Header: React.FC<HeaderProps> = ({
               }`}
             >
               <Network className="w-3.5 h-3.5" />
-              <span>الشجرة التفاعلية</span>
+              <span>مخطط النسب والقرابة المتصل</span>
             </button>
 
             <button
@@ -161,7 +161,7 @@ export const Header: React.FC<HeaderProps> = ({
           }`}
         >
           <Network className="w-4 h-4 mb-0.5" />
-          <span className="text-[10px]">الشجرة</span>
+          <span className="text-[10px]">مخطط القرابة</span>
         </button>
 
         <button
@@ -173,7 +173,7 @@ export const Header: React.FC<HeaderProps> = ({
           }`}
         >
           <GitFork className="w-4 h-4 mb-0.5" />
-          <span className="text-[10px]">النسب</span>
+          <span className="text-[10px]">سلسلة النسب</span>
         </button>
 
         <button

@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { FamilyMember } from '../types/family';
 import { HeritageCrest, FemaleHeritageBadge } from './HeritageCrest';
+import { SubFamilyBadge } from './SubFamilyBadge';
 import { Search, GitFork, ArrowDown, Copy, Check, Calendar, Heart, Shield } from 'lucide-react';
 import { matchesArabic } from '../utils/arabicUtils';
 
@@ -208,10 +209,14 @@ export const LineagePathView: React.FC<LineagePathViewProps> = ({
                         </h3>
 
                         {member.nickname && (
-                          <p className="text-xs font-medium text-emerald-400 mb-2">
+                          <p className="text-xs font-medium text-emerald-400 mb-1">
                             {member.nickname}
                           </p>
                         )}
+
+                        <div className="mb-2">
+                          <SubFamilyBadge member={member} memberMap={memberMap} size="xs" />
+                        </div>
 
                         <div className="flex flex-wrap items-center gap-4 text-xs text-slate-300 mt-2">
                           <div className="flex items-center gap-1.5">

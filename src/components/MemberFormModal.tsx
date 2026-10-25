@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { FamilyMember, Gender } from '../types/family';
-import { X, Save, User, UserPlus, Heart, Users2, FileText, Image, ShieldAlert } from 'lucide-react';
+import { X, Save, User, UserPlus, Heart, Users2, FileText, Image, ShieldAlert, Trash2 } from 'lucide-react';
 
 interface MemberFormModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (data: Omit<FamilyMember, 'id'>) => void;
+  onDelete?: (id: string) => void;
   initialData?: FamilyMember | null;
   members: FamilyMember[];
 }
@@ -14,6 +15,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
   isOpen,
   onClose,
   onSubmit,
+  onDelete,
   initialData,
   members
 }) => {
@@ -30,6 +32,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
   const [deathDate, setDeathDate] = useState(initialData?.death_date || '');
   const [isLiving, setIsLiving] = useState(initialData ? initialData.is_living : true);
   const [branch, setBranch] = useState(initialData?.branch || 'الفرع الرئيسي');
+  const [subFamily, setSubFamily] = useState<string>(initialData?.sub_family || 'auto');
 
   // Male-specific fields
   const [spouseInfo, setSpouseInfo] = useState(initialData?.spouse_info || '');
@@ -40,6 +43,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
   const [childrenSummary, setChildrenSummary] = useState(initialData?.children_summary || '');
   const [notes, setNotes] = useState(initialData?.notes || '');
 
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
   // Eligible fathers list: all male members excluding self
@@ -61,6 +65,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
       death_date: isLiving ? undefined : deathDate.trim() || undefined,
       is_living: isLiving,
       branch: branch.trim() || 'الفرع العام',
+      sub_family: subFamily === 'auto' ? undefined : (subFamily.trim() || undefined),
       spouse_info: spouseInfo.trim() || undefined,
       // Strictly enforce male vs female fields
       ...(gender === 'male'
@@ -206,6 +211,22 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                 placeholder="مثال: فرع محمد، فرع علي، فرع إبراهيم"
                 className="w-full bg-slate-900/90 border border-emerald-500/30 rounded-xl px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400"
               />
+            </div>
+
+            <div>
+              <label className="block text-slate-300 font-semibold mb-1">
+                وسم العائلة الفرعية:
+              </label>
+              <select
+                value={subFamily}
+                onChange={(e) => setSubFamily(e.target.value)}
+                className="w-full bg-slate-900/90 border border-emerald-500/30 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-emerald-400"
+              >
+                <option value="auto">تلقائي (حسب شجرة النسب والفرع)</option>
+                <option value="آل جابر">آل جابر (وسم ذهبي فاخر)</option>
+                <option value="النواصر">النواصر (وسم زمردي فاخر)</option>
+                <option value="آل جابر والنواصر">آل جابر والنواصر (الجامع)</option>
+              </select>
             </div>
           </div>
 
@@ -353,23 +374,67 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
             </div>
           )}
 
-          {/* Submit Actions */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/10">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold"
-            >
-              إلغاء
-            </button>
+          {/* Delete confirmation inline box */}
+          {confirmDelete && initialData && onDelete && (
+            <div className="p-3.5 rounded-2xl bg-rose-950/80 border border-rose-500/40 text-right animate-in fade-in duration-150">
+              <p className="text-xs text-rose-200 font-semibold mb-2">
+                هل أنت متأكد من حذف سجل "{initialData.full_name}" بشكل نهائي؟
+              </p>
+              <div className="flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setConfirmDelete(false)}
+                  className="px-3 py-1.5 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold"
+                >
+                  تراجع
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onDelete(initialData.id);
+                    onClose();
+                  }}
+                  className="px-4 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold flex items-center gap-1 shadow-md shadow-rose-950/60"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>تأكيد الحذف</span>
+                </button>
+              </div>
+            </div>
+          )}
 
-            <button
-              type="submit"
-              className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-emerald-950 font-bold text-xs flex items-center gap-1.5 shadow-lg shadow-emerald-950/50"
-            >
-              <Save className="w-4 h-4" />
-              <span>{isEditing ? 'حفظ التعديلات' : 'إضافة الفرد للشجرة'}</span>
-            </button>
+          {/* Submit Actions */}
+          <div className="flex items-center justify-between gap-3 pt-4 border-t border-white/10">
+            <div>
+              {isEditing && initialData && onDelete && !confirmDelete && (
+                <button
+                  type="button"
+                  onClick={() => setConfirmDelete(true)}
+                  className="px-3.5 py-2 rounded-xl text-xs font-semibold text-rose-300 hover:text-white hover:bg-rose-950/80 border border-rose-500/30 flex items-center gap-1.5 transition-colors"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  <span>حذف السجل</span>
+                </button>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold"
+              >
+                إلغاء
+              </button>
+
+              <button
+                type="submit"
+                className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-emerald-950 font-bold text-xs flex items-center gap-1.5 shadow-lg shadow-emerald-950/50"
+              >
+                <Save className="w-4 h-4" />
+                <span>{isEditing ? 'حفظ التعديلات' : 'إضافة الفرد للشجرة'}</span>
+              </button>
+            </div>
           </div>
         </form>
       </div>

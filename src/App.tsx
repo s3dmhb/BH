@@ -23,6 +23,7 @@ export default function App() {
     deleteMember,
     importJSON,
     resetToDefault,
+    exportTypeScriptCode,
     getPaternalLineage,
     getChildren
   } = useFamilyStorage();
@@ -126,6 +127,8 @@ export default function App() {
               memberMap={memberMap}
               onSelectMember={(m) => setSelectedMember(m)}
               onViewLineage={handleViewLineage}
+              onDelete={deleteMember}
+              isAdmin={isAdmin}
             />
           )}
 
@@ -192,6 +195,7 @@ export default function App() {
           setEditingMember(null);
         }}
         onSubmit={handleFormSubmit}
+        onDelete={deleteMember}
         initialData={editingMember}
         members={members}
       />
@@ -203,6 +207,7 @@ export default function App() {
         members={members}
         onImportJSON={importJSON}
         onResetToDefault={resetToDefault}
+        onExportTypeScriptCode={exportTypeScriptCode}
         isAdmin={isAdmin}
         onRequireLogin={() => setIsLoginModalOpen(true)}
         onLogout={logout}

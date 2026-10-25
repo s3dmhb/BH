@@ -1,6 +1,7 @@
 import React from 'react';
 import { FamilyMember, FamilyStats } from '../types/family';
 import { HeritageCrest } from './HeritageCrest';
+import { getSubFamilyTags } from '../utils/subFamilyUtils';
 
 interface PrintReportViewProps {
   members: FamilyMember[];
@@ -85,6 +86,7 @@ export const PrintReportView: React.FC<PrintReportViewProps> = ({ members, stats
                     <th className="p-1.5 font-bold">الفترة</th>
                     <th className="p-1.5 font-bold">الحالة</th>
                     <th className="p-1.5 font-bold">الفرع</th>
+                    <th className="p-1.5 font-bold">وسم العائلة</th>
                     <th className="p-1.5 font-bold">الزوج / الزوجات</th>
                     <th className="p-1.5 font-bold">ملاحظات / سيرة</th>
                   </tr>
@@ -93,6 +95,7 @@ export const PrintReportView: React.FC<PrintReportViewProps> = ({ members, stats
                   {genMembers.map(m => {
                     const father = m.father_id ? memberMap.get(m.father_id) : null;
                     const isMale = m.gender === 'male';
+                    const tagsStr = getSubFamilyTags(m, memberMap).map(t => t.label).join('، ');
 
                     return (
                       <tr key={m.id} className="border-b border-gray-200 hover:bg-gray-50">
@@ -104,6 +107,7 @@ export const PrintReportView: React.FC<PrintReportViewProps> = ({ members, stats
                         </td>
                         <td className="p-1.5 text-gray-700">{m.is_living ? 'حي' : 'متوفى'}</td>
                         <td className="p-1.5 text-gray-600">{m.branch || 'العام'}</td>
+                        <td className="p-1.5 font-semibold text-emerald-800">{tagsStr}</td>
                         <td className="p-1.5 text-gray-700">{m.spouse_info || '-'}</td>
                         <td className="p-1.5 text-gray-600 max-w-xs truncate">
                           {isMale ? m.bio || '-' : m.children_summary ? `الأبناء: ${m.children_summary}` : m.notes || '-'}

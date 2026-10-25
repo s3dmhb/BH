@@ -24,6 +24,7 @@ interface AdminPanelModalProps {
   members: FamilyMember[];
   onImportJSON: (jsonString: string) => { success: boolean; count?: number; error?: string };
   onResetToDefault: () => void;
+  onExportTypeScriptCode?: () => string;
   isAdmin: boolean;
   onRequireLogin: () => void;
   onLogout: () => void;
@@ -35,6 +36,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
   members,
   onImportJSON,
   onResetToDefault,
+  onExportTypeScriptCode,
   isAdmin,
   onRequireLogin,
   onLogout
@@ -176,7 +178,27 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
               <span>تصدير البيانات والنسخ الاحتياطي:</span>
             </h3>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              {/* Copy TypeScript Code for Permanent GitHub Project Sync */}
+              <button
+                onClick={() => {
+                  if (onExportTypeScriptCode) {
+                    const code = onExportTypeScriptCode();
+                    navigator.clipboard.writeText(code);
+                    showNotification('success', 'تم نسخ كود البيانات (TypeScript) بالكامل! أرسله للمهندس ليتم تحديث ملف المشروع وتعميم الشجرة على جميع الأجهزة فوراً.');
+                  }
+                }}
+                className="glass-panel p-4 rounded-2xl border border-emerald-400/40 hover:border-emerald-300 bg-emerald-950/30 text-right group transition-all"
+              >
+                <div className="w-8 h-8 rounded-lg bg-emerald-900/80 border border-emerald-400/50 flex items-center justify-center text-emerald-300 mb-2 group-hover:scale-105 transition-transform">
+                  <FileCode className="w-4 h-4" />
+                </div>
+                <h4 className="font-bold text-emerald-300 text-xs mb-1">نسخ كود البيانات للمشروع</h4>
+                <p className="text-[11px] text-slate-300 leading-normal">
+                  نسخ كود السجلات الكامل بنقرة واحدة لتثبيته في ملف المشروع الرسمي ومزامنته لكل الأجهزة عبر GitHub.
+                </p>
+              </button>
+
               {/* Export JSON */}
               <button
                 onClick={() => {
@@ -186,7 +208,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
                 className="glass-panel p-4 rounded-2xl border border-emerald-500/20 hover:border-emerald-400/50 text-right group transition-all"
               >
                 <div className="w-8 h-8 rounded-lg bg-emerald-950/80 border border-emerald-500/30 flex items-center justify-center text-emerald-400 mb-2 group-hover:scale-105 transition-transform">
-                  <FileCode className="w-4 h-4" />
+                  <Database className="w-4 h-4" />
                 </div>
                 <h4 className="font-bold text-white text-xs mb-1">نسخة احتياطية (JSON)</h4>
                 <p className="text-[11px] text-slate-400 leading-normal">
@@ -308,6 +330,55 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
                 </button>
               </div>
             )}
+          </div>
+
+          {/* Section 2.5: Multi-Device Sync & Cloud Database Clarification */}
+          <div className="pt-2 border-t border-white/10">
+            <div className="bg-gradient-to-br from-amber-950/40 via-slate-900 to-slate-950 p-5 rounded-2xl border border-amber-500/30 space-y-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-amber-950/90 border border-amber-500/40 flex items-center justify-center text-amber-300 shrink-0">
+                  <Database className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-xs md:text-sm font-bold text-white">
+                    لماذا لا تظهر التعديلات على أجهزة أخرى تلقائياً؟ وما هو الحل؟
+                  </h3>
+                  <span className="text-[11px] text-amber-300">
+                    توضيح معماري وطريقتين لحل المزامنة بين كافة الجوالات والأجهزة
+                  </span>
+                </div>
+              </div>
+
+              <div className="text-xs text-slate-300 space-y-3 leading-relaxed">
+                <p>
+                  موقع شجرة عائلة البوحسون يعمل كنظام ويب تفاعلي سريع مستضاف على <strong className="text-white">GitHub Pages</strong> (استضافة ثابتة). عندما تقوم بإضافة أو تعديل فرد من متصفحك، فإن التعديل يُحفظ فوراً في <strong className="text-emerald-400">ذاكرة المتصفح المحلي (Local Storage)</strong> لذلك الجهاز بعينه، ولا ينتقل تلقائياً للجوالات الأخرى إلا عبر إحدى الطريقتين:
+                </p>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+                  {/* Method 1: GitHub Official Source Sync */}
+                  <div className="bg-slate-950/80 p-3.5 rounded-xl border border-emerald-500/30 space-y-1.5">
+                    <span className="text-xs font-bold text-emerald-300 flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                      <span>الطريقة الأولى (مزامنة ملف الكود عبر GitHub) - موصى بها:</span>
+                    </span>
+                    <p className="text-[11px] text-slate-300">
+                      تعديل وتثبيت بيانات أفراد العائلة في ملف الكود المصدري الأساسي (<code className="text-emerald-400 font-mono">src/data/initialFamilyData.ts</code>) هنا في Google AI Studio. بمجرد تعديله، يقوم GitHub تلقائياً بنشر التحديث لكل زوار الموقع حول العالم، وتظهر الشجرة المحدثة لجميع أفراد الأسرة على أي جوال فوراً ومجاناً للأبد.
+                    </p>
+                  </div>
+
+                  {/* Method 2: Live Cloud DB (Firebase Firestore) */}
+                  <div className="bg-slate-950/80 p-3.5 rounded-xl border border-amber-500/30 space-y-1.5">
+                    <span className="text-xs font-bold text-amber-300 flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-amber-400" />
+                      <span>الطريقة الثانية (ربط قاعدة بيانات سحابية Firebase):</span>
+                    </span>
+                    <p className="text-[11px] text-slate-300">
+                      إذا كنت تريد إضافة وتعديل الأشخاص مباشرة من متصفح أي جوال وتظهر التعديلات لحظياً في نفس الثانية لجميع أفراد العائلة دون الحاجة لكتابة كود أو عمل Commit على GitHub، يمكننا ربط قاعدة بيانات <strong className="text-white">Firebase Firestore</strong> بنقرة واحدة.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Section 3: GitHub Pages Deployment Quick Guide */}
