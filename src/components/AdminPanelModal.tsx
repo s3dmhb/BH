@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { FamilyMember } from '../types/family';
-import { exportToJSON, exportToCSV, exportStandaloneHTML } from '../utils/exportUtils';
+import { exportToJSON, exportToCSV, exportStandaloneHTML, exportTypeScriptFile } from '../utils/exportUtils';
 import {
   X,
   Download,
@@ -15,7 +15,9 @@ import {
   ExternalLink,
   Lock,
   ShieldCheck,
-  LogOut
+  LogOut,
+  Copy,
+  GitBranch
 } from 'lucide-react';
 
 interface AdminPanelModalProps {
@@ -178,24 +180,41 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
               <span>تصدير البيانات والنسخ الاحتياطي:</span>
             </h3>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {/* Copy TypeScript Code for Permanent GitHub Project Sync */}
               <button
                 onClick={() => {
                   if (onExportTypeScriptCode) {
                     const code = onExportTypeScriptCode();
                     navigator.clipboard.writeText(code);
-                    showNotification('success', 'تم نسخ كود البيانات (TypeScript) بالكامل! أرسله للمهندس ليتم تحديث ملف المشروع وتعميم الشجرة على جميع الأجهزة فوراً.');
+                    showNotification('success', 'تم نسخ كود البيانات (TypeScript) بنجاح! الصقه هنا في محادثة المساعد لتحديث ملف المشروع فوراً.');
                   }
                 }}
                 className="glass-panel p-4 rounded-2xl border border-emerald-400/40 hover:border-emerald-300 bg-emerald-950/30 text-right group transition-all"
               >
                 <div className="w-8 h-8 rounded-lg bg-emerald-900/80 border border-emerald-400/50 flex items-center justify-center text-emerald-300 mb-2 group-hover:scale-105 transition-transform">
+                  <Copy className="w-4 h-4" />
+                </div>
+                <h4 className="font-bold text-emerald-300 text-xs mb-1">1. نسخ كود البيانات للمشروع</h4>
+                <p className="text-[11px] text-slate-300 leading-normal">
+                  نسخ الكود ولصقه في المحادثة مع المساعد لتحديث ملف الكود المصدري قبل النشر إلى GitHub.
+                </p>
+              </button>
+
+              {/* Download initialFamilyData.ts File */}
+              <button
+                onClick={() => {
+                  exportTypeScriptFile(members);
+                  showNotification('success', 'تم تنزيل ملف initialFamilyData.ts! يمكنك استبداله مباشرة في مجلد src/data/ في مستودع GitHub.');
+                }}
+                className="glass-panel p-4 rounded-2xl border border-teal-400/40 hover:border-teal-300 bg-teal-950/30 text-right group transition-all"
+              >
+                <div className="w-8 h-8 rounded-lg bg-teal-900/80 border border-teal-400/50 flex items-center justify-center text-teal-300 mb-2 group-hover:scale-105 transition-transform">
                   <FileCode className="w-4 h-4" />
                 </div>
-                <h4 className="font-bold text-emerald-300 text-xs mb-1">نسخ كود البيانات للمشروع</h4>
+                <h4 className="font-bold text-teal-300 text-xs mb-1">2. تحميل ملف initialFamilyData.ts</h4>
                 <p className="text-[11px] text-slate-300 leading-normal">
-                  نسخ كود السجلات الكامل بنقرة واحدة لتثبيته في ملف المشروع الرسمي ومزامنته لكل الأجهزة عبر GitHub.
+                  تحميل ملف الكود المصدري المحدث فوراً لرفعه واستبداله في GitHub.
                 </p>
               </button>
 
@@ -239,14 +258,14 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
                   exportStandaloneHTML(members);
                   showNotification('success', 'تم تنزيل ملف index.html الجاهز للاستضافة على GitHub Pages بنجاح!');
                 }}
-                className="glass-panel p-4 rounded-2xl border border-amber-500/30 hover:border-amber-400/60 bg-amber-950/20 text-right group transition-all"
+                className="glass-panel p-4 rounded-2xl border border-amber-500/30 hover:border-amber-400/60 bg-amber-950/20 text-right group transition-all sm:col-span-2 lg:col-span-2"
               >
                 <div className="w-8 h-8 rounded-lg bg-amber-950/80 border border-amber-500/40 flex items-center justify-center text-amber-300 mb-2 group-hover:scale-105 transition-transform">
                   <Globe className="w-4 h-4" />
                 </div>
-                <h4 className="font-bold text-amber-300 text-xs mb-1">تجهيز GitHub Pages</h4>
+                <h4 className="font-bold text-amber-300 text-xs mb-1">تجهيز GitHub Pages كصفحة واحدة منفردة (index.html)</h4>
                 <p className="text-[11px] text-slate-300 leading-normal">
-                  تحميل ملف منفرد self-contained (`index.html`) جاهز للرفع المباشر.
+                  تحميل ملف منفرد self-contained (`index.html`) يحتوي على كافة البيانات والتصميم مدمجين وجاهز للرفع المباشر.
                 </p>
               </button>
             </div>
@@ -332,7 +351,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
             )}
           </div>
 
-          {/* Section 2.5: Multi-Device Sync & Cloud Database Clarification */}
+          {/* Section 2.5: Multi-Device Sync & GitHub Export Clarification */}
           <div className="pt-2 border-t border-white/10">
             <div className="bg-gradient-to-br from-amber-950/40 via-slate-900 to-slate-950 p-5 rounded-2xl border border-amber-500/30 space-y-3">
               <div className="flex items-center gap-2.5">
@@ -341,39 +360,49 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
                 </div>
                 <div>
                   <h3 className="text-xs md:text-sm font-bold text-white">
-                    لماذا لا تظهر التعديلات على أجهزة أخرى تلقائياً؟ وما هو الحل؟
+                    لماذا لا تنعكس الإضافات على GitHub بعد النشر من الإعدادات؟ وما هو الحل؟
                   </h3>
                   <span className="text-[11px] text-amber-300">
-                    توضيح معماري وطريقتين لحل المزامنة بين كافة الجوالات والأجهزة
+                    توضيح تقني دقيق وطرق تثبيت البيانات في مستودع GitHub للأبد
                   </span>
                 </div>
               </div>
 
               <div className="text-xs text-slate-300 space-y-3 leading-relaxed">
                 <p>
-                  موقع شجرة عائلة البوحسون يعمل كنظام ويب تفاعلي سريع مستضاف على <strong className="text-white">GitHub Pages</strong> (استضافة ثابتة). عندما تقوم بإضافة أو تعديل فرد من متصفحك، فإن التعديل يُحفظ فوراً في <strong className="text-emerald-400">ذاكرة المتصفح المحلي (Local Storage)</strong> لذلك الجهاز بعينه، ولا ينتقل تلقائياً للجوالات الأخرى إلا عبر إحدى الطريقتين:
+                  عندما تضيف أو تعدل فرداً في واجهة الشجرة من متصفحك، فإن التطبيق يقوم بحفظه فوراً في <strong className="text-emerald-400">الذاكرة المحلية لمتصفحك فقط (Local Storage)</strong>. بينما ميزة <strong className="text-white">نشر / تصدير المشروع إلى GitHub عبر الإعدادات</strong> تقوم برفع <strong className="text-amber-300">ملفات الكود المصدري للمشروع</strong> (الموجودة في الخادم)، وتحديداً الملف الرسمي: <code className="text-emerald-400 font-mono bg-slate-950 px-1.5 py-0.5 rounded">src/data/initialFamilyData.ts</code>.
+                </p>
+
+                <p className="text-slate-200">
+                  ولأن المتصفح لا يستطيع الكتابة مباشرة في ملفات الكود المصدري لأسباب أمنية، فإن مستودع GitHub يظل محتفظاً بالبيانات الأصلية فقط ما لم يتم تحديث ذلك الملف.
                 </p>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
-                  {/* Method 1: GitHub Official Source Sync */}
-                  <div className="bg-slate-950/80 p-3.5 rounded-xl border border-emerald-500/30 space-y-1.5">
+                  {/* Action 1 */}
+                  <div className="bg-slate-950/80 p-3.5 rounded-xl border border-emerald-500/30 space-y-2">
                     <span className="text-xs font-bold text-emerald-300 flex items-center gap-1.5">
                       <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                      <span>الطريقة الأولى (مزامنة ملف الكود عبر GitHub) - موصى بها:</span>
+                      <span>الحل الأسهل (التحديث عبر المساعد ثم النشر):</span>
                     </span>
                     <p className="text-[11px] text-slate-300">
-                      تعديل وتثبيت بيانات أفراد العائلة في ملف الكود المصدري الأساسي (<code className="text-emerald-400 font-mono">src/data/initialFamilyData.ts</code>) هنا في Google AI Studio. بمجرد تعديله، يقوم GitHub تلقائياً بنشر التحديث لكل زوار الموقع حول العالم، وتظهر الشجرة المحدثة لجميع أفراد الأسرة على أي جوال فوراً ومجاناً للأبد.
+                      1. اضغط على الزر الأخضر أعلاه <strong className="text-emerald-300 font-semibold">"1. نسخ كود البيانات للمشروع"</strong>.<br />
+                      2. الصق الكود هنا في المحادثة مع المساعد واطلب منه تثبيته.<br />
+                      3. سيقوم المساعد بتحديث ملف <code className="text-emerald-400 font-mono text-[10px]">initialFamilyData.ts</code> فوراً.<br />
+                      4. بعد ذلك، انشر المشروع لـ GitHub من الإعدادات وستجد جميع الإضافات معتمدة ودائمة لكل أفراد الأسرة!
                     </p>
                   </div>
 
-                  {/* Method 2: Live Cloud DB (Firebase Firestore) */}
-                  <div className="bg-slate-950/80 p-3.5 rounded-xl border border-amber-500/30 space-y-1.5">
-                    <span className="text-xs font-bold text-amber-300 flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-amber-400" />
-                      <span>الطريقة الثانية (ربط قاعدة بيانات سحابية Firebase):</span>
+                  {/* Action 2 */}
+                  <div className="bg-slate-950/80 p-3.5 rounded-xl border border-teal-500/30 space-y-2">
+                    <span className="text-xs font-bold text-teal-300 flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-teal-400" />
+                      <span>الحل المباشر (تنزيل الملف ورفعه يدوياً لـ GitHub):</span>
                     </span>
                     <p className="text-[11px] text-slate-300">
-                      إذا كنت تريد إضافة وتعديل الأشخاص مباشرة من متصفح أي جوال وتظهر التعديلات لحظياً في نفس الثانية لجميع أفراد العائلة دون الحاجة لكتابة كود أو عمل Commit على GitHub، يمكننا ربط قاعدة بيانات <strong className="text-white">Firebase Firestore</strong> بنقرة واحدة.
+                      1. اضغط على زر <strong className="text-teal-300 font-semibold">"2. تحميل ملف initialFamilyData.ts"</strong> أعلاه.<br />
+                      2. افتح مستودعك على GitHub، ثم ادخل المجلد <code className="text-teal-300 font-mono text-[10px]">src/data/</code>.<br />
+                      3. اضغط <strong className="text-white">Add file ➔ Upload files</strong> واستبدل الملف بالملف الجديد الذي قمت بتنزيله.<br />
+                      4. سيقوم GitHub Actions بنشر الموقع الجديد آلياً.
                     </p>
                   </div>
                 </div>

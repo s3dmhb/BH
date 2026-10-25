@@ -10,6 +10,16 @@ export function exportToJSON(members: FamilyMember[], filename = 'albuhasson_fam
 }
 
 /**
+ * Export family members directly as initialFamilyData.ts source code file
+ */
+export function exportTypeScriptFile(members: FamilyMember[], filename = 'initialFamilyData.ts') {
+  const content = `import { FamilyMember } from '../types/family';\n\nexport const INITIAL_FAMILY_DATA: FamilyMember[] = ${JSON.stringify(members, null, 2)};\n`;
+  const blob = new Blob([content], { type: 'text/typescript;charset=utf-8' });
+  triggerDownload(blob, filename);
+}
+
+
+/**
  * Export family members as Excel-compatible CSV with UTF-8 BOM
  */
 export function exportToCSV(members: FamilyMember[], filename = 'albuhasson_family_tree.csv') {
