@@ -321,9 +321,21 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
   }, [rootMembers, childrenMap, memberMap, selectedBranch, subFamilyFilter, genderFilter, statusFilter, collapsedIds]);
 
   // Compute D3 Tree Layout with D3-Hierarchy
-  const { nodes, links, bounds } = useMemo(() => {
+  // Fixed card dimensions and clean generational tier heights
+  const CARD_WIDTH = 270;
+  const CARD_HEIGHT = 110;
+  const LEVEL_GAP_Y = 120; // 120px clean gap between generation levels
+  const LEVEL_HEIGHT = CARD_HEIGHT + LEVEL_GAP_Y; // 230px total height per generational tier
+  const LEVEL_WIDTH = CARD_WIDTH + 110; // 380px total width per generational tier in horizontal
+
+  const { nodes, links, bounds, distinctGenerations } = useMemo(() => {
     if (!d3TreeData) {
-      return { nodes: [], links: [], bounds: { minX: 0, maxX: 0, minY: 0, maxY: 0, width: 0, height: 0 } };
+      return {
+        nodes: [],
+        links: [],
+        bounds: { minX: 0, maxX: 0, minY: 0, maxY: 0, width: 0, height: 0 },
+        distinctGenerations: []
+      };
     }
 
     const rootHierarchy = hierarchy<TreeNodeData>(d3TreeData, d => d.children);
@@ -332,28 +344,40 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
     let computedNodes: HierarchyPointNode<TreeNodeData>[] = [];
     let treeRoot: HierarchyPointNode<TreeNodeData>;
 
-    const CARD_WIDTH = 280;
-    const CARD_HEIGHT = 120;
-    const GAP_X = 80;
-    const GAP_Y = 60;
-
     if (layoutMode === 'horizontal') {
       // Horizontal Arab Kinship Layout (founders on right, branches flowing left)
       layout = tree<TreeNodeData>()
-        .nodeSize([CARD_HEIGHT + GAP_Y, CARD_WIDTH + GAP_X])
-        .separation((a, b) => (a.parent === b.parent ? 1.05 : 1.25));
+        .nodeSize([CARD_HEIGHT + 50, LEVEL_WIDTH])
+        .separation((a, b) => (a.parent === b.parent ? 1.12 : 1.35));
 
       treeRoot = layout(rootHierarchy);
       computedNodes = treeRoot.descendants();
     } else {
       // Vertical Pedigree Layout (founders at top, branches descending)
       layout = tree<TreeNodeData>()
-        .nodeSize([CARD_WIDTH + GAP_X, CARD_HEIGHT + GAP_Y])
-        .separation((a, b) => (a.parent === b.parent ? 1.05 : 1.25));
+        .nodeSize([CARD_WIDTH + 60, LEVEL_HEIGHT])
+        .separation((a, b) => (a.parent === b.parent ? 1.08 : 1.25));
 
       treeRoot = layout(rootHierarchy);
       computedNodes = treeRoot.descendants();
     }
+
+    // STRICT GENERATIONAL PLACEMENT:
+    // Ensure every single generation occupies its own level/tier without drift or cross-level pollution
+    const hasVirtualRoot = rootMembers.length > 1;
+    computedNodes.forEach(node => {
+      const isVirtual = node.data.id === 'patriarch-virtual-root';
+      const explicitGen = node.data.member.generation;
+      const gen = isVirtual
+        ? 0
+        : (explicitGen && explicitGen >= 1 ? explicitGen : node.depth + (hasVirtualRoot ? 0 : 1));
+
+      if (layoutMode === 'horizontal') {
+        node.y = isVirtual ? -LEVEL_WIDTH : (gen - 1) * LEVEL_WIDTH;
+      } else {
+        node.y = isVirtual ? -LEVEL_HEIGHT : (gen - 1) * LEVEL_HEIGHT;
+      }
+    });
 
     // Compute bounding box
     let minX = Infinity;
@@ -386,7 +410,19 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
     const width = Math.max(maxX - minX + CARD_WIDTH * 2, 800);
     const height = Math.max(maxY - minY + CARD_HEIGHT * 2, 600);
 
-    // Links computed from treeRoot with defined x and y coordinates
+    // Collect distinct generation numbers for background guide ribbons
+    const genSet = new Set<number>();
+    computedNodes.forEach(n => {
+      const isVirtual = n.data.id === 'patriarch-virtual-root';
+      if (!isVirtual) {
+        const explicitGen = n.data.member.generation;
+        const g = explicitGen && explicitGen >= 1 ? explicitGen : n.depth + (hasVirtualRoot ? 0 : 1);
+        genSet.add(g);
+      }
+    });
+    const sortedGens = Array.from(genSet).sort((a, b) => a - b);
+
+    // Links computed with clean card-edge connections (never slicing through card bodies)
     const computedLinks = treeRoot.links().map(l => {
       let sourceX = 0;
       let sourceY = 0;
@@ -394,15 +430,22 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
       let targetY = 0;
 
       if (layoutMode === 'horizontal') {
-        sourceX = -l.source.y;
-        sourceY = l.source.x;
-        targetX = -l.target.y;
-        targetY = l.target.x;
+        // Exit from parent LEFT edge, enter child RIGHT edge
+        const sourceCenterPosX = -l.source.y;
+        const sourceCenterPosY = l.source.x;
+        const targetCenterPosX = -l.target.y;
+        const targetCenterPosY = l.target.x;
+
+        sourceX = sourceCenterPosX - CARD_WIDTH / 2;
+        sourceY = sourceCenterPosY;
+        targetX = targetCenterPosX + CARD_WIDTH / 2;
+        targetY = targetCenterPosY;
       } else {
+        // Exit from parent BOTTOM edge, enter child TOP edge
         sourceX = l.source.x;
-        sourceY = l.source.y;
+        sourceY = l.source.y + CARD_HEIGHT / 2;
         targetX = l.target.x;
-        targetY = l.target.y;
+        targetY = l.target.y - CARD_HEIGHT / 2;
       }
 
       return {
@@ -418,20 +461,21 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
     return {
       nodes: computedNodes,
       links: computedLinks,
-      bounds: { minX, maxX, minY, maxY, width, height }
+      bounds: { minX, maxX, minY, maxY, width, height },
+      distinctGenerations: sortedGens
     };
-  }, [d3TreeData, layoutMode]);
+  }, [d3TreeData, layoutMode, rootMembers.length]);
 
-  // Generate SVG path for links using smooth cubic bezier curves
+  // Generate SVG path for links using smooth, non-intersecting cubic bezier curves
   const generateLinkPath = useCallback(
     (link: { sourceX: number; sourceY: number; targetX: number; targetY: number }) => {
       if (layoutMode === 'horizontal') {
-        // Curve from right to left
+        // Horizontal curve from parent left edge to child right edge
         const { sourceX, sourceY, targetX, targetY } = link;
         const midX = (sourceX + targetX) / 2;
         return `M ${sourceX} ${sourceY} C ${midX} ${sourceY}, ${midX} ${targetY}, ${targetX} ${targetY}`;
       } else {
-        // Vertical curve from top to bottom
+        // Vertical curve from parent bottom edge to child top edge
         const { sourceX, sourceY, targetX, targetY } = link;
         const midY = (sourceY + targetY) / 2;
         return `M ${sourceX} ${sourceY} C ${sourceX} ${midY}, ${targetX} ${midY}, ${targetX} ${targetY}`;
@@ -939,6 +983,91 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
                 </linearGradient>
               </defs>
 
+              {/* Generational Guide Ribbons (Background planar separation) */}
+              {layoutMode === 'vertical' && distinctGenerations.map(gen => {
+                const tierY = (gen - 1) * LEVEL_HEIGHT;
+                const leftX = bounds.minX - 350;
+                const rightX = bounds.maxX + 350;
+                return (
+                  <g key={`gen-guide-${gen}`} className="pointer-events-none opacity-50">
+                    <line
+                      x1={leftX}
+                      y1={tierY}
+                      x2={rightX}
+                      y2={tierY}
+                      stroke="#10b981"
+                      strokeWidth={1}
+                      strokeDasharray="6 6"
+                      strokeOpacity={0.2}
+                    />
+                    <rect
+                      x={rightX - 110}
+                      y={tierY - 12}
+                      width={100}
+                      height={24}
+                      rx={12}
+                      fill="#032115"
+                      stroke="#059669"
+                      strokeWidth={1}
+                      strokeOpacity={0.4}
+                    />
+                    <text
+                      x={rightX - 60}
+                      y={tierY + 4}
+                      textAnchor="middle"
+                      fill="#34d399"
+                      fontSize={11}
+                      fontWeight="bold"
+                      fontFamily="Cairo, sans-serif"
+                    >
+                      الجيل {gen}
+                    </text>
+                  </g>
+                );
+              })}
+
+              {layoutMode === 'horizontal' && distinctGenerations.map(gen => {
+                const tierX = -((gen - 1) * LEVEL_WIDTH);
+                const topY = bounds.minY - 200;
+                const bottomY = bounds.maxY + 200;
+                return (
+                  <g key={`gen-guide-h-${gen}`} className="pointer-events-none opacity-50">
+                    <line
+                      x1={tierX}
+                      y1={topY}
+                      x2={tierX}
+                      y2={bottomY}
+                      stroke="#10b981"
+                      strokeWidth={1}
+                      strokeDasharray="6 6"
+                      strokeOpacity={0.2}
+                    />
+                    <rect
+                      x={tierX - 45}
+                      y={topY - 26}
+                      width={90}
+                      height={22}
+                      rx={11}
+                      fill="#032115"
+                      stroke="#059669"
+                      strokeWidth={1}
+                      strokeOpacity={0.4}
+                    />
+                    <text
+                      x={tierX}
+                      y={topY - 11}
+                      textAnchor="middle"
+                      fill="#34d399"
+                      fontSize={11}
+                      fontWeight="bold"
+                      fontFamily="Cairo, sans-serif"
+                    >
+                      الجيل {gen}
+                    </text>
+                  </g>
+                );
+              })}
+
               {/* Draw All D3-Hierarchy Links */}
               {links.map((link, idx) => {
                 const isAncestorLink =
@@ -957,7 +1086,7 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
                       fill="none"
                       stroke={isActiveLink ? '#fbbf24' : '#059669'}
                       strokeWidth={isActiveLink ? 3.5 : 1.8}
-                      strokeOpacity={isActiveLink ? 1 : 0.4}
+                      strokeOpacity={isActiveLink ? 1 : 0.45}
                       strokeLinecap="round"
                       filter={isActiveLink ? 'url(#goldGlow)' : undefined}
                       className="transition-all duration-300"
@@ -975,11 +1104,20 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
                       />
                     )}
 
-                    {/* Junction Point */}
+                    {/* Source Anchor Dot (Exit from parent card edge) */}
+                    <circle
+                      cx={link.sourceX}
+                      cy={link.sourceY}
+                      r={isActiveLink ? 3.5 : 2.5}
+                      fill={isActiveLink ? '#fbbf24' : '#059669'}
+                      className="transition-all duration-300"
+                    />
+
+                    {/* Target Junction Dot (Entry into child card edge) */}
                     <circle
                       cx={link.targetX}
                       cy={link.targetY}
-                      r={isActiveLink ? 4.5 : 3}
+                      r={isActiveLink ? 5 : 3.5}
                       fill={isActiveLink ? '#fbbf24' : '#10b981'}
                       className="transition-all duration-300"
                     />
@@ -1011,10 +1149,6 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
                 posX = node.x;
                 posY = node.y;
               }
-
-              // Dimensions
-              const CARD_WIDTH = 270;
-              const CARD_HEIGHT = 110;
 
               return (
                 <div
@@ -1049,7 +1183,13 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
                   {/* Main Glass Card */}
                   <div
                     className={`rounded-2xl p-3 text-right relative transition-all duration-300 border ${
-                      isMale ? 'glass-card' : 'glass-card-female'
+                      isMale
+                        ? member.is_living
+                          ? 'glass-card border-emerald-500/30'
+                          : 'bg-slate-900/85 border-amber-600/35 shadow-none'
+                        : member.is_living
+                        ? 'glass-card-female border-rose-400/40'
+                        : 'bg-slate-900/85 border-pink-900/50 shadow-none'
                     } ${
                       isTarget
                         ? 'ring-2 ring-emerald-400 shadow-[0_0_30px_rgba(16,185,129,0.5)] border-emerald-400'
@@ -1101,13 +1241,19 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-1 mb-0.5">
                           <span
-                            className={`text-[9px] font-medium px-1.5 py-0.2 rounded-full ${
+                            className={`text-[9px] font-medium px-2 py-0.2 rounded-full ${
                               member.is_living
-                                ? 'bg-emerald-950/90 text-emerald-300 border border-emerald-500/30'
-                                : 'bg-slate-800/80 text-slate-400'
+                                ? isMale
+                                  ? 'bg-emerald-950/90 text-emerald-300 border border-emerald-500/30'
+                                  : 'bg-rose-950/90 text-rose-300 border border-rose-500/30'
+                                : isMale
+                                ? 'bg-amber-950/70 text-amber-300 border border-amber-600/40'
+                                : 'bg-pink-950/70 text-pink-300/80 border border-pink-800/40'
                             }`}
                           >
-                            {member.is_living ? 'حي' : 'متوفى'}
+                            {member.is_living
+                              ? isMale ? '● حي يُرزق' : '● حفظها الله'
+                              : isMale ? 'رحمه الله' : 'رحمها الله'}
                           </span>
                           <span className="text-[10px] text-slate-400 font-mono">
                             {member.birth_date || 'غير مدون'}
@@ -1274,23 +1420,23 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399]" />
-              <span className="text-emerald-300 font-medium">سلسلة النسب المتصلة</span>
+              <span className="text-emerald-300 font-medium">رجال (أحياء)</span>
             </span>
             <span className="flex items-center gap-1.5 hidden sm:flex">
-              <span className="w-2.5 h-2.5 rounded-full bg-amber-400 shadow-[0_0_6px_#fbbf24]" />
-              <span className="text-amber-300">سلسلة الأجداد الصاعدة</span>
+              <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-[0_0_6px_#f59e0b]" />
+              <span className="text-amber-300">رجال (رحمه الله)</span>
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-rose-400 shadow-[0_0_6px_#fb7185]" />
+              <span className="text-rose-300 font-medium">نساء (أحياء)</span>
             </span>
             <span className="flex items-center gap-1.5 hidden sm:flex">
-              <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 shadow-[0_0_6px_#22d3ee]" />
-              <span className="text-cyan-300">سلسلة الذرية النازلة</span>
+              <span className="w-2.5 h-2.5 rounded-full bg-pink-600 shadow-[0_0_6px_#db2777]" />
+              <span className="text-pink-300">نساء (رحمها الله)</span>
             </span>
-            <span className="flex items-center gap-1.5 hidden lg:flex border-r border-white/10 pr-3">
-              <Award className="w-3 h-3 text-emerald-300" />
-              <span className="text-emerald-300 font-medium">البوحسون</span>
-            </span>
-            <span className="flex items-center gap-1.5 hidden lg:flex">
-              <Gem className="w-3 h-3 text-indigo-300" />
-              <span className="text-indigo-300 font-medium">النصف</span>
+            <span className="flex items-center gap-1.5 hidden md:flex border-r border-white/10 pr-3">
+              <span className="w-2.5 h-2.5 rounded-full bg-yellow-400 shadow-[0_0_6px_#facc15]" />
+              <span className="text-yellow-300 font-medium">سلسلة النسب المتصلة</span>
             </span>
             <span className="flex items-center gap-1.5 hidden lg:flex">
               <Flame className="w-3 h-3 text-orange-400" />

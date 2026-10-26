@@ -36,8 +36,14 @@ export const MemberNode: React.FC<MemberNodeProps> = ({
       {/* Node Card */}
       <div
         onClick={() => onSelect(member)}
-        className={`w-[260px] sm:w-[272px] md:w-72 rounded-2xl p-3 sm:p-3.5 cursor-pointer text-right transition-all duration-300 relative ${
-          isMale ? 'glass-card' : 'glass-card-female'
+        className={`w-[260px] sm:w-[272px] md:w-72 rounded-2xl p-3 sm:p-3.5 cursor-pointer text-right transition-all duration-300 relative border ${
+          isMale
+            ? member.is_living
+              ? 'glass-card border-emerald-500/30'
+              : 'bg-slate-900/85 border-amber-600/35'
+            : member.is_living
+            ? 'glass-card-female border-rose-400/40'
+            : 'bg-slate-900/85 border-pink-900/50'
         } ${
           isHighlighted
             ? 'ring-2 ring-emerald-400 shadow-[0_0_25px_rgba(16,185,129,0.4)] scale-105'
@@ -91,11 +97,17 @@ export const MemberNode: React.FC<MemberNodeProps> = ({
               <span
                 className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${
                   member.is_living
-                    ? 'bg-emerald-950/80 text-emerald-300 border border-emerald-500/30'
-                    : 'bg-slate-800/80 text-slate-400 border border-slate-700/50'
+                    ? isMale
+                      ? 'bg-emerald-950/80 text-emerald-300 border border-emerald-500/30'
+                      : 'bg-rose-950/80 text-rose-300 border border-rose-500/30'
+                    : isMale
+                    ? 'bg-amber-950/60 text-amber-300/90 border border-amber-700/40'
+                    : 'bg-pink-950/60 text-pink-300/80 border border-pink-800/40'
                 }`}
               >
-                {member.is_living ? 'حي يرزق' : 'رحمه الله'}
+                {member.is_living
+                  ? isMale ? 'حي يُرزق' : 'حفظها الله'
+                  : isMale ? 'رحمه الله' : 'رحمها الله'}
               </span>
               <span className="text-[11px] text-slate-400 font-mono">
                 {member.birth_date} {member.death_date ? `- ${member.death_date}` : ''}

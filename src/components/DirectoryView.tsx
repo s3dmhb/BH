@@ -373,7 +373,13 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
               <div
                 key={member.id}
                 className={`rounded-2xl p-5 flex flex-col justify-between border transition-all duration-300 hover:-translate-y-1 ${
-                  isMale ? 'glass-card' : 'glass-card-female'
+                  isMale
+                    ? member.is_living
+                      ? 'glass-card border-emerald-500/30'
+                      : 'bg-slate-900/85 border-amber-600/35'
+                    : member.is_living
+                    ? 'glass-card-female border-rose-400/40'
+                    : 'bg-slate-900/85 border-pink-900/50'
                 }`}
               >
                 <div>
@@ -411,11 +417,17 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
                         <span
                           className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${
                             member.is_living
-                              ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/30'
-                              : 'bg-slate-800 text-slate-400'
+                              ? isMale
+                                ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/30'
+                                : 'bg-rose-950 text-rose-300 border border-rose-500/30'
+                              : isMale
+                              ? 'bg-amber-950/70 text-amber-300 border border-amber-600/40'
+                              : 'bg-pink-950/70 text-pink-300/80 border border-pink-800/40'
                           }`}
                         >
-                          {member.is_living ? 'حي يرزق' : 'رحمه الله'}
+                          {member.is_living
+                            ? isMale ? '● حي يُرزق' : '● حفظها الله'
+                            : isMale ? 'رحمه الله' : 'رحمها الله'}
                         </span>
                         <span className="text-[11px] text-slate-400 font-mono">
                           {member.birth_date} {member.death_date ? `- ${member.death_date}` : ''}

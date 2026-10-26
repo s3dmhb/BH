@@ -105,7 +105,11 @@ export const PrintReportView: React.FC<PrintReportViewProps> = ({ members, stats
                         <td className="p-1.5 text-gray-600 font-mono">
                           {m.birth_date} {m.death_date ? `- ${m.death_date}` : ''}
                         </td>
-                        <td className="p-1.5 text-gray-700">{m.is_living ? 'حي' : 'متوفى'}</td>
+                        <td className="p-1.5 text-gray-700">
+                          {m.is_living
+                            ? isMale ? 'حي يُرزق' : 'حفظها الله'
+                            : isMale ? 'رحمه الله' : 'رحمها الله'}
+                        </td>
                         <td className="p-1.5 text-gray-600">{m.branch || 'العام'}</td>
                         <td className="p-1.5 font-semibold text-emerald-800">{tagsStr}</td>
                         <td className="p-1.5 text-gray-700">{m.spouse_info || '-'}</td>

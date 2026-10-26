@@ -99,11 +99,17 @@ export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({
               <span
                 className={`text-xs font-semibold px-3 py-1 rounded-full ${
                   member.is_living
-                    ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/40'
-                    : 'bg-slate-800 text-slate-400 border border-slate-700'
+                    ? isMale
+                      ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/40'
+                      : 'bg-rose-950 text-rose-300 border border-rose-500/40'
+                    : isMale
+                    ? 'bg-amber-950/70 text-amber-300 border border-amber-600/40'
+                    : 'bg-pink-950/70 text-pink-300/90 border border-pink-800/40'
                 }`}
               >
-                {member.is_living ? 'على قيد الحياة (حي يرزق)' : 'متوفى (رحمه الله)'}
+                {member.is_living
+                  ? isMale ? 'على قيد الحياة (حي يُرزق)' : 'على قيد الحياة (حفظها الله)'
+                  : isMale ? 'متوفى (رحمه الله)' : 'متوفاة (رحمها الله)'}
               </span>
               <span className="text-xs px-2.5 py-0.5 rounded-full bg-slate-900 text-slate-300 border border-white/10">
                 {member.branch || 'الفرع العام'}

@@ -1,5 +1,6 @@
 import { FamilyMember } from '../types/family';
 import { matchesSubFamilyFilter, getSubFamilyTags } from './subFamilyUtils';
+import { hierarchy, tree, HierarchyPointNode } from 'd3-hierarchy';
 
 export type ExportTreeStyle = 'botanical' | 'vertical';
 export type ExportTheme = 'parchment' | 'emerald' | 'classic';
@@ -14,14 +15,16 @@ export interface TreeImageExportOptions {
   genderFilter: 'all' | 'male' | 'female';
   showDates: boolean;
   showVerses: boolean;
-  useFirstNameOnly?: boolean; // Defaults to true as requested
-  scale?: number; // Internal scaling for preview vs download
+  useFirstNameOnly?: boolean;
+  scale?: number;
 }
 
 export interface HierarchyExportNode {
+  id: string;
   member: FamilyMember;
   firstName: string;
-  children: HierarchyExportNode[];
+  generation: number;
+  children?: HierarchyExportNode[];
   x: number;
   y: number;
   width: number;
@@ -82,7 +85,7 @@ export function getFirstNameOnly(fullName: string): string {
 export function buildExportHierarchy(
   members: FamilyMember[],
   options: TreeImageExportOptions
-): { root: HierarchyExportNode | null; totalNodes: number; maxDepth: number; filterTitle?: string } {
+): { root: HierarchyExportNode | null; totalNodes: number; maxDepth: number } {
   const fullMemberMap = new Map<string, FamilyMember>();
   members.forEach(m => fullMemberMap.set(m.id, m));
 
@@ -156,18 +159,21 @@ export function buildExportHierarchy(
     count++;
     if (depth > maxGen) maxGen = depth;
 
-    const children = (childrenMap.get(m.id) || []).map(child => buildNode(child, depth + 1));
+    const rawChildren = childrenMap.get(m.id) || [];
+    const children = rawChildren.length > 0 ? rawChildren.map(child => buildNode(child, depth + 1)) : undefined;
     const subColor = getSubFamilyColor(m.sub_family);
     const firstName = getFirstNameOnly(m.full_name);
 
     return {
+      id: m.id,
       member: m,
       firstName,
+      generation: m.generation || depth,
       children,
       x: 0,
       y: 0,
-      width: 100,
-      height: 44,
+      width: 140,
+      height: 60,
       branchColor: subColor.border
     };
   }
@@ -193,12 +199,12 @@ function drawIslamicFrame(
   ctx.save();
 
   // Background
-  ctx.fillStyle = isDark ? 'rgba(4, 28, 19, 0.88)' : 'rgba(255, 252, 243, 0.94)';
+  ctx.fillStyle = isDark ? 'rgba(4, 28, 19, 0.92)' : 'rgba(255, 252, 243, 0.96)';
   ctx.strokeStyle = accentColor;
   ctx.lineWidth = 2.5;
 
   // Path with pointed top arch
-  const archH = 28;
+  const archH = 26;
   ctx.beginPath();
   ctx.moveTo(x + 16, y + archH);
   ctx.quadraticCurveTo(x + w / 2, y - 8, x + w - 16, y + archH);
@@ -236,7 +242,9 @@ function drawIslamicFrame(
 }
 
 /**
- * 1. BOTANICAL HERITAGE TREE RENDERER (من الأصل إلى الفروع بالساق والأغصان)
+ * 1. DYNAMIC BOTANICAL HERITAGE TREE RENDERER (شجرة صاعدة من الأصل إلى الفروع)
+ * Dynamically computes branch paths based on actual input nodes,
+ * with prominent visual differentiation between Men and Women, and Living vs Deceased!
  */
 export function renderBotanicalHeritageTree(
   canvas: HTMLCanvasElement,
@@ -247,9 +255,36 @@ export function renderBotanicalHeritageTree(
   if (!context) return;
   const ctx: CanvasRenderingContext2D = context;
 
+  // 1. Build dynamic tree hierarchy
+  const { root, totalNodes, maxDepth } = buildExportHierarchy(members, options);
+  if (!root) return;
+
+  // 2. Use D3 tree layout to calculate collision-free organic X coordinates
+  const CARD_W = 120;
+  const CARD_H = 50;
+  const GAP_X = 50;
+  const GAP_Y = 160;
+
+  const rootHierarchy = hierarchy<HierarchyExportNode>(root, d => d.children);
+  const treeLayout = tree<HierarchyExportNode>()
+    .nodeSize([CARD_W + GAP_X, GAP_Y])
+    .separation((a, b) => (a.parent === b.parent ? 1.15 : 1.35));
+
+  const treeRoot = treeLayout(rootHierarchy);
+  const layoutNodes = treeRoot.descendants();
+
+  // Find natural bounding box
+  let minX = Infinity;
+  let maxX = -Infinity;
+  layoutNodes.forEach(n => {
+    if (n.x < minX) minX = n.x;
+    if (n.x > maxX) maxX = n.x;
+  });
+
+  const spanX = Math.max(maxX - minX, 1000);
   const isUltra = options.resolution === 'ultra_4k';
-  const width = isUltra ? 3200 : 2000;
-  const height = isUltra ? 4400 : 2800;
+  const width = Math.max(isUltra ? 3400 : 2200, Math.round(spanX + 800));
+  const height = Math.max(isUltra ? 4400 : 2800, (maxDepth + 1) * 230 + 900);
 
   canvas.width = width;
   canvas.height = height;
@@ -260,14 +295,14 @@ export function renderBotanicalHeritageTree(
   // Palette
   const gold = '#d4af37';
   const goldLight = '#fae17d';
-  const woodDark = '#382012';
-  const woodMid = '#54341d';
-  const woodLight = '#7c4f2e';
+  const woodDark = '#321c10';
+  const woodMid = '#4e301b';
+  const woodLight = '#754b2d';
   const leafGreen = '#2e6f40';
   const leafGreenLight = '#499a5e';
   const leafDark = '#1a472a';
 
-  // 1. Draw Background
+  // 3. Draw Background
   if (isDark) {
     const bgGrad = ctx.createRadialGradient(width / 2, height / 2, 200, width / 2, height / 2, width);
     bgGrad.addColorStop(0, '#06261c');
@@ -279,7 +314,7 @@ export function renderBotanicalHeritageTree(
     ctx.fillStyle = '#fcfdfd';
     ctx.fillRect(0, 0, width, height);
   } else {
-    // Royal Parchment Background
+    // Royal Parchment
     const bgGrad = ctx.createRadialGradient(width / 2, height / 2, 300, width / 2, height / 2, width * 0.95);
     bgGrad.addColorStop(0, '#faf7f0');
     bgGrad.addColorStop(0.5, '#f4ebe0');
@@ -289,7 +324,7 @@ export function renderBotanicalHeritageTree(
     ctx.fillRect(0, 0, width, height);
   }
 
-  // 2. Poster Outer Ornamental Border
+  // 4. Outer Border
   const pad = 42;
   ctx.save();
   ctx.strokeStyle = gold;
@@ -318,14 +353,14 @@ export function renderBotanicalHeritageTree(
   });
   ctx.restore();
 
-  // 3. Header Section
-  const headerY = 100;
+  // 5. Header Section
+  const headerY = 95;
   ctx.save();
   ctx.textAlign = 'center';
 
-  // Basmala cartouche medallion
+  // Basmala cartouche
   const basmalaW = 340;
-  const basmalaH = 62;
+  const basmalaH = 60;
   const basmalaX = width / 2 - basmalaW / 2;
   const basmalaY = headerY;
 
@@ -339,9 +374,9 @@ export function renderBotanicalHeritageTree(
 
   ctx.fillStyle = gold;
   ctx.font = 'bold 28px "Traditional Arabic", "Amiri", "Scheherazade", serif';
-  ctx.fillText('بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ', width / 2, basmalaY + 42);
+  ctx.fillText('بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ', width / 2, basmalaY + 40);
 
-  // Determine dynamic title based on active filter
+  // Dynamic Main Title
   let mainTitle = 'شَجَرَةُ عَائِلَةِ آلِ بُوحَسُّونَ (آلِ بُوعَيْنَيْنِ)';
   if (options.selectedSubFamily !== 'all') {
     mainTitle = `شَجَرَةُ عَائِلَةِ آلِ بُوحَسُّونَ · ${options.selectedSubFamily}`;
@@ -349,27 +384,25 @@ export function renderBotanicalHeritageTree(
     mainTitle = `شَجَرَةُ عَائِلَةِ آلِ بُوحَسُّونَ · ${options.selectedBranch}`;
   }
 
-  // Main Title
   ctx.fillStyle = isDark ? '#f8fafc' : '#2b1b11';
   ctx.font = 'bold 54px "Traditional Arabic", "Amiri", serif';
-  ctx.fillText(mainTitle, width / 2, basmalaY + 135);
+  ctx.fillText(mainTitle, width / 2, basmalaY + 130);
 
-  // Subtitle Lineage
+  // Subtitle
   ctx.fillStyle = gold;
   ctx.font = 'bold 34px "Traditional Arabic", "Amiri", serif';
-  ctx.fillText('فَخِذُ النَّوَاصِرِ · آلِ جَابِرٍ الكِرَامِ', width / 2, basmalaY + 185);
+  ctx.fillText('فَخِذُ النَّوَاصِرِ · آلِ جَابِرٍ الكِرَامِ', width / 2, basmalaY + 180);
 
   ctx.fillStyle = isDark ? '#94a3b8' : '#654321';
   ctx.font = '22px "Traditional Arabic", "Amiri", "Tahoma", sans-serif';
-  ctx.fillText('ذُرِّيَّةُ الجَدِّ المُؤَسِّسِ / حَسَنِ بْنِ مُحَمَّدِ بْنِ جَابِرٍ آلِ بُوعَيْنَيْنِ رَحِمَهُ اللَّهُ', width / 2, basmalaY + 225);
+  ctx.fillText('ذُرِّيَّةُ الجَدِّ المُؤَسِّسِ / حَسَنِ بْنِ مُحَمَّدِ بْنِ جَابِرٍ آلِ بُوعَيْنَيْنِ رَحِمَهُ اللَّهُ', width / 2, basmalaY + 220);
   ctx.restore();
 
-  // 4. Side Mihrab Cartouches (Quran & Hadith)
+  // 6. Side Mihrab Cartouches
   if (options.showVerses) {
     const sideW = 380;
     const sideH = 260;
 
-    // Right Cartouche: Quranic Ayah
     drawIslamicFrame(
       ctx,
       width - pad - sideW - 40,
@@ -388,7 +421,6 @@ export function renderBotanicalHeritageTree(
       isDark
     );
 
-    // Left Cartouche: Prophetic Hadith
     drawIslamicFrame(
       ctx,
       pad + 40,
@@ -409,19 +441,21 @@ export function renderBotanicalHeritageTree(
     );
   }
 
-  // 5. Build Tree Hierarchy Data
-  const { root, totalNodes, maxDepth } = buildExportHierarchy(members, options);
-  if (!root) return;
+  // 7. Calculate Node Coordinates (Ascending: Base is root, ascending to canopy)
+  const treeBaseY = height - 500; // Ground level
+  const treeTopY = headerY + 360;  // Top canopy level
+  const levelStepY = (treeBaseY - 140 - treeTopY) / Math.max(maxDepth, 1);
+  const centerX = width / 2;
+  const xOffset = centerX - (minX + maxX) / 2;
 
-  // 6. Tree Layout Geometry (من الأصل إلى الفروع)
-  const treeBaseY = height - 520; // Base of the trunk on ground
-  const treeTrunkForkY = height - 1400; // Primary fork where limbs radiate
-  const treeTopCanopyY = 500; // Apex of the tree canopy
-  const treeCenterX = width / 2;
-  const canopyRadiusX = width * 0.43;
-  const canopyRadiusY = (treeTrunkForkY - treeTopCanopyY) * 1.15;
+  layoutNodes.forEach(n => {
+    n.data.x = n.x + xOffset;
+    // Invert: Generation 1 at bottom, deeper generations rise higher
+    const gen = n.data.generation || (n.depth + 1);
+    n.data.y = treeBaseY - 100 - (gen - 1) * levelStepY;
+  });
 
-  // 7. Ground Base & Roots (الجذور والتربة)
+  // 8. Ground & Roots
   ctx.save();
   const groundGrad = ctx.createLinearGradient(0, treeBaseY - 40, 0, height - 340);
   groundGrad.addColorStop(0, '#3a7d44');
@@ -430,7 +464,7 @@ export function renderBotanicalHeritageTree(
   ctx.fillStyle = groundGrad;
 
   ctx.beginPath();
-  ctx.ellipse(treeCenterX, treeBaseY + 60, 520, 100, 0, 0, Math.PI * 2);
+  ctx.ellipse(centerX, treeBaseY + 60, Math.min(width * 0.45, 600), 100, 0, 0, Math.PI * 2);
   ctx.fill();
 
   // Root lines
@@ -438,18 +472,20 @@ export function renderBotanicalHeritageTree(
   ctx.lineWidth = 14;
   ctx.lineCap = 'round';
   for (let angle = -0.75; angle <= 0.75; angle += 0.25) {
-    const rx = treeCenterX + Math.sin(angle) * 160;
+    const rx = centerX + Math.sin(angle) * 180;
     const ry = treeBaseY + 115 + Math.cos(angle) * 35;
     ctx.beginPath();
-    ctx.moveTo(treeCenterX, treeBaseY);
-    ctx.quadraticCurveTo(treeCenterX + Math.sin(angle) * 80, treeBaseY + 50, rx, ry);
+    ctx.moveTo(centerX, treeBaseY);
+    ctx.quadraticCurveTo(centerX + Math.sin(angle) * 90, treeBaseY + 50, rx, ry);
     ctx.stroke();
   }
   ctx.restore();
 
-  // 8. Draw Grand Wooden Tree Trunk (الساق الخشبي العريض)
+  // 9. Draw Ascending Wooden Trunk & Organic Branches
+  // Main Trunk connecting ground to root patriarch
   ctx.save();
-  const trunkGrad = ctx.createLinearGradient(treeCenterX - 110, 0, treeCenterX + 110, 0);
+  const rootNode = layoutNodes[0];
+  const trunkGrad = ctx.createLinearGradient(centerX - 100, 0, centerX + 100, 0);
   trunkGrad.addColorStop(0, '#23140a');
   trunkGrad.addColorStop(0.3, woodDark);
   trunkGrad.addColorStop(0.5, woodMid);
@@ -458,102 +494,46 @@ export function renderBotanicalHeritageTree(
 
   ctx.fillStyle = trunkGrad;
   ctx.beginPath();
-  ctx.moveTo(treeCenterX - 120, treeBaseY);
-  ctx.quadraticCurveTo(treeCenterX - 90, (treeBaseY + treeTrunkForkY) / 2, treeCenterX - 85, treeTrunkForkY);
-  ctx.lineTo(treeCenterX + 85, treeTrunkForkY);
-  ctx.quadraticCurveTo(treeCenterX + 90, (treeBaseY + treeTrunkForkY) / 2, treeCenterX + 120, treeBaseY);
+  ctx.moveTo(centerX - 110, treeBaseY);
+  ctx.quadraticCurveTo(centerX - 80, (treeBaseY + rootNode.data.y) / 2, centerX - 70, rootNode.data.y + 40);
+  ctx.lineTo(centerX + 70, rootNode.data.y + 40);
+  ctx.quadraticCurveTo(centerX + 80, (treeBaseY + rootNode.data.y) / 2, centerX + 110, treeBaseY);
   ctx.closePath();
   ctx.fill();
 
   // Bark Texture Lines
   ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
   ctx.lineWidth = 3;
-  for (let i = -60; i <= 60; i += 25) {
+  for (let i = -50; i <= 50; i += 25) {
     ctx.beginPath();
-    ctx.moveTo(treeCenterX + i, treeBaseY - 10);
-    ctx.quadraticCurveTo(treeCenterX + i * 0.8, (treeBaseY + treeTrunkForkY) / 2, treeCenterX + i * 0.9, treeTrunkForkY + 10);
+    ctx.moveTo(centerX + i, treeBaseY - 10);
+    ctx.quadraticCurveTo(centerX + i * 0.8, (treeBaseY + rootNode.data.y) / 2, centerX + i * 0.85, rootNode.data.y + 45);
     ctx.stroke();
   }
   ctx.restore();
 
-  // 9. Position Nodes across the Canopy
-  // Patriarch is placed at base of trunk in the golden sunburst medallion
-  root.x = treeCenterX;
-  root.y = treeBaseY - 260;
+  // Draw Dynamic Branches (From Parent up to Children)
+  ctx.save();
+  treeRoot.links().forEach(link => {
+    const pNode = link.source.data;
+    const cNode = link.target.data;
+    const depth = link.target.depth;
+    const branchThickness = Math.max(4, 38 - depth * 6);
 
-  // Distribute children by generation and branch angles
-  const nodesByDepth: HierarchyExportNode[][] = [];
-  function collectDepth(node: HierarchyExportNode, d: number) {
-    if (!nodesByDepth[d]) nodesByDepth[d] = [];
-    nodesByDepth[d].push(node);
-    node.children.forEach(c => collectDepth(c, d + 1));
-  }
-  collectDepth(root, 0);
-
-  // Position generation 1 (immediate sons of patriarch) along primary limbs
-  const gen1 = nodesByDepth[1] || [];
-  const gen1Count = Math.max(gen1.length, 1);
-
-  gen1.forEach((son, i) => {
-    const factor = gen1Count === 1 ? 0 : (i / (gen1Count - 1)) * 2 - 1; // from -1 to 1
-    const angle = factor * 1.25; // radians
-    const dist = 430;
-    son.x = treeCenterX + Math.sin(angle) * dist * 1.35;
-    son.y = treeTrunkForkY - Math.cos(angle) * (dist * 0.58) + 90;
-  });
-
-  // Position subsequent generations recursively outwards
-  function positionSubtree(parent: HierarchyExportNode, d: number, minAngle: number, maxAngle: number) {
-    if (!parent.children || parent.children.length === 0) return;
-
-    const count = parent.children.length;
-    const angleStep = (maxAngle - minAngle) / (count + 1);
-
-    parent.children.forEach((child, idx) => {
-      const childAngle = minAngle + angleStep * (idx + 1);
-      const branchLen = Math.max(150, 310 - d * 35);
-      
-      child.x = parent.x + Math.sin(childAngle) * branchLen;
-      child.y = parent.y - Math.cos(childAngle) * (branchLen * 0.78);
-
-      // Clamp within canopy boundary
-      const dx = child.x - treeCenterX;
-      const dy = child.y - (treeTopCanopyY + canopyRadiusY * 0.5);
-      const distNorm = Math.sqrt((dx * dx) / (canopyRadiusX * canopyRadiusX) + (dy * dy) / (canopyRadiusY * canopyRadiusY));
-      if (distNorm > 0.95) {
-        child.x = treeCenterX + (dx / distNorm) * 0.95;
-        child.y = (treeTopCanopyY + canopyRadiusY * 0.5) + (dy / distNorm) * 0.95;
-      }
-
-      // Fan out for grandchildren
-      const spread = (maxAngle - minAngle) * 0.55;
-      positionSubtree(child, d + 1, childAngle - spread, childAngle + spread);
-    });
-  }
-
-  gen1.forEach((son, i) => {
-    const factor = gen1Count === 1 ? 0 : (i / (gen1Count - 1)) * 2 - 1;
-    const centerAngle = factor * 1.25;
-    const spread = 0.85;
-    positionSubtree(son, 2, centerAngle - spread, centerAngle + spread);
-  });
-
-  // 10. Draw Botanical Branches & Leaves (الأغصان والأوراق)
-  function drawBranchAndLeaves(parent: HierarchyExportNode, child: HierarchyExportNode, d: number) {
-    ctx.save();
-    const branchThickness = Math.max(4, 36 - d * 6);
-
-    // Wooden branch
+    // Smooth organic branch
     ctx.strokeStyle = woodMid;
     ctx.lineWidth = branchThickness;
     ctx.lineCap = 'round';
 
-    const midX = (parent.x + child.x) / 2 + (d % 2 === 0 ? 18 : -18);
-    const midY = (parent.y + child.y) / 2 - 25;
+    const startX = pNode.x;
+    const startY = pNode.y - 25; // Top of parent card
+    const endX = cNode.x;
+    const endY = cNode.y + 25;   // Bottom of child card
+    const midY = (startY + endY) / 2;
 
     ctx.beginPath();
-    ctx.moveTo(parent.x, parent.y);
-    ctx.quadraticCurveTo(midX, midY, child.x, child.y);
+    ctx.moveTo(startX, startY);
+    ctx.bezierCurveTo(startX, midY, endX, midY, endX, endY);
     ctx.stroke();
 
     // Wood highlight
@@ -561,97 +541,72 @@ export function renderBotanicalHeritageTree(
     ctx.lineWidth = Math.max(1.5, branchThickness * 0.25);
     ctx.stroke();
 
-    // Leaves along the branch
-    const numLeaves = Math.max(2, 6 - d);
+    // Natural leaves along the branch
+    const numLeaves = Math.max(2, 5 - depth);
     for (let l = 1; l <= numLeaves; l++) {
       const t = l / (numLeaves + 1);
-      const lx = (1 - t) * (1 - t) * parent.x + 2 * (1 - t) * t * midX + t * t * child.x;
-      const ly = (1 - t) * (1 - t) * parent.y + 2 * (1 - t) * t * midY + t * t * child.y;
+      const lx = (1 - t) * (1 - t) * startX + 2 * (1 - t) * t * ((startX + endX) / 2) + t * t * endX;
+      const ly = (1 - t) * (1 - t) * startY + 2 * (1 - t) * t * midY + t * t * endY;
 
       const leafSide = (l % 2 === 0 ? 1 : -1);
-      const leafAngle = Math.atan2(child.y - parent.y, child.x - parent.x) + (leafSide * Math.PI) / 3;
+      const leafAngle = Math.atan2(endY - startY, endX - startX) + (leafSide * Math.PI) / 3;
 
       ctx.save();
       ctx.translate(lx, ly);
       ctx.rotate(leafAngle);
 
-      // Leaf body
       ctx.fillStyle = l % 3 === 0 ? leafGreenLight : leafGreen;
       ctx.beginPath();
-      ctx.ellipse(14, 0, 16, 7, 0, 0, Math.PI * 2);
+      ctx.ellipse(14, 0, 15, 6.5, 0, 0, Math.PI * 2);
       ctx.fill();
 
-      // Center leaf vein
       ctx.strokeStyle = leafDark;
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.moveTo(0, 0);
-      ctx.lineTo(26, 0);
+      ctx.lineTo(24, 0);
       ctx.stroke();
 
       ctx.restore();
     }
-    ctx.restore();
-
-    child.children.forEach(c => drawBranchAndLeaves(child, c, d + 1));
-  }
-
-  // Draw main trunk limbs connecting to Gen 1
-  gen1.forEach(son => {
-    ctx.save();
-    ctx.strokeStyle = woodDark;
-    ctx.lineWidth = 55;
-    ctx.lineCap = 'round';
-    ctx.beginPath();
-    ctx.moveTo(treeCenterX, treeTrunkForkY);
-    ctx.quadraticCurveTo(treeCenterX + (son.x - treeCenterX) * 0.35, treeTrunkForkY - 60, son.x, son.y);
-    ctx.stroke();
-
-    ctx.strokeStyle = woodLight;
-    ctx.lineWidth = 14;
-    ctx.stroke();
-    ctx.restore();
-
-    son.children.forEach(grandchild => drawBranchAndLeaves(son, grandchild, 2));
   });
+  ctx.restore();
 
-  // 11. Draw Member Medallions with FIRST NAME ONLY
-  function drawMemberMedallion(node: HierarchyExportNode, isPatriarch: boolean) {
+  // 10. Draw Distinct Member Cards (Men vs Women, Living vs Deceased)
+  layoutNodes.forEach(n => {
+    const d = n.data;
+    const isPatriarch = d.member.father_id === null;
+    const isMale = d.member.gender === 'male';
+    const isLiving = d.member.is_living;
+    const subColor = getSubFamilyColor(d.member.sub_family);
+
     ctx.save();
-    const isMale = node.member.gender === 'male';
-    const subColor = getSubFamilyColor(node.member.sub_family);
-
     if (isPatriarch) {
-      // 🌟 Grand Golden Sunburst Rosette Medallion for Patriarch
-      const r = 88;
-      const cx = node.x;
-      const cy = node.y;
+      // 🌟 Patriarch Sunburst Medallion
+      const r = 85;
+      const cx = d.x;
+      const cy = d.y;
 
-      // Sunburst radiant rays
-      ctx.save();
+      // Radiant rays
       ctx.strokeStyle = gold;
       ctx.lineWidth = 3;
       for (let a = 0; a < Math.PI * 2; a += Math.PI / 16) {
         ctx.beginPath();
         ctx.moveTo(cx + Math.cos(a) * (r + 4), cy + Math.sin(a) * (r + 4));
-        ctx.lineTo(cx + Math.cos(a) * (r + 24), cy + Math.sin(a) * (r + 24));
+        ctx.lineTo(cx + Math.cos(a) * (r + 22), cy + Math.sin(a) * (r + 22));
         ctx.stroke();
       }
-      ctx.restore();
 
-      // Outer gold circle
       ctx.fillStyle = gold;
       ctx.beginPath();
       ctx.arc(cx, cy, r + 4, 0, Math.PI * 2);
       ctx.fill();
 
-      // Middle emerald circle
       ctx.fillStyle = '#064e3b';
       ctx.beginPath();
       ctx.arc(cx, cy, r - 4, 0, Math.PI * 2);
       ctx.fill();
 
-      // Inner medallion
       const innerGrad = ctx.createRadialGradient(cx, cy, 10, cx, cy, r - 12);
       innerGrad.addColorStop(0, '#fffbeb');
       innerGrad.addColorStop(0.7, '#fef3c7');
@@ -661,121 +616,159 @@ export function renderBotanicalHeritageTree(
       ctx.arc(cx, cy, r - 12, 0, Math.PI * 2);
       ctx.fill();
 
-      // Gold border inside
       ctx.strokeStyle = gold;
       ctx.lineWidth = 4;
       ctx.stroke();
 
-      // Patriarch Title & First Name
       ctx.textAlign = 'center';
       ctx.fillStyle = '#78350f';
       ctx.font = 'bold 15px "Traditional Arabic", "Amiri", sans-serif';
-      ctx.fillText('الْجَدُّ الْمُؤَسِّسُ', cx, cy - 32);
+      ctx.fillText('الْجَدُّ الْمُؤَسِّسُ', cx, cy - 30);
 
-      // Prominent First Name "حسن"
       ctx.fillStyle = '#1e1b4b';
-      ctx.font = 'bold 32px "Traditional Arabic", "Amiri", serif';
-      ctx.fillText(node.firstName || 'حَسَن', cx, cy - 2);
+      ctx.font = 'bold 34px "Traditional Arabic", "Amiri", serif';
+      ctx.fillText(d.firstName || 'حَسَن', cx, cy);
 
       ctx.fillStyle = '#047857';
       ctx.font = 'bold 15px "Traditional Arabic", "Amiri", sans-serif';
-      ctx.fillText('آل بوعينين (البوحسون)', cx, cy + 26);
+      ctx.fillText('آل بوعينين (البوحسون)', cx, cy + 28);
 
-      if (options.showDates && node.member.birth_date) {
+      if (options.showDates && d.member.birth_date) {
         ctx.fillStyle = '#475569';
-        ctx.font = '13px "Tahoma", sans-serif';
-        ctx.fillText(`(${node.member.birth_date} - ${node.member.death_date || 'ت'})`, cx, cy + 46);
+        ctx.font = '12px "Tahoma", sans-serif';
+        ctx.fillText(`(${d.member.birth_date} - ${d.member.death_date || 'ت'})`, cx, cy + 48);
       }
     } else {
-      // 🌿 Member Medallion / Rectangle perfectly fitted for the FIRST NAME
-      const mw = 105;
-      const mh = 44;
-      const cx = node.x;
-      const cy = node.y;
+      // 🌿 Distinct Member Card:
+      // Men: Emerald & Gold / White
+      // Women: Elegant Rose-Gold / Coral Blossom (#f43f5e, #fb7185, #fff1f2)
+      // Living vs Deceased: Clear status badge & border tint
+      const mw = 120;
+      const mh = 50;
+      const cx = d.x;
+      const cy = d.y;
+      const x = cx - mw / 2;
+      const y = cy - mh / 2;
 
-      // Drop shadow
+      // Shadow
       ctx.shadowColor = 'rgba(0, 0, 0, 0.22)';
       ctx.shadowBlur = 6;
       ctx.shadowOffsetY = 3;
 
-      // Outer gold rim
-      ctx.fillStyle = gold;
+      // Outer gender border color
+      const borderColor = isMale 
+        ? (isLiving ? '#10b981' : '#b45309') 
+        : (isLiving ? '#f43f5e' : '#be185d');
+
+      // Card Fill Gradient
+      const fillGrad = ctx.createLinearGradient(cx, y, cx, y + mh);
+      if (isDark) {
+        if (isMale) {
+          fillGrad.addColorStop(0, isLiving ? '#0d3326' : '#1c2826');
+          fillGrad.addColorStop(1, '#051912');
+        } else {
+          fillGrad.addColorStop(0, isLiving ? '#3b121e' : '#28171f');
+          fillGrad.addColorStop(1, '#18070d');
+        }
+      } else {
+        if (isMale) {
+          // Men: Crisp white or warm sepia for deceased
+          if (isLiving) {
+            fillGrad.addColorStop(0, '#ffffff');
+            fillGrad.addColorStop(1, '#f0fdf4');
+          } else {
+            fillGrad.addColorStop(0, '#fefaf2');
+            fillGrad.addColorStop(1, '#f4ece1');
+          }
+        } else {
+          // Women: Soft rose-blossom tint
+          if (isLiving) {
+            fillGrad.addColorStop(0, '#ffffff');
+            fillGrad.addColorStop(1, '#fff1f2');
+          } else {
+            fillGrad.addColorStop(0, '#fdf4f5');
+            fillGrad.addColorStop(1, '#fae8eb');
+          }
+        }
+      }
+
+      ctx.fillStyle = fillGrad;
       ctx.beginPath();
-      ctx.roundRect(cx - mw / 2 - 2, cy - mh / 2 - 2, mw + 4, mh + 4, 18);
+      ctx.roundRect(x, y, mw, mh, 14);
       ctx.fill();
 
       ctx.shadowColor = 'transparent';
 
-      // Inner background
-      const fillGrad = ctx.createLinearGradient(cx, cy - mh / 2, cx, cy + mh / 2);
-      if (isDark) {
-        fillGrad.addColorStop(0, '#0f291e');
-        fillGrad.addColorStop(1, '#061a12');
+      // Border with gender & deceased accent
+      ctx.strokeStyle = borderColor;
+      ctx.lineWidth = isLiving ? 2.5 : 2;
+      if (!isLiving) {
+        ctx.setLineDash([6, 3]); // Subtle dashed accent for deceased
       } else {
-        fillGrad.addColorStop(0, '#ffffff');
-        fillGrad.addColorStop(0.6, '#fef9ee');
-        fillGrad.addColorStop(1, '#faecd4');
+        ctx.setLineDash([]);
       }
-      ctx.fillStyle = fillGrad;
-      ctx.beginPath();
-      ctx.roundRect(cx - mw / 2, cy - mh / 2, mw, mh, 16);
-      ctx.fill();
-
-      // Sub-family inner rim accent
-      ctx.strokeStyle = subColor.border;
-      ctx.lineWidth = 2;
       ctx.stroke();
+      ctx.setLineDash([]);
 
-      // Sub-family indicator dot / living status
-      ctx.fillStyle = node.member.is_living ? '#22c55e' : subColor.fill;
+      // Top color ribbon indicating Sub-Family
+      ctx.fillStyle = subColor.fill;
       ctx.beginPath();
-      ctx.arc(cx - mw / 2 + 10, cy, 3.5, 0, Math.PI * 2);
+      ctx.roundRect(x, y, mw, 5, [14, 14, 0, 0]);
       ctx.fill();
 
-      // FIRST NAME ONLY (Fitted cleanly in rectangle)
-      ctx.textAlign = 'center';
-      ctx.fillStyle = isDark ? '#f8fafc' : '#1c1917';
-      ctx.font = 'bold 18px "Traditional Arabic", "Amiri", "Cairo", serif';
-      ctx.fillText(node.firstName, cx + 4, cy + (options.showDates && node.member.birth_date ? -4 : 5));
+      // Gender + Living / Deceased indicator pill
+      const statusText = isLiving 
+        ? (isMale ? 'حي' : 'حية') 
+        : (isMale ? 'رحمه الله' : 'رحمها الله');
+      
+      const statusColor = isLiving 
+        ? '#16a34a' 
+        : (isMale ? '#b45309' : '#be185d');
 
-      if (options.showDates && node.member.birth_date) {
-        ctx.fillStyle = isDark ? '#94a3b8' : '#78716c';
-        ctx.font = '10px "Tahoma", sans-serif';
-        ctx.fillText(node.member.birth_date, cx + 4, cy + 12);
-      }
+      ctx.textAlign = 'center';
+
+      // FIRST NAME (Centered & prominent)
+      ctx.fillStyle = isDark ? '#f8fafc' : (isMale ? '#0f172a' : '#881337');
+      ctx.font = 'bold 18px "Traditional Arabic", "Amiri", "Cairo", serif';
+      ctx.fillText(d.firstName, cx, y + 26);
+
+      // Status Prayer / Living Pill
+      ctx.font = 'bold 10px "Traditional Arabic", "Amiri", sans-serif';
+      ctx.fillStyle = statusColor;
+      ctx.fillText(statusText, cx, y + 40);
+
+      // Gender marker tag (left side badge)
+      ctx.fillStyle = isMale ? '#059669' : '#e11d48';
+      ctx.beginPath();
+      ctx.arc(x + 10, cy, 3.5, 0, Math.PI * 2);
+      ctx.fill();
     }
     ctx.restore();
+  });
 
-    node.children.forEach(c => drawMemberMedallion(c, false));
-  }
-
-  drawMemberMedallion(root, true);
-
-  // 12. Lower Ancestral Inscriptions inside the Main Trunk
+  // 11. Ancestral trunk inscriptions
   ctx.save();
   ctx.textAlign = 'center';
   ctx.fillStyle = goldLight;
   ctx.font = 'bold 22px "Traditional Arabic", "Amiri", serif';
-
   const trunkAncestors = ['عَبْدُاللَّهِ', 'مُبَارَكٌ', 'جَابِرٌ', 'آلُ بُوعَيْنَيْنِ'];
   let ancY = treeBaseY - 140;
   trunkAncestors.forEach(anc => {
-    ctx.fillText(anc, treeCenterX, ancY);
+    ctx.fillText(anc, centerX, ancY);
     ancY += 40;
   });
   ctx.restore();
 
-  // 13. Bottom Historical & Documentation Panels
+  // 12. Bottom Historical Panels with Full Legend (Men/Women & Living/Deceased)
   const footerY = height - 310;
   const panelW = (width - pad * 2 - 120) / 2;
   const panelH = 220;
 
-  // Active filter description in right panel
   const filterSummary = options.selectedSubFamily !== 'all' 
     ? `تفرع العائلة المختار: [${options.selectedSubFamily}] المتصل بسند الجد المؤسس.`
     : 'تتفرع العائلة إلى عدة أسر مباركة منها: البوحسون، النصف، الدرويش، والأزرق.';
 
-  // Right Panel: Family Lineage & Heritage Summary
+  // Right Panel: Lineage
   drawIslamicFrame(
     ctx,
     width - pad - panelW - 40,
@@ -786,34 +779,34 @@ export function renderBotanicalHeritageTree(
     [
       'يعود نسب العائلة الكريمة إلى فخذ النواصر من آل جابر من قبيلة آل بوعينين،',
       'ذرية الجد المؤسس حسن بن محمد بن جابر آل بوعينين رحمه الله.',
-      'سكنت العائلة حواضر وثغور الخليج العربي التاريخية واشتهر رجالاتها',
-      'بالأمانة، وتجارة اللؤلؤ والملاحة البحرية، والشجاعة، والتمسك بالقيم الإسلامية.',
+      'سكنت العائلة حواضر وثغور الخليج العربي واشتهر رجالاتها بالأمانة،',
+      'وتجارة اللؤلؤ والملاحة البحرية، والشجاعة، والتمسك بالقيم الإسلامية.',
       filterSummary
     ],
     gold,
     isDark
   );
 
-  // Left Panel: Documentation, Statistics & Authentication
+  // Left Panel: Documentation & Legend
   drawIslamicFrame(
     ctx,
     pad + 40,
     footerY,
     panelW,
     panelH,
-    'التَّوْثِيقُ الإِحْصَائِيُّ وَالتَّحْقِيقُ',
+    'مِفْتَاحُ الرُّمُوزِ وَالتَّوْثِيقِ الإِحْصَائِيِّ',
     [
-      `إجمالي عدد الأفراد المعروضين: (${totalNodes}) فرداً مباركاً`,
-      `عمق الأجيال المتعاقبة: (${maxDepth}) أجيال موثقة متصلة السند`,
-      `العائلة الفرعية: ${options.selectedSubFamily === 'all' ? 'كافة العائلات الفرعية' : options.selectedSubFamily}`,
-      `تاريخ الإصدار: ${new Date().toLocaleDateString('ar-SA')} م`,
-      'حُفِظَتْ وَوُثِّقَتْ بِقَاعِدَةِ بَيَانَاتِ شَجَرَةِ عَائِلَةِ آلِ بُوحَسُّونَ السَّحَابِيَّةِ'
+      `إجمالي عدد الأفراد المعروضين: (${totalNodes}) فرداً مباركاً | الأجيال: (${maxDepth}) أجيال`,
+      'دلالات الألوان: 🟩 رجال (أحياء) · 🟫 رجال (متوفون: رحمه الله)',
+      '              🌸 نساء (أحياء) · 🟪 نساء (متوفيات: رحمها الله)',
+      `العائلة الفرعية: ${options.selectedSubFamily === 'all' ? 'كافة العائلات' : options.selectedSubFamily}`,
+      `تاريخ الإصدار: ${new Date().toLocaleDateString('ar-SA')} م · شجرة آل بوحسون`
     ],
     gold,
     isDark
   );
 
-  // 14. Bottom Center Seal Banner
+  // Bottom Center Seal Banner
   ctx.save();
   ctx.textAlign = 'center';
   ctx.fillStyle = gold;
@@ -824,6 +817,8 @@ export function renderBotanicalHeritageTree(
 
 /**
  * 2. VERTICAL HIERARCHICAL BRANCHING CHART (المخطط الهيكلي الرأسي المتفرع)
+ * With strict generational tier levels, distinct Men vs Women colors,
+ * and prominent Living vs Deceased distinction!
  */
 export function renderVerticalBranchingChart(
   canvas: HTMLCanvasElement,
@@ -834,9 +829,34 @@ export function renderVerticalBranchingChart(
   if (!context) return;
   const ctx: CanvasRenderingContext2D = context;
 
+  const { root, totalNodes, maxDepth } = buildExportHierarchy(members, options);
+  if (!root) return;
+
+  // 1. D3 Tree layout for non-overlapping sibling spacing
+  const CARD_W = 140;
+  const CARD_H = 65;
+  const GAP_X = 40;
+  const LEVEL_H = 210; // Strict fixed vertical distance per generation!
+
+  const rootHierarchy = hierarchy<HierarchyExportNode>(root, d => d.children);
+  const treeLayout = tree<HierarchyExportNode>()
+    .nodeSize([CARD_W + GAP_X, LEVEL_H])
+    .separation((a, b) => (a.parent === b.parent ? 1.15 : 1.35));
+
+  const treeRoot = treeLayout(rootHierarchy);
+  const layoutNodes = treeRoot.descendants();
+
+  let minX = Infinity;
+  let maxX = -Infinity;
+  layoutNodes.forEach(n => {
+    if (n.x < minX) minX = n.x;
+    if (n.x > maxX) maxX = n.x;
+  });
+
+  const spanX = Math.max(maxX - minX, 1000);
   const isUltra = options.resolution === 'ultra_4k';
-  const width = isUltra ? 3400 : 2200;
-  const height = isUltra ? 4600 : 3000;
+  const width = Math.max(isUltra ? 3400 : 2200, Math.round(spanX + 600));
+  const height = Math.max(isUltra ? 4500 : 2800, (maxDepth + 1) * LEVEL_H + 600);
 
   canvas.width = width;
   canvas.height = height;
@@ -845,7 +865,7 @@ export function renderVerticalBranchingChart(
   const isClassic = options.theme === 'classic';
   const gold = '#d4af37';
 
-  // 1. Background
+  // 2. Background
   if (isDark) {
     const bgGrad = ctx.createLinearGradient(0, 0, 0, height);
     bgGrad.addColorStop(0, '#041c15');
@@ -872,7 +892,7 @@ export function renderVerticalBranchingChart(
   ctx.lineWidth = 4;
   ctx.strokeRect(pad, pad, width - pad * 2, height - pad * 2);
 
-  // 2. Header
+  // 3. Header
   const headerY = 90;
   ctx.save();
   ctx.textAlign = 'center';
@@ -894,137 +914,183 @@ export function renderVerticalBranchingChart(
   ctx.fillText('آلِ بوعينين · فخذ النواصر · آلِ جابر', width / 2, headerY + 120);
   ctx.restore();
 
-  // 3. Build Tree
-  const { root, totalNodes, maxDepth } = buildExportHierarchy(members, options);
-  if (!root) return;
+  // 4. Strict Generational Placement (كل جيل في مستوى رأسي مستقل تماماً)
+  const topY = headerY + 220;
+  const centerX = width / 2;
+  const xOffset = centerX - (minX + maxX) / 2;
 
-  // Level positioning
-  const topY = headerY + 210;
-  const bottomY = height - 250;
-  const levelH = (bottomY - topY) / Math.max(maxDepth, 1);
-
-  // Group nodes by depth
-  const depthNodes: HierarchyExportNode[][] = [];
-  function assignDepth(n: HierarchyExportNode, d: number) {
-    if (!depthNodes[d]) depthNodes[d] = [];
-    depthNodes[d].push(n);
-    n.children.forEach(c => assignDepth(c, d + 1));
-  }
-  assignDepth(root, 0);
-
-  // Layout X positions evenly across available width per generation
-  depthNodes.forEach((nodesInLevel, d) => {
-    const curY = topY + d * levelH;
-    const count = nodesInLevel.length;
-    const margin = 120;
-    const usableW = width - margin * 2;
-    const step = usableW / (count + 1);
-
-    nodesInLevel.forEach((n, idx) => {
-      n.y = curY;
-      n.x = margin + step * (idx + 1);
-    });
+  layoutNodes.forEach(n => {
+    n.data.x = n.x + xOffset;
+    // STRICT GENERATION TIER: y is purely a function of generation!
+    const gen = n.data.generation || (n.depth + 1);
+    n.data.y = topY + (gen - 1) * LEVEL_H;
   });
 
-  // 4. Draw Connecting Lines (Parent to Children)
+  // Draw Generational Guide Ribbons on the right margin
   ctx.save();
-  function drawConnector(n: HierarchyExportNode) {
-    n.children.forEach(child => {
-      ctx.strokeStyle = isDark ? 'rgba(52, 211, 153, 0.45)' : 'rgba(180, 140, 40, 0.6)';
-      ctx.lineWidth = 2.5;
+  for (let g = 1; g <= maxDepth; g++) {
+    const tierY = topY + (g - 1) * LEVEL_H;
+    ctx.strokeStyle = isDark ? 'rgba(52, 211, 153, 0.12)' : 'rgba(180, 140, 40, 0.15)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([8, 6]);
+    ctx.beginPath();
+    ctx.moveTo(pad + 20, tierY);
+    ctx.lineTo(width - pad - 20, tierY);
+    ctx.stroke();
+    ctx.setLineDash([]);
 
-      const startX = n.x;
-      const startY = n.y + 30;
-      const endX = child.x;
-      const endY = child.y - 30;
-      const midY = (startY + endY) / 2;
-
-      ctx.beginPath();
-      ctx.moveTo(startX, startY);
-      ctx.bezierCurveTo(startX, midY, endX, midY, endX, endY);
-      ctx.stroke();
-
-      drawConnector(child);
-    });
+    // Generation label badge
+    ctx.fillStyle = gold;
+    ctx.font = 'bold 13px "Traditional Arabic", "Amiri", sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText(`الجيل ${g}`, width - pad - 35, tierY - CARD_H / 2 - 8);
   }
-  drawConnector(root);
   ctx.restore();
 
-  // 5. Draw Member Cards with FIRST NAME ONLY (Fits cleanly in rectangle)
-  function drawCard(n: HierarchyExportNode, isPatriarch: boolean) {
+  // 5. Draw Non-Overlapping Lineage Connector Lines (From bottom of parent to top of child)
+  ctx.save();
+  treeRoot.links().forEach(link => {
+    const p = link.source.data;
+    const c = link.target.data;
+
+    ctx.strokeStyle = isDark ? 'rgba(52, 211, 153, 0.55)' : 'rgba(180, 140, 40, 0.65)';
+    ctx.lineWidth = 2.5;
+
+    const startX = p.x;
+    const startY = p.y + CARD_H / 2; // Bottom of parent card
+    const endX = c.x;
+    const endY = c.y - CARD_H / 2;   // Top of child card
+    const midY = (startY + endY) / 2;
+
+    // Smooth non-intersecting cubic bezier
+    ctx.beginPath();
+    ctx.moveTo(startX, startY);
+    ctx.bezierCurveTo(startX, midY, endX, midY, endX, endY);
+    ctx.stroke();
+
+    // Small connector dot at junction
+    ctx.fillStyle = gold;
+    ctx.beginPath();
+    ctx.arc(endX, endY, 3, 0, Math.PI * 2);
+    ctx.fill();
+  });
+  ctx.restore();
+
+  // 6. Draw Member Cards with Gender (Men vs Women) and Status (Living vs Deceased)
+  layoutNodes.forEach(n => {
+    const d = n.data;
+    const isPatriarch = d.member.father_id === null;
+    const isMale = d.member.gender === 'male';
+    const isLiving = d.member.is_living;
+    const subColor = getSubFamilyColor(d.member.sub_family);
+
     ctx.save();
-    // Fitted dimensions for first name
-    const cardW = isPatriarch ? 180 : 130;
-    const cardH = isPatriarch ? 65 : 54;
-    const x = n.x - cardW / 2;
-    const y = n.y - cardH / 2;
-    const subColor = getSubFamilyColor(n.member.sub_family);
+    const cardW = isPatriarch ? 170 : CARD_W;
+    const cardH = isPatriarch ? 70 : CARD_H;
+    const x = d.x - cardW / 2;
+    const y = d.y - cardH / 2;
 
-    // Card background
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
-    ctx.shadowBlur = 8;
-    ctx.shadowOffsetY = 4;
+    // Card shadow
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.16)';
+    ctx.shadowBlur = 6;
+    ctx.shadowOffsetY = 3;
 
-    ctx.fillStyle = isDark ? '#06261c' : '#ffffff';
-    ctx.strokeStyle = isPatriarch ? gold : subColor.border;
-    ctx.lineWidth = isPatriarch ? 3 : 2;
+    // Gender & Status Palette
+    const borderColor = isPatriarch 
+      ? gold 
+      : isMale 
+        ? (isLiving ? '#10b981' : '#b45309') 
+        : (isLiving ? '#f43f5e' : '#be185d');
+
+    // Background Fill
+    if (isDark) {
+      if (isMale) {
+        ctx.fillStyle = isLiving ? '#06261c' : '#1a2622';
+      } else {
+        ctx.fillStyle = isLiving ? '#311019' : '#22151b';
+      }
+    } else {
+      if (isMale) {
+        ctx.fillStyle = isLiving ? '#ffffff' : '#f7f4ed';
+      } else {
+        ctx.fillStyle = isLiving ? '#fff5f6' : '#f7ebed';
+      }
+    }
 
     ctx.beginPath();
     ctx.roundRect(x, y, cardW, cardH, 14);
     ctx.fill();
-    ctx.stroke();
 
     ctx.shadowColor = 'transparent';
 
-    // Top color band for sub-family
-    ctx.fillStyle = isPatriarch ? gold : subColor.fill;
+    // Border
+    ctx.strokeStyle = borderColor;
+    ctx.lineWidth = isPatriarch ? 3 : (isLiving ? 2.5 : 1.8);
+    if (!isLiving && !isPatriarch) {
+      ctx.setLineDash([5, 3]);
+    }
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Top Gender Ribbon
+    ctx.fillStyle = isPatriarch ? gold : (isMale ? '#059669' : '#e11d48');
     ctx.beginPath();
     ctx.roundRect(x, y, cardW, 6, [14, 14, 0, 0]);
     ctx.fill();
 
-    // FIRST NAME ONLY
+    // FIRST NAME
     ctx.textAlign = 'center';
-    ctx.fillStyle = isDark ? '#f8fafc' : '#1c1917';
+    ctx.fillStyle = isDark ? '#f8fafc' : (isMale ? '#0f172a' : '#881337');
     ctx.font = `bold ${isPatriarch ? 22 : 18}px "Traditional Arabic", "Amiri", "Cairo", serif`;
-    ctx.fillText(n.firstName, n.x, y + (isPatriarch ? 32 : 26));
+    ctx.fillText(d.firstName, d.x, y + (isPatriarch ? 35 : 28));
 
-    // Sub-family badge or date
-    ctx.fillStyle = isPatriarch ? '#b45309' : subColor.border;
+    // Sub-family badge or gender marker
     ctx.font = 'bold 11px "Traditional Arabic", "Amiri", sans-serif';
-    const subText = isPatriarch ? 'الجد المؤسس' : (n.member.sub_family || n.member.branch || 'آل بوعينين');
-    ctx.fillText(subText, n.x, y + (isPatriarch ? 50 : 42));
+    ctx.fillStyle = isPatriarch ? '#b45309' : (isMale ? '#047857' : '#be185d');
+    const subText = isPatriarch ? 'الجد المؤسس' : (d.member.sub_family || (isMale ? 'ابن / رجل' : 'ابنة / سيدة'));
+    ctx.fillText(subText, d.x, y + (isPatriarch ? 52 : 44));
+
+    // Status Prayer or Living indicator
+    const statusText = isLiving 
+      ? '● حي' 
+      : (isMale ? 'رحمه الله' : 'رحمها الله');
+
+    ctx.font = 'bold 10px "Traditional Arabic", "Amiri", sans-serif';
+    ctx.fillStyle = isLiving ? '#16a34a' : (isMale ? '#9a3412' : '#9f1239');
+    ctx.fillText(statusText, d.x, y + 58);
 
     ctx.restore();
+  });
 
-    n.children.forEach(c => drawCard(c, false));
-  }
-  drawCard(root, true);
-
-  // 6. Bottom Legend & Footer
+  // 7. Bottom Legend & Footer
   const legendY = height - 120;
   ctx.save();
   ctx.textAlign = 'center';
 
-  // Sub-families legend badges
-  const legendItems = ['البوحسون', 'النصف', 'الدرويش', 'الأزرق'];
-  const totalLegendW = legendItems.length * 160;
+  // Comprehensive Legend: Men/Women & Living/Deceased
+  const legendItems = [
+    { label: 'رجال (أحياء)', color: '#10b981' },
+    { label: 'رجال (رحمه الله)', color: '#b45309' },
+    { label: 'نساء (أحياء)', color: '#f43f5e' },
+    { label: 'نساء (رحمها الله)', color: '#be185d' }
+  ];
+
+  const totalLegendW = legendItems.length * 170;
   let legX = (width - totalLegendW) / 2 + 80;
 
   legendItems.forEach(item => {
-    const col = getSubFamilyColor(item);
-    ctx.fillStyle = col.fill;
+    ctx.fillStyle = item.color;
     ctx.beginPath();
-    ctx.arc(legX - 45, legendY, 7, 0, Math.PI * 2);
+    ctx.arc(legX - 55, legendY, 7, 0, Math.PI * 2);
     ctx.fill();
 
     ctx.fillStyle = isDark ? '#e2e8f0' : '#334155';
     ctx.font = 'bold 15px "Traditional Arabic", "Amiri", sans-serif';
-    ctx.fillText(item, legX, legendY + 5);
+    ctx.fillText(item.label, legX, legendY + 5);
 
-    legX += 160;
+    legX += 170;
   });
 
-  // Bottom info
   ctx.fillStyle = isDark ? '#64748b' : '#64748b';
   ctx.font = '13px "Tahoma", sans-serif';
   ctx.fillText(`إجمالي الأفراد: ${totalNodes} | الأجيال: ${maxDepth} | تم التصدير بتاريخ: ${new Date().toLocaleDateString('ar-SA')}`, width / 2, height - 55);
