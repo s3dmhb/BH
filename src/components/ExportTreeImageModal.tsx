@@ -8,11 +8,9 @@ import {
   ZoomIn,
   ZoomOut,
   Maximize2,
-  TreeDeciduous,
   GitBranch,
   Palette,
   Sparkles,
-  Layers,
   Settings2,
   FileImage,
   Printer
@@ -22,7 +20,6 @@ import {
   ExportTreeStyle,
   ExportTheme,
   ExportResolution,
-  renderBotanicalHeritageTree,
   renderVerticalBranchingChart,
   downloadCanvasAsPNG
 } from '../utils/treeImageGenerator';
@@ -38,8 +35,8 @@ export const ExportTreeImageModal: React.FC<ExportTreeImageModalProps> = ({
   onClose,
   members
 }) => {
-  // Options State
-  const [style, setStyle] = useState<ExportTreeStyle>('botanical');
+  // Options State - Vertical Hierarchical Chart as the sole export style
+  const style: ExportTreeStyle = 'vertical';
   const [theme, setTheme] = useState<ExportTheme>('parchment');
   const [resolution, setResolution] = useState<ExportResolution>('ultra_4k');
   const [selectedBranch, setSelectedBranch] = useState<string>('all');
@@ -71,14 +68,14 @@ export const ExportTreeImageModal: React.FC<ExportTreeImageModalProps> = ({
     return ['البوحسون', 'النصف', 'الدرويش', 'الأزرق', 'آل جابر', 'النواصر'];
   }, []);
 
-  // Render on preview canvas
+  // Render on preview canvas (Sole style: Vertical Hierarchical Chart)
   const renderPreview = useCallback(() => {
     if (!previewCanvasRef.current || !isOpen) return;
     setIsGenerating(true);
 
     const canvas = previewCanvasRef.current;
     const options: TreeImageExportOptions = {
-      style,
+      style: 'vertical',
       theme,
       resolution: 'hd', // Preview uses lighter resolution for ultra-fast response
       selectedBranch,
@@ -89,17 +86,13 @@ export const ExportTreeImageModal: React.FC<ExportTreeImageModalProps> = ({
     };
 
     try {
-      if (style === 'botanical') {
-        renderBotanicalHeritageTree(canvas, members, options);
-      } else {
-        renderVerticalBranchingChart(canvas, members, options);
-      }
+      renderVerticalBranchingChart(canvas, members, options);
     } catch (err) {
       console.error('Error rendering tree preview:', err);
     } finally {
       setIsGenerating(false);
     }
-  }, [style, theme, selectedBranch, selectedSubFamily, genderFilter, showDates, showVerses, members, isOpen]);
+  }, [theme, selectedBranch, selectedSubFamily, genderFilter, showDates, showVerses, members, isOpen]);
 
   useEffect(() => {
     if (isOpen) {
@@ -116,7 +109,7 @@ export const ExportTreeImageModal: React.FC<ExportTreeImageModalProps> = ({
       // Create off-screen canvas at requested export resolution
       const exportCanvas = document.createElement('canvas');
       const options: TreeImageExportOptions = {
-        style,
+        style: 'vertical',
         theme,
         resolution,
         selectedBranch,
@@ -126,15 +119,10 @@ export const ExportTreeImageModal: React.FC<ExportTreeImageModalProps> = ({
         showVerses
       };
 
-      if (style === 'botanical') {
-        renderBotanicalHeritageTree(exportCanvas, members, options);
-      } else {
-        renderVerticalBranchingChart(exportCanvas, members, options);
-      }
+      renderVerticalBranchingChart(exportCanvas, members, options);
 
-      const styleName = style === 'botanical' ? 'شجرة_الدوحة_التراثية' : 'المخطط_الهيكلي_الرأسي';
       const branchName = selectedSubFamily !== 'all' ? `_${selectedSubFamily}` : '';
-      const filename = `شجرة_عائلة_آل_بوعينين_${styleName}${branchName}_${Date.now()}.png`;
+      const filename = `شجرة_عائلة_آل_بوعينين_المخطط_الهيكلي_الرأسي${branchName}_${Date.now()}.png`;
 
       downloadCanvasAsPNG(exportCanvas, filename);
     } catch (err) {
@@ -197,7 +185,7 @@ export const ExportTreeImageModal: React.FC<ExportTreeImageModalProps> = ({
                 </span>
               </h2>
               <p className="text-xs text-slate-400">
-                اختر النمط المناسب لك: شجرة الدوحة التراثية بالساق والأغصان، أو المخطط الرأسي المتفرع
+                المخطط الهيكلي الرأسي عالي الدقة، جاهز للطباعة الفاخرة والمشاركة والتأطير
               </p>
             </div>
           </div>
@@ -217,65 +205,28 @@ export const ExportTreeImageModal: React.FC<ExportTreeImageModalProps> = ({
           {/* Controls & Configuration Sidebar */}
           <div className="w-full lg:w-96 p-4 sm:p-5 space-y-5 shrink-0 bg-slate-950/40 overflow-y-auto">
             
-            {/* 1. Style Selection (Two Choices Requested by User) */}
+            {/* 1. Style Selection (Single Approved Choice: Vertical Hierarchical Chart) */}
             <div>
               <label className="block text-xs font-bold text-emerald-400 mb-2 flex items-center gap-1.5">
-                <Layers className="w-3.5 h-3.5" />
-                <span>اختر نمط الشجرة:</span>
+                <GitBranch className="w-3.5 h-3.5" />
+                <span>نمط التصدير المعتمد:</span>
               </label>
 
-              <div className="grid grid-cols-1 gap-2.5">
-                {/* Choice 1: Botanical Heritage Tree (Trunk & Branches like uploaded photo) */}
-                <button
-                  type="button"
-                  onClick={() => setStyle('botanical')}
-                  className={`p-3.5 rounded-2xl border text-right transition-all flex items-start gap-3 relative ${
-                    style === 'botanical'
-                      ? 'bg-emerald-950/80 border-emerald-400 shadow-lg shadow-emerald-950/60 ring-1 ring-emerald-400'
-                      : 'bg-slate-900/60 border-white/10 hover:border-white/20 text-slate-300'
-                  }`}
-                >
-                  <div className={`p-2 rounded-xl mt-0.5 ${style === 'botanical' ? 'bg-emerald-500 text-emerald-950' : 'bg-slate-800 text-slate-400'}`}>
-                    <TreeDeciduous className="w-5 h-5" />
+              <div className="p-3.5 rounded-2xl border bg-emerald-950/80 border-emerald-400 shadow-lg shadow-emerald-950/60 ring-1 ring-emerald-400/80 flex items-start gap-3">
+                <div className="p-2 rounded-xl mt-0.5 bg-emerald-500 text-emerald-950 shrink-0">
+                  <GitBranch className="w-5 h-5" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-white">المخطط الهيكلي الرأسي</span>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-semibold">
+                      النمط المعتمد
+                    </span>
                   </div>
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-white">شجرة الدوحة التراثية</span>
-                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                        كالصورة المرفقة
-                      </span>
-                    </div>
-                    <p className="text-[11px] text-slate-400 mt-1 leading-relaxed">
-                      تبدأ من الأصل وترتفع بالساق الخشبي والأغصان والأوراق مع أوسمة ذهبية ومحراب للآيات والأحاديث.
-                    </p>
-                  </div>
-                </button>
-
-                {/* Choice 2: Vertical Hierarchical Branching Chart */}
-                <button
-                  type="button"
-                  onClick={() => setStyle('vertical')}
-                  className={`p-3.5 rounded-2xl border text-right transition-all flex items-start gap-3 relative ${
-                    style === 'vertical'
-                      ? 'bg-emerald-950/80 border-emerald-400 shadow-lg shadow-emerald-950/60 ring-1 ring-emerald-400'
-                      : 'bg-slate-900/60 border-white/10 hover:border-white/20 text-slate-300'
-                  }`}
-                >
-                  <div className={`p-2 rounded-xl mt-0.5 ${style === 'vertical' ? 'bg-emerald-500 text-emerald-950' : 'bg-slate-800 text-slate-400'}`}>
-                    <GitBranch className="w-5 h-5" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-white">المخطط الهيكلي الرأسي</span>
-                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30">
-                        مخطط أنساب متفرع
-                      </span>
-                    </div>
-                    <p className="text-[11px] text-slate-400 mt-1 leading-relaxed">
-                      يبدأ من الجد الأعلى في القمة ويتفرع رأسياً للأسفل عبر بطاقات الأجيال وخطوط النسب المتصلة.
-                    </p>
-                  </div>
-                </button>
+                  <p className="text-[11px] text-slate-300 mt-1 leading-relaxed">
+                    يبدأ من الجد الأعلى في القمة ويتفرع رأسياً للأسفل عبر بطاقات الأجيال المنفصلة مع اسم الشهرة لكل شخص وتمييز الرجال والنساء والأحياء والمتوفين.
+                  </p>
+                </div>
               </div>
             </div>
 
@@ -435,18 +386,6 @@ export const ExportTreeImageModal: React.FC<ExportTreeImageModalProps> = ({
                   className="w-4 h-4 rounded text-emerald-500 focus:ring-0 cursor-pointer"
                 />
               </label>
-
-              {style === 'botanical' && (
-                <label className="flex items-center justify-between text-xs text-slate-300 cursor-pointer">
-                  <span>إظهار الآيات والأحاديث بالأقواس الجانبية</span>
-                  <input
-                    type="checkbox"
-                    checked={showVerses}
-                    onChange={(e) => setShowVerses(e.target.checked)}
-                    className="w-4 h-4 rounded text-emerald-500 focus:ring-0 cursor-pointer"
-                  />
-                </label>
-              )}
             </div>
           </div>
 
@@ -518,9 +457,7 @@ export const ExportTreeImageModal: React.FC<ExportTreeImageModalProps> = ({
         <div className="p-4 sm:p-5 border-t border-white/10 bg-slate-950/80 flex flex-wrap items-center justify-between gap-3 shrink-0">
           <div className="flex items-center gap-2 text-xs text-slate-400">
             <Sparkles className="w-4 h-4 text-amber-400" />
-            <span>
-              {style === 'botanical' ? 'شجرة الدوحة التراثية (بالساق والغصون كالصورة المرفقة)' : 'المخطط الهيكلي الرأسي المتفرع'}
-            </span>
+            <span>المخطط الهيكلي الرأسي المتفرع</span>
             <span className="text-slate-600">·</span>
             <span>{resolution === 'ultra_4k' ? 'دقة فائقة (3200×4500px)' : 'دقة عالية (2000×2800px)'}</span>
           </div>

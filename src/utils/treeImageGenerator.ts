@@ -1044,11 +1044,24 @@ export function renderVerticalBranchingChart(
     ctx.font = `bold ${isPatriarch ? 22 : 18}px "Traditional Arabic", "Amiri", "Cairo", serif`;
     ctx.fillText(d.firstName, d.x, y + (isPatriarch ? 35 : 28));
 
-    // Sub-family badge or gender marker
-    ctx.font = 'bold 11px "Traditional Arabic", "Amiri", sans-serif';
-    ctx.fillStyle = isPatriarch ? '#b45309' : (isMale ? '#047857' : '#be185d');
-    const subText = isPatriarch ? 'الجد المؤسس' : (d.member.sub_family || (isMale ? 'ابن / رجل' : 'ابنة / سيدة'));
-    ctx.fillText(subText, d.x, y + (isPatriarch ? 52 : 44));
+    // السطر الثاني: استبدال (ابن/رجل) باسم الشهرة للشخص
+    const nickname = d.member.nickname?.trim();
+    const subText = isPatriarch
+      ? (nickname || 'الجد المؤسس')
+      : (nickname || d.member.sub_family || '');
+
+    if (subText) {
+      ctx.font = 'bold 11px "Traditional Arabic", "Amiri", sans-serif';
+      ctx.fillStyle = isPatriarch ? '#b45309' : (isMale ? '#047857' : '#be185d');
+      let displaySub = subText;
+      if (ctx.measureText(displaySub).width > cardW - 14) {
+        while (displaySub.length > 3 && ctx.measureText(displaySub + '..').width > cardW - 14) {
+          displaySub = displaySub.slice(0, -1);
+        }
+        displaySub += '..';
+      }
+      ctx.fillText(displaySub, d.x, y + (isPatriarch ? 51 : 43));
+    }
 
     // Status Prayer or Living indicator
     const statusText = isLiving 
