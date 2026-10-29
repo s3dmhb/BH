@@ -85,7 +85,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-2xl max-h-[88dvh] overflow-y-auto glass-panel rounded-3xl p-5 sm:p-6 md:p-8 border border-emerald-500/30 shadow-2xl text-right">
+      <div className="relative w-full max-w-2xl max-h-[88dvh] overflow-y-auto glass-panel rounded-3xl p-5 sm:p-6 md:p-8 border border-white/10 shadow-2xl text-right">
         
         {/* Close Button */}
         <button
@@ -98,14 +98,14 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
 
         {/* Modal Title */}
         <div className="flex items-center gap-3 border-b border-white/10 pb-4 mb-6">
-          <div className="w-10 h-10 rounded-xl bg-emerald-950/80 border border-emerald-500/30 flex items-center justify-center text-emerald-300">
+          <div className="w-10 h-10 rounded-xl bg-white/[0.06] border border-white/10 flex items-center justify-center text-sky-300">
             {isEditing ? <User className="w-5 h-5" /> : <UserPlus className="w-5 h-5" />}
           </div>
           <div>
             <h2 className="text-xl font-bold text-white">
               {isEditing ? 'تعديل بيانات فرد في الشجرة' : 'إضافة فرد جديد إلى شجرة العائلة'}
             </h2>
-            <p className="text-xs text-emerald-400">
+            <p className="text-xs text-sky-300">
               إدارة بيانات أنساب عائلة البوحسون وتوثيق السجلات
             </p>
           </div>
@@ -129,8 +129,8 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                 onClick={() => setGender('male')}
                 className={`py-2.5 px-4 rounded-xl border font-bold flex items-center justify-center gap-2 transition-all ${
                   gender === 'male'
-                    ? 'bg-emerald-600 text-white border-emerald-400 shadow-md'
-                    : 'bg-slate-900/60 text-slate-400 border-white/10 hover:border-emerald-500/30'
+                    ? 'bg-sky-500/30 text-sky-200 border-sky-400/40 shadow-sm'
+                    : 'bg-slate-900/60 text-slate-400 border-white/10 hover:border-sky-500/30'
                 }`}
               >
                 <span>ذكر (رجل)</span>
@@ -141,8 +141,8 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                 onClick={() => setGender('female')}
                 className={`py-2.5 px-4 rounded-xl border font-bold flex items-center justify-center gap-2 transition-all ${
                   gender === 'female'
-                    ? 'bg-rose-600 text-white border-pink-400 shadow-md'
-                    : 'bg-slate-900/60 text-slate-400 border-white/10 hover:border-pink-500/30'
+                    ? 'bg-rose-500/30 text-rose-200 border-rose-400/40 shadow-sm'
+                    : 'bg-slate-900/60 text-slate-400 border-white/10 hover:border-rose-500/30'
                 }`}
               >
                 <span>أنثى (امرأة - بدون صورة)</span>
@@ -162,7 +162,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder="مثال: محمد بن حسن بن محمد البوحسون"
                 required
-                className="w-full bg-slate-900/90 border border-emerald-500/30 rounded-xl px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400"
+                className="w-full bg-slate-900/80 border border-white/10 rounded-xl px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-sky-400/50"
               />
             </div>
 
@@ -175,7 +175,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                 value={nickname}
                 onChange={(e) => setNickname(e.target.value)}
                 placeholder="مثال: الوجيه، أبو أحمد، النوخذة، المستشار"
-                className="w-full bg-slate-900/90 border border-emerald-500/30 rounded-xl px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400"
+                className="w-full bg-slate-900/80 border border-white/10 rounded-xl px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-sky-400/50"
               />
             </div>
           </div>
@@ -189,7 +189,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
               <select
                 value={fatherId}
                 onChange={(e) => setFatherId(e.target.value)}
-                className="w-full bg-slate-900/90 border border-emerald-500/30 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-emerald-400"
+                className="w-full bg-slate-900/80 border border-white/10 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-sky-400/50"
               >
                 <option value="">-- الجد المؤسس (لا يوجد أب مسجل) --</option>
                 {eligibleFathers.map(f => (
@@ -209,7 +209,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                 value={branch}
                 onChange={(e) => setBranch(e.target.value)}
                 placeholder="مثال: فرع محمد، فرع علي، فرع إبراهيم"
-                className="w-full bg-slate-900/90 border border-emerald-500/30 rounded-xl px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400"
+                className="w-full bg-slate-900/80 border border-white/10 rounded-xl px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-sky-400/50"
               />
             </div>
 
@@ -220,7 +220,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
               <select
                 value={subFamily}
                 onChange={(e) => setSubFamily(e.target.value)}
-                className="w-full bg-slate-900/90 border border-emerald-500/30 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-emerald-400"
+                className="w-full bg-slate-900/80 border border-white/10 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-sky-400/50"
               >
                 <option value="auto">تلقائي (حسب شجرة النسب والفرع)</option>
                 <option value="البوحسون">البوحسون (الفرع والنسب الأصيل)</option>
@@ -228,7 +228,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                 <option value="الدرويش">الدرويش (وسم التراث النحاسي)</option>
                 <option value="الأزرق">الأزرق (وسم الفيروز السماوي)</option>
                 <option value="آل جابر">آل جابر (وسم ذهبي فاخر)</option>
-                <option value="النواصر">النواصر (وسم زمردي فاخر)</option>
+                <option value="النواصر">النواصر (وسم تركوازي فاخر)</option>
                 <option value="آل جابر والنواصر">آل جابر والنواصر (الجامع)</option>
               </select>
             </div>
@@ -240,13 +240,13 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
               <label className="block text-slate-300 font-semibold mb-1">
                 الحالة الحياتية:
               </label>
-              <div className="flex items-center gap-2 h-[42px] px-3 rounded-xl bg-slate-900/90 border border-emerald-500/30">
+              <div className="flex items-center gap-2 h-[42px] px-3 rounded-xl bg-slate-900/80 border border-white/10">
                 <input
                   type="checkbox"
                   id="isLivingCheck"
                   checked={isLiving}
                   onChange={(e) => setIsLiving(e.target.checked)}
-                  className="w-4 h-4 text-emerald-500 rounded focus:ring-emerald-400"
+                  className="w-4 h-4 text-sky-500 rounded focus:ring-sky-400"
                 />
                 <label htmlFor="isLivingCheck" className="text-xs text-white cursor-pointer select-none">
                   على قيد الحياة
@@ -263,7 +263,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                 value={birthDate}
                 onChange={(e) => setBirthDate(e.target.value)}
                 placeholder="مثال: 1965"
-                className="w-full bg-slate-900/90 border border-emerald-500/30 rounded-xl px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400"
+                className="w-full bg-slate-900/80 border border-white/10 rounded-xl px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-sky-400/50"
               />
             </div>
 
@@ -277,15 +277,15 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                 value={deathDate}
                 onChange={(e) => setDeathDate(e.target.value)}
                 placeholder={isLiving ? 'حي يرزق' : 'مثال: 2015'}
-                className="w-full bg-slate-900/90 border border-emerald-500/30 rounded-xl px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400 disabled:opacity-40 disabled:cursor-not-allowed"
+                className="w-full bg-slate-900/80 border border-white/10 rounded-xl px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-sky-400/50 disabled:opacity-40 disabled:cursor-not-allowed"
               />
             </div>
           </div>
 
           {/* Conditional Fields based on Gender */}
           {gender === 'male' ? (
-            <div className="space-y-3 pt-2 border-t border-emerald-500/20">
-              <h4 className="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
+            <div className="space-y-3 pt-2 border-t border-white/10">
+              <h4 className="text-xs font-bold text-sky-300 flex items-center gap-1.5">
                 <User className="w-4 h-4" />
                 <span>حقول خاصة بالذكور:</span>
               </h4>
@@ -299,7 +299,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                   value={spouseInfo}
                   onChange={(e) => setSpouseInfo(e.target.value)}
                   placeholder="مثال: مريم بنت راشد آل بوعينين، نورة بنت عبد العزيز"
-                  className="w-full bg-slate-900/90 border border-emerald-500/30 rounded-xl px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400"
+                  className="w-full bg-slate-900/80 border border-white/10 rounded-xl px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-sky-400/50"
                 />
               </div>
 
@@ -312,13 +312,13 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                   value={bio}
                   onChange={(e) => setBio(e.target.value)}
                   placeholder="اكتب نبذة تاريخية، المؤهلات، الإنجازات، المناصب، الأعمال الخيرية..."
-                  className="w-full bg-slate-900/90 border border-emerald-500/30 rounded-xl px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400"
+                  className="w-full bg-slate-900/80 border border-white/10 rounded-xl px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-sky-400/50"
                 />
               </div>
 
               <div>
                 <label className="block text-slate-300 font-semibold mb-1 flex items-center gap-1.5">
-                  <Image className="w-3.5 h-3.5 text-emerald-400" />
+                  <Image className="w-3.5 h-3.5 text-sky-400" />
                   <span>رابط الصورة المصغرة (اختياري - للذكور فقط):</span>
                 </label>
                 <input
@@ -326,13 +326,13 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                   value={avatarUrl}
                   onChange={(e) => setAvatarUrl(e.target.value)}
                   placeholder="https://example.com/photo.jpg"
-                  className="w-full bg-slate-900/90 border border-emerald-500/30 rounded-xl px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400 font-mono text-xs"
+                  className="w-full bg-slate-900/80 border border-white/10 rounded-xl px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-sky-400/50 font-mono text-xs"
                 />
               </div>
             </div>
           ) : (
-            <div className="space-y-3 pt-2 border-t border-pink-500/20">
-              <h4 className="text-xs font-bold text-pink-400 flex items-center gap-1.5">
+            <div className="space-y-3 pt-2 border-t border-rose-500/20">
+              <h4 className="text-xs font-bold text-rose-300 flex items-center gap-1.5">
                 <Heart className="w-4 h-4" />
                 <span>حقول خاصة بالإناث (محفوظة بالكامل بدون أي صورة):</span>
               </h4>
@@ -346,7 +346,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                   value={spouseInfo}
                   onChange={(e) => setSpouseInfo(e.target.value)}
                   placeholder="مثال: محمد بن علي آل بوعينين"
-                  className="w-full bg-slate-900/90 border border-pink-500/30 rounded-xl px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-pink-400"
+                  className="w-full bg-slate-900/80 border border-white/10 rounded-xl px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-rose-400/50"
                 />
               </div>
 
@@ -359,7 +359,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                   value={childrenSummary}
                   onChange={(e) => setChildrenSummary(e.target.value)}
                   placeholder="مثال: عبد الله، فهد، سارة، نورة"
-                  className="w-full bg-slate-900/90 border border-pink-500/30 rounded-xl px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-pink-400"
+                  className="w-full bg-slate-900/80 border border-white/10 rounded-xl px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-rose-400/50"
                 />
               </div>
 
@@ -372,7 +372,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="أعمال البر، الدور الاجتماعي والتربوي، مراجع النسب..."
-                  className="w-full bg-slate-900/90 border border-pink-500/30 rounded-xl px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-pink-400"
+                  className="w-full bg-slate-900/80 border border-white/10 rounded-xl px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-rose-400/50"
                 />
               </div>
             </div>
@@ -433,7 +433,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
 
               <button
                 type="submit"
-                className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-emerald-950 font-bold text-xs flex items-center gap-1.5 shadow-lg shadow-emerald-950/50"
+                className="px-6 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-lg shadow-sky-950/50 transition-all active:scale-95"
               >
                 <Save className="w-4 h-4" />
                 <span>{isEditing ? 'حفظ التعديلات' : 'إضافة الفرد للشجرة'}</span>

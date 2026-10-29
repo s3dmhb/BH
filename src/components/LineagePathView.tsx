@@ -76,17 +76,17 @@ export const LineagePathView: React.FC<LineagePathViewProps> = ({
   return (
     <div className="w-full max-w-5xl 2xl:max-w-6xl mx-auto px-3 sm:px-6 py-6 pb-24 md:pb-10">
       {/* Top Banner / Selection */}
-      <div className="glass-panel rounded-3xl p-4 sm:p-6 md:p-8 mb-6 sm:mb-8 border border-emerald-500/25 shadow-2xl">
+      <div className="glass-panel rounded-3xl p-4 sm:p-6 md:p-8 mb-6 sm:mb-8 border border-white/10 shadow-2xl">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-6 mb-4 sm:mb-6">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-emerald-950/80 border border-emerald-500/30 flex items-center justify-center text-emerald-300 shrink-0">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-white/[0.06] border border-white/10 flex items-center justify-center text-sky-300 shrink-0">
               <GitFork className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
             <div>
               <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-white tracking-tight">
                 مسار النسب وسلسلة الأجداد
               </h2>
-              <p className="text-[11px] sm:text-xs md:text-sm text-emerald-400">
+              <p className="text-[11px] sm:text-xs md:text-sm text-sky-300/80">
                 تتبّع السلسلة الأبوية المتصلة صعوداً من أي فرد حتى الجد المؤسس
               </p>
             </div>
@@ -101,7 +101,7 @@ export const LineagePathView: React.FC<LineagePathViewProps> = ({
               <select
                 value={selectedId}
                 onChange={(e) => setSelectedId(e.target.value)}
-                className="w-full bg-slate-900/90 border border-emerald-500/30 text-white rounded-xl px-4 py-2.5 text-xs md:text-sm focus:outline-none focus:border-emerald-400"
+                className="w-full bg-slate-900/80 border border-white/10 text-white rounded-xl px-4 py-2.5 text-xs md:text-sm focus:outline-none focus:border-sky-400/50"
               >
                 {selectableMembers.map(m => (
                   <option key={m.id} value={m.id}>
@@ -115,12 +115,12 @@ export const LineagePathView: React.FC<LineagePathViewProps> = ({
 
         {/* Full Lineage String Card */}
         {targetMember && (
-          <div className="bg-slate-900/60 rounded-2xl p-4 border border-emerald-500/15 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="bg-slate-900/50 rounded-2xl p-4 border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex-1">
-              <span className="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider block mb-1">
+              <span className="text-[11px] font-semibold text-sky-300 uppercase tracking-wider block mb-1">
                 سلسلة النسب المتصلة:
               </span>
-              <p className="text-sm md:text-base font-bold text-emerald-100 font-serif leading-relaxed">
+              <p className="text-sm md:text-base font-bold text-slate-100 font-serif leading-relaxed">
                 {fullLineageProse}
               </p>
             </div>
@@ -128,7 +128,7 @@ export const LineagePathView: React.FC<LineagePathViewProps> = ({
               onClick={handleCopyLineage}
               className="glass-btn px-4 py-2 rounded-xl text-xs font-medium text-slate-200 hover:text-white flex items-center justify-center gap-1.5 shrink-0"
             >
-              {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+              {copied ? <Check className="w-4 h-4 text-sky-400" /> : <Copy className="w-4 h-4" />}
               <span>{copied ? 'تم النسخ!' : 'نسخ سلسلة النسب'}</span>
             </button>
           </div>
@@ -138,7 +138,7 @@ export const LineagePathView: React.FC<LineagePathViewProps> = ({
       {/* Vertical Pedigree Chain Timeline */}
       <div className="relative flex flex-col items-center">
         {/* Continuous vertical connecting line */}
-        <div className="absolute top-10 bottom-10 right-1/2 translate-x-1/2 w-0.5 bg-gradient-to-b from-emerald-400 via-emerald-600 to-amber-500/80 z-0 opacity-40" />
+        <div className="absolute top-10 bottom-10 right-1/2 translate-x-1/2 w-0.5 bg-gradient-to-b from-sky-400 via-indigo-500 to-amber-400/80 z-0 opacity-40" />
 
         {chain.map((member, index) => {
           const isTarget = index === 0;
@@ -153,10 +153,12 @@ export const LineagePathView: React.FC<LineagePathViewProps> = ({
                   onClick={() => onSelectMember(member)}
                   className={`rounded-2xl p-5 md:p-6 cursor-pointer border transition-all duration-300 ${
                     isRoot
-                      ? 'bg-gradient-to-r from-emerald-950/90 via-emerald-900/60 to-emerald-950/90 border-amber-500/40 shadow-[0_0_30px_rgba(212,175,55,0.15)]'
+                      ? 'bg-gradient-to-r from-slate-900/90 via-slate-800/80 to-slate-900/90 border-amber-400/40 shadow-xl'
                       : isTarget
-                      ? 'bg-slate-900/85 border-emerald-400/50 shadow-xl'
-                      : 'bg-slate-900/70 border-emerald-500/20 hover:border-emerald-500/40'
+                      ? isMale
+                        ? 'glass-card border-sky-400/40 shadow-xl'
+                        : 'glass-card-female border-rose-400/40 shadow-xl'
+                      : 'glass-panel border-white/10 hover:border-white/20'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-4">
@@ -171,15 +173,15 @@ export const LineagePathView: React.FC<LineagePathViewProps> = ({
                               src={member.avatar_url}
                               alt={member.full_name}
                               referrerPolicy="no-referrer"
-                              className="w-14 h-14 rounded-2xl object-cover border border-emerald-400/40 shadow-md"
+                              className="w-14 h-14 rounded-2xl object-cover border border-sky-400/30 shadow-md"
                             />
                           ) : (
-                            <div className="w-14 h-14 rounded-2xl bg-emerald-950 border border-emerald-500/30 flex items-center justify-center text-emerald-200 font-bold text-xl shadow-inner">
+                            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 border border-sky-400/25 flex items-center justify-center text-sky-200 font-bold text-xl shadow-inner">
                               {member.full_name.charAt(0)}
                             </div>
                           )
                         ) : (
-                          <div className="w-14 h-14 rounded-2xl bg-rose-950/70 border border-pink-500/30 flex items-center justify-center shadow-inner">
+                          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-950/60 to-rose-950/80 border border-rose-400/30 flex items-center justify-center shadow-inner">
                             <FemaleHeritageBadge size={34} />
                           </div>
                         )}
@@ -191,9 +193,9 @@ export const LineagePathView: React.FC<LineagePathViewProps> = ({
                           <span
                             className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${
                               isRoot
-                                ? 'bg-amber-950/80 text-amber-300 border border-amber-500/40'
+                                ? 'bg-amber-950/70 text-amber-300 border border-amber-500/30'
                                 : isTarget
-                                ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/30'
+                                ? 'bg-sky-950/70 text-sky-300 border border-sky-500/30'
                                 : 'bg-slate-800 text-slate-300'
                             }`}
                           >
@@ -209,7 +211,7 @@ export const LineagePathView: React.FC<LineagePathViewProps> = ({
                         </h3>
 
                         {member.nickname && (
-                          <p className="text-xs font-medium text-emerald-400 mb-1">
+                          <p className={`text-xs font-medium mb-1 ${isMale ? 'text-sky-300' : 'text-rose-300'}`}>
                             {member.nickname}
                           </p>
                         )}
@@ -228,7 +230,7 @@ export const LineagePathView: React.FC<LineagePathViewProps> = ({
 
                           {member.spouse_info && (
                             <div className="flex items-center gap-1.5 text-slate-300">
-                              <Heart className="w-3.5 h-3.5 text-emerald-400" />
+                              <Heart className={`w-3.5 h-3.5 ${isMale ? 'text-sky-400' : 'text-rose-400'}`} />
                               <span>{isMale ? 'الزوجات: ' : 'الزوج: '}{member.spouse_info}</span>
                             </div>
                           )}
@@ -242,7 +244,7 @@ export const LineagePathView: React.FC<LineagePathViewProps> = ({
                       </div>
                     </div>
 
-                    <span className="text-xs text-emerald-400/80 group-hover:text-emerald-300 shrink-0 font-medium hidden sm:inline">
+                    <span className="text-xs text-sky-400/80 group-hover:text-sky-300 shrink-0 font-medium hidden sm:inline">
                       عرض الملف الكامل ←
                     </span>
                   </div>
@@ -252,7 +254,7 @@ export const LineagePathView: React.FC<LineagePathViewProps> = ({
               {/* Down Arrow separator between ancestors */}
               {!isRoot && (
                 <div className="relative z-10 my-1 flex items-center justify-center">
-                  <div className="w-7 h-7 rounded-full bg-slate-900 border border-emerald-500/40 text-emerald-400 flex items-center justify-center shadow-md">
+                  <div className="w-7 h-7 rounded-full bg-slate-900 border border-white/15 text-sky-400 flex items-center justify-center shadow-md">
                     <ArrowDown className="w-4 h-4" />
                   </div>
                 </div>

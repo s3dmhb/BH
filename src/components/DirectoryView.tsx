@@ -120,13 +120,13 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
   return (
     <div className="w-full max-w-7xl 2xl:max-w-[1700px] mx-auto px-3 sm:px-6 py-6 pb-24 md:pb-10">
       {/* Control & Search Bar */}
-      <div className="glass-panel rounded-3xl p-4 sm:p-6 mb-6 sm:mb-8 border border-emerald-500/20 shadow-xl space-y-4">
+      <div className="glass-panel rounded-3xl p-4 sm:p-6 mb-6 sm:mb-8 border border-white/10 shadow-xl space-y-4">
         
         {/* Title & Live Counter */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
           <div>
             <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-white tracking-tight flex items-center gap-2">
-              <Users className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-400" />
+              <Users className="w-5 h-5 sm:w-6 sm:h-6 text-sky-400" />
               <span>دليل أفراد عائلة البوحسون</span>
             </h2>
             <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5">
@@ -136,7 +136,7 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
 
           <div className="flex items-center gap-2 text-xs">
             <span className="text-slate-400">النتائج المعروضة:</span>
-            <span className="px-3 py-1 rounded-full bg-emerald-950/80 text-emerald-300 font-mono font-bold border border-emerald-500/30">
+            <span className="px-3 py-1 rounded-full bg-white/[0.06] text-sky-300 font-mono font-bold border border-white/10">
               {filteredMembers.length} من {members.length} فرد
             </span>
           </div>
@@ -144,13 +144,13 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
 
         {/* Search input with live clear */}
         <div className="relative">
-          <Search className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <Search className="w-4 h-4 sm:w-5 sm:h-5 text-sky-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="ابحث بالاسم الكامل أو اسم الشهرة أو الأب أو الزوجة (مثال: الوجيه، أبو حسن، النوخذة)..."
-            className="w-full bg-slate-900/90 border border-emerald-500/30 rounded-2xl pr-10 sm:pr-12 pl-4 py-2.5 sm:py-3 text-xs sm:text-sm text-white placeholder-slate-400 focus:outline-none focus:border-emerald-400 shadow-inner"
+            className="w-full bg-slate-900/60 border border-white/10 rounded-2xl pr-10 sm:pr-12 pl-4 py-2.5 sm:py-3 text-xs sm:text-sm text-white placeholder-slate-400 focus:outline-none focus:border-sky-400/50 shadow-inner"
           />
           {searchQuery && (
             <button
@@ -165,12 +165,12 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
         {/* Filter Strip (Apple Style Segmented Controls) */}
         <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-white/5">
           {/* Sub-Family Lineage Filter */}
-          <div className="flex items-center gap-1 bg-slate-900/80 p-1 rounded-xl border border-emerald-500/20 shadow-inner overflow-x-auto max-w-full">
+          <div className="flex items-center gap-1 bg-slate-900/60 p-1 rounded-xl border border-white/10 shadow-inner overflow-x-auto max-w-full">
             <button
               onClick={() => setSubFamilyFilter('all')}
               className={`px-2.5 py-1.5 text-xs font-medium rounded-lg transition-all whitespace-nowrap ${
                 subFamilyFilter === 'all'
-                  ? 'bg-emerald-600 text-white font-bold'
+                  ? 'bg-white/15 text-white font-bold shadow-sm'
                   : 'text-slate-400 hover:text-white'
               }`}
             >
@@ -180,12 +180,12 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
               onClick={() => setSubFamilyFilter('albuhasson')}
               className={`flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold rounded-lg transition-all whitespace-nowrap ${
                 subFamilyFilter === 'albuhasson'
-                  ? 'bg-emerald-500 text-slate-950 font-bold shadow-md'
-                  : 'text-emerald-300 hover:text-white'
+                  ? 'bg-sky-500 text-slate-950 font-bold shadow-md'
+                  : 'text-sky-300 hover:text-white'
               }`}
               title="تصفية حسب وسم البوحسون"
             >
-              <Award className="w-3.5 h-3.5 text-emerald-300" />
+              <Award className="w-3.5 h-3.5 text-sky-300" />
               <span>البوحسون</span>
             </button>
             <button
@@ -245,17 +245,17 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
               }`}
               title="تصفية حسب وسم النواصر"
             >
-              <Shield className="w-3.5 h-3.5 text-emerald-400" />
+              <Shield className="w-3.5 h-3.5 text-teal-300" />
               <span>النواصر</span>
             </button>
           </div>
 
           {/* Gender filters */}
-          <div className="flex items-center gap-1 bg-slate-900/70 p-1 rounded-xl border border-emerald-500/15">
+          <div className="flex items-center gap-1 bg-slate-900/60 p-1 rounded-xl border border-white/10">
             <button
               onClick={() => setGenderFilter('all')}
               className={`px-2.5 sm:px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
-                genderFilter === 'all' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'
+                genderFilter === 'all' ? 'bg-white/15 text-white font-semibold' : 'text-slate-400 hover:text-white'
               }`}
             >
               الكل
@@ -263,7 +263,7 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
             <button
               onClick={() => setGenderFilter('male')}
               className={`px-2.5 sm:px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
-                genderFilter === 'male' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'
+                genderFilter === 'male' ? 'bg-sky-500/30 text-sky-200 border border-sky-400/30 font-semibold' : 'text-slate-400 hover:text-white'
               }`}
             >
               الذكور
@@ -271,7 +271,7 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
             <button
               onClick={() => setGenderFilter('female')}
               className={`px-2.5 sm:px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
-                genderFilter === 'female' ? 'bg-rose-600 text-white' : 'text-slate-400 hover:text-white'
+                genderFilter === 'female' ? 'bg-rose-500/30 text-rose-200 border border-rose-400/30 font-semibold' : 'text-slate-400 hover:text-white'
               }`}
             >
               الإناث
@@ -279,11 +279,11 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
           </div>
 
           {/* Status filters */}
-          <div className="flex items-center gap-1 bg-slate-900/70 p-1 rounded-xl border border-emerald-500/15">
+          <div className="flex items-center gap-1 bg-slate-900/60 p-1 rounded-xl border border-white/10">
             <button
               onClick={() => setStatusFilter('all')}
               className={`px-2.5 sm:px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
-                statusFilter === 'all' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'
+                statusFilter === 'all' ? 'bg-white/15 text-white font-semibold' : 'text-slate-400 hover:text-white'
               }`}
             >
               كافة الحالات
@@ -291,7 +291,7 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
             <button
               onClick={() => setStatusFilter('living')}
               className={`px-2.5 sm:px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
-                statusFilter === 'living' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'
+                statusFilter === 'living' ? 'bg-emerald-500/25 text-emerald-200 border border-emerald-400/30 font-semibold' : 'text-slate-400 hover:text-white'
               }`}
             >
               أحياء
@@ -299,7 +299,7 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
             <button
               onClick={() => setStatusFilter('deceased')}
               className={`px-2.5 sm:px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
-                statusFilter === 'deceased' ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-white'
+                statusFilter === 'deceased' ? 'bg-slate-700/80 text-slate-200 border border-white/10 font-semibold' : 'text-slate-400 hover:text-white'
               }`}
             >
               متوفون
@@ -311,7 +311,7 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
             <select
               value={selectedBranch}
               onChange={(e) => setSelectedBranch(e.target.value)}
-              className="bg-slate-900/90 border border-emerald-500/20 text-slate-200 text-xs rounded-xl px-2.5 sm:px-3 py-2 focus:outline-none focus:border-emerald-400"
+              className="bg-slate-900/80 border border-white/10 text-slate-200 text-xs rounded-xl px-2.5 sm:px-3 py-2 focus:outline-none focus:border-sky-400/50"
             >
               <option value="all">كافة الفروع</option>
               {branches.map(b => (
@@ -322,7 +322,7 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
             <select
               value={selectedGen}
               onChange={(e) => setSelectedGen(e.target.value)}
-              className="bg-slate-900/90 border border-emerald-500/20 text-slate-200 text-xs rounded-xl px-2.5 sm:px-3 py-2 focus:outline-none focus:border-emerald-400"
+              className="bg-slate-900/80 border border-white/10 text-slate-200 text-xs rounded-xl px-2.5 sm:px-3 py-2 focus:outline-none focus:border-sky-400/50"
             >
               <option value="all">كافة الأجيال</option>
               {generations.map(g => (
@@ -330,8 +330,8 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
               ))}
             </select>
 
-            <div className="flex items-center gap-1 bg-slate-900/90 border border-emerald-500/20 rounded-xl px-2 py-1">
-              <ArrowUpDown className="w-3.5 h-3.5 text-emerald-400" />
+            <div className="flex items-center gap-1 bg-slate-900/80 border border-white/10 rounded-xl px-2 py-1">
+              <ArrowUpDown className="w-3.5 h-3.5 text-sky-400" />
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as any)}
@@ -348,7 +348,7 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
 
       {/* Members Cards Grid */}
       {filteredMembers.length === 0 ? (
-        <div className="glass-panel rounded-3xl p-12 sm:p-16 text-center text-slate-400 border border-emerald-500/15">
+        <div className="glass-panel rounded-3xl p-12 sm:p-16 text-center text-slate-400 border border-white/10">
           <p className="text-base text-slate-300 mb-2">لا توجد نتائج مطابقة لمعايير البحث الحالية.</p>
           <button
             onClick={() => {
@@ -358,7 +358,7 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
               setSelectedBranch('all');
               setSelectedGen('all');
             }}
-            className="text-xs text-emerald-400 hover:underline font-semibold"
+            className="text-xs text-sky-400 hover:underline font-semibold"
           >
             إعادة تعيين كافة المرشحات
           </button>
@@ -375,11 +375,11 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
                 className={`rounded-2xl p-5 flex flex-col justify-between border transition-all duration-300 hover:-translate-y-1 ${
                   isMale
                     ? member.is_living
-                      ? 'glass-card border-emerald-500/30'
-                      : 'bg-slate-900/85 border-amber-600/35'
+                      ? 'glass-card border-sky-400/25'
+                      : 'bg-slate-900/85 border-slate-700/50'
                     : member.is_living
-                    ? 'glass-card-female border-rose-400/40'
-                    : 'bg-slate-900/85 border-pink-900/50'
+                    ? 'glass-card-female border-rose-400/35'
+                    : 'bg-slate-900/85 border-purple-900/50'
                 }`}
               >
                 <div>
@@ -393,16 +393,16 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
                             src={member.avatar_url}
                             alt={member.full_name}
                             referrerPolicy="no-referrer"
-                            className="w-13 h-13 rounded-xl object-cover border border-emerald-400/40 shadow-sm"
+                            className="w-13 h-13 rounded-xl object-cover border border-sky-400/30 shadow-sm"
                           />
                         ) : (
-                          <div className="w-13 h-13 rounded-xl bg-emerald-950/80 border border-emerald-500/30 flex items-center justify-center text-emerald-200 font-bold text-lg shadow-inner">
+                          <div className="w-13 h-13 rounded-xl bg-gradient-to-br from-slate-800 to-slate-900 border border-sky-400/25 flex items-center justify-center text-sky-200 font-bold text-lg shadow-inner">
                             {member.full_name.charAt(0)}
                           </div>
                         )
                       ) : (
                         /* Strictly NO photo for females */
-                        <div className="w-13 h-13 rounded-xl bg-rose-950/70 border border-pink-500/30 flex items-center justify-center shadow-inner">
+                        <div className="w-13 h-13 rounded-xl bg-gradient-to-br from-purple-950/60 to-rose-950/80 border border-rose-400/30 flex items-center justify-center shadow-inner">
                           <FemaleHeritageBadge size={30} />
                         </div>
                       )}
@@ -418,11 +418,11 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
                           className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${
                             member.is_living
                               ? isMale
-                                ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/30'
-                                : 'bg-rose-950 text-rose-300 border border-rose-500/30'
+                                ? 'bg-sky-950/60 text-sky-300 border border-sky-500/25'
+                                : 'bg-rose-950/60 text-rose-300 border border-rose-500/25'
                               : isMale
-                              ? 'bg-amber-950/70 text-amber-300 border border-amber-600/40'
-                              : 'bg-pink-950/70 text-pink-300/80 border border-pink-800/40'
+                              ? 'bg-slate-800/80 text-amber-200/90 border border-amber-600/30'
+                              : 'bg-slate-800/80 text-rose-200/80 border border-rose-800/30'
                           }`}
                         >
                           {member.is_living
@@ -439,7 +439,7 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
                       </h3>
 
                       {member.nickname && (
-                        <p className={`text-xs font-medium truncate ${isMale ? 'text-emerald-400' : 'text-pink-300'}`}>
+                        <p className={`text-xs font-medium truncate ${isMale ? 'text-sky-300' : 'text-rose-300'}`}>
                           {member.nickname}
                         </p>
                       )}
@@ -461,7 +461,7 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
 
                     <div className="flex items-center justify-between text-[11px]">
                       <span className="text-slate-400">الفرع العائلي:</span>
-                      <span className="text-emerald-300 font-medium">{member.branch || 'الفرع العام'}</span>
+                      <span className="text-sky-300 font-medium">{member.branch || 'الفرع العام'}</span>
                     </div>
 
                     <div className="flex items-center justify-between text-[11px]">
@@ -514,13 +514,13 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
                     title="تتبع مسار نسب الأجداد حتى المؤسس"
                     className="flex-1 py-1.5 px-2 rounded-xl glass-btn text-slate-200 hover:text-white flex items-center justify-center gap-1 text-[11px]"
                   >
-                    <GitFork className="w-3.5 h-3.5 text-emerald-400" />
+                    <GitFork className="w-3.5 h-3.5 text-sky-400" />
                     <span>مسار النسب</span>
                   </button>
 
                   <button
                     onClick={() => onSelectMember(member)}
-                    className="flex-1 py-1.5 px-2 rounded-xl bg-emerald-600/80 hover:bg-emerald-600 text-white flex items-center justify-center gap-1 text-[11px] font-medium shadow-sm"
+                    className="flex-1 py-1.5 px-2 rounded-xl bg-white/[0.08] hover:bg-white/[0.15] border border-white/10 text-white flex items-center justify-center gap-1 text-[11px] font-medium shadow-sm transition-all"
                   >
                     <Eye className="w-3.5 h-3.5" />
                     <span>تفاصيل السجل</span>

@@ -88,12 +88,13 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#03130c] text-slate-100 flex flex-col font-sans selection:bg-emerald-500/30 selection:text-emerald-200 relative overflow-x-hidden">
+    <div className="min-h-screen bg-[#0b0f17] text-slate-100 flex flex-col font-sans selection:bg-sky-500/25 selection:text-sky-100 relative overflow-x-hidden">
       
-      {/* Ambient Apple Liquid Glass Emerald Glow Accents */}
-      <div className="fixed top-0 left-1/4 w-96 h-96 bg-emerald-600/10 rounded-full blur-3xl pointer-events-none -z-10" />
-      <div className="fixed bottom-10 right-1/4 w-96 h-96 bg-teal-600/10 rounded-full blur-3xl pointer-events-none -z-10" />
-      <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-emerald-950/20 rounded-full blur-3xl pointer-events-none -z-10" />
+      {/* Ambient Apple Cupertino Multi-Spectrum Luminous Auroras */}
+      <div className="fixed top-[-10%] right-[15%] w-[550px] h-[550px] bg-sky-500/[0.04] rounded-full blur-[120px] pointer-events-none -z-10" />
+      <div className="fixed bottom-[-10%] left-[10%] w-[600px] h-[600px] bg-indigo-500/[0.04] rounded-full blur-[140px] pointer-events-none -z-10" />
+      <div className="fixed top-1/3 left-1/4 w-[450px] h-[450px] bg-rose-500/[0.025] rounded-full blur-[130px] pointer-events-none -z-10" />
+      <div className="fixed top-1/2 right-1/3 w-[400px] h-[400px] bg-amber-500/[0.025] rounded-full blur-[120px] pointer-events-none -z-10" />
 
       {/* Screen Interactive UI (Hidden during print) */}
       <div className="no-print flex flex-col flex-1">

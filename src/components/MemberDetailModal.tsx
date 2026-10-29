@@ -55,7 +55,7 @@ export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
       {/* Modal Card */}
-      <div className="relative w-full max-w-2xl max-h-[88dvh] overflow-y-auto glass-panel rounded-3xl p-5 sm:p-6 md:p-8 border border-emerald-500/30 shadow-2xl text-right">
+      <div className="relative w-full max-w-2xl max-h-[88dvh] overflow-y-auto glass-panel rounded-3xl p-5 sm:p-6 md:p-8 border border-white/10 shadow-2xl text-right">
         
         {/* Close Button */}
         <button
@@ -75,20 +75,20 @@ export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({
                   src={member.avatar_url}
                   alt={member.full_name}
                   referrerPolicy="no-referrer"
-                  className="w-20 h-20 rounded-2xl object-cover border-2 border-emerald-400/50 shadow-xl"
+                  className="w-20 h-20 rounded-2xl object-cover border border-sky-400/30 shadow-xl"
                 />
               ) : (
-                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-emerald-800 to-emerald-950 border-2 border-emerald-400/40 flex items-center justify-center text-emerald-200 font-bold text-3xl shadow-xl">
+                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 border border-sky-400/25 flex items-center justify-center text-sky-200 font-bold text-3xl shadow-xl">
                   {member.full_name.charAt(0)}
                 </div>
               )
             ) : (
               /* Strictly NO photo for females */
-              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-pink-950/70 to-rose-950/90 border-2 border-pink-500/40 flex items-center justify-center shadow-xl">
+              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-purple-950/60 to-rose-950/80 border border-rose-400/30 flex items-center justify-center shadow-xl">
                 <FemaleHeritageBadge size={48} />
               </div>
             )}
-            <span className="absolute -bottom-2 -left-2 text-xs font-mono font-bold px-2 py-0.5 rounded-md bg-slate-900 border border-white/20 text-emerald-300">
+            <span className="absolute -bottom-2 -left-2 text-xs font-mono font-bold px-2 py-0.5 rounded-md bg-slate-900 border border-white/20 text-sky-300">
               الجيل {member.generation || 1}
             </span>
           </div>
@@ -100,11 +100,11 @@ export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({
                 className={`text-xs font-semibold px-3 py-1 rounded-full ${
                   member.is_living
                     ? isMale
-                      ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/40'
-                      : 'bg-rose-950 text-rose-300 border border-rose-500/40'
+                      ? 'bg-sky-950/60 text-sky-300 border border-sky-500/25'
+                      : 'bg-rose-950/60 text-rose-300 border border-rose-500/25'
                     : isMale
-                    ? 'bg-amber-950/70 text-amber-300 border border-amber-600/40'
-                    : 'bg-pink-950/70 text-pink-300/90 border border-pink-800/40'
+                    ? 'bg-slate-800/80 text-amber-200/90 border border-amber-600/30'
+                    : 'bg-slate-800/80 text-rose-200/80 border border-rose-800/30'
                 }`}
               >
                 {member.is_living
@@ -124,7 +124,7 @@ export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({
             </h2>
 
             {member.nickname && (
-              <p className={`text-sm font-semibold ${isMale ? 'text-emerald-400' : 'text-pink-300'}`}>
+              <p className={`text-sm font-semibold ${isMale ? 'text-sky-300' : 'text-rose-300'}`}>
                 {member.nickname}
               </p>
             )}
@@ -139,9 +139,9 @@ export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({
         <div className="space-y-4 text-xs md:text-sm text-slate-200">
           
           {/* Sub-Family Heritage & Clan Banner */}
-          <div className="bg-gradient-to-r from-slate-900/90 via-slate-900/60 to-emerald-950/40 p-3.5 sm:p-4 rounded-2xl border border-emerald-500/30 flex flex-col sm:flex-row items-center sm:items-start justify-between gap-3 shadow-md">
+          <div className="bg-gradient-to-r from-slate-900/90 via-slate-900/60 to-slate-800/40 p-3.5 sm:p-4 rounded-2xl border border-white/10 flex flex-col sm:flex-row items-center sm:items-start justify-between gap-3 shadow-md">
             <div>
-              <span className="text-emerald-400 font-bold text-xs mb-1 flex items-center gap-1.5">
+              <span className="text-sky-300 font-bold text-xs mb-1 flex items-center gap-1.5">
                 <Crown className="w-4 h-4 text-amber-400" />
                 <span>الوسم والانتساب العائلي (فخذ النواصر - آل جابر):</span>
               </span>
@@ -158,7 +158,7 @@ export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="bg-slate-900/60 p-3.5 rounded-2xl border border-white/5">
               <span className="text-slate-400 block text-[11px] mb-1 flex items-center gap-1.5">
-                <Calendar className="w-3.5 h-3.5 text-emerald-400" />
+                <Calendar className="w-3.5 h-3.5 text-sky-400" />
                 <span>سنة الميلاد / العمر:</span>
               </span>
               <span className="font-semibold text-white">
@@ -190,7 +190,7 @@ export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({
                 onClose();
                 onViewLineage(member);
               }}
-              className="glass-btn px-3 py-1.5 rounded-xl text-xs font-medium text-emerald-300 hover:text-white flex items-center gap-1 shrink-0"
+              className="glass-btn px-3 py-1.5 rounded-xl text-xs font-medium text-sky-300 hover:text-white flex items-center gap-1 shrink-0"
             >
               <GitFork className="w-3.5 h-3.5" />
               <span>استعراض سلسلة النسب</span>
@@ -201,8 +201,8 @@ export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({
           {isMale ? (
             <>
               {member.spouse_info && (
-                <div className="bg-slate-900/60 p-4 rounded-2xl border border-emerald-500/15">
-                  <span className="text-emerald-400 font-semibold block text-xs mb-1.5 flex items-center gap-1.5">
+                <div className="bg-slate-900/60 p-4 rounded-2xl border border-white/5">
+                  <span className="text-sky-300 font-semibold block text-xs mb-1.5 flex items-center gap-1.5">
                     <Heart className="w-3.5 h-3.5" />
                     <span>أسماء الزوجات والمصاهرات:</span>
                   </span>
@@ -211,8 +211,8 @@ export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({
               )}
 
               {member.bio && (
-                <div className="bg-slate-900/60 p-4 rounded-2xl border border-emerald-500/15">
-                  <span className="text-emerald-400 font-semibold block text-xs mb-1.5 flex items-center gap-1.5">
+                <div className="bg-slate-900/60 p-4 rounded-2xl border border-white/5">
+                  <span className="text-sky-300 font-semibold block text-xs mb-1.5 flex items-center gap-1.5">
                     <FileText className="w-3.5 h-3.5" />
                     <span>السيرة الذاتية والنبذة التاريخية:</span>
                   </span>
@@ -223,8 +223,8 @@ export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({
           ) : (
             <>
               {member.spouse_info && (
-                <div className="bg-slate-900/60 p-4 rounded-2xl border border-pink-500/15">
-                  <span className="text-pink-300 font-semibold block text-xs mb-1.5 flex items-center gap-1.5">
+                <div className="bg-slate-900/60 p-4 rounded-2xl border border-white/5">
+                  <span className="text-rose-300 font-semibold block text-xs mb-1.5 flex items-center gap-1.5">
                     <Heart className="w-3.5 h-3.5" />
                     <span>اسم الزوج:</span>
                   </span>
@@ -233,8 +233,8 @@ export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({
               )}
 
               {member.children_summary && (
-                <div className="bg-slate-900/60 p-4 rounded-2xl border border-pink-500/15">
-                  <span className="text-pink-300 font-semibold block text-xs mb-1.5 flex items-center gap-1.5">
+                <div className="bg-slate-900/60 p-4 rounded-2xl border border-white/5">
+                  <span className="text-rose-300 font-semibold block text-xs mb-1.5 flex items-center gap-1.5">
                     <Users2 className="w-3.5 h-3.5" />
                     <span>أسماء الأبناء والبنات:</span>
                   </span>
@@ -243,8 +243,8 @@ export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({
               )}
 
               {member.notes && (
-                <div className="bg-slate-900/60 p-4 rounded-2xl border border-pink-500/15">
-                  <span className="text-pink-300 font-semibold block text-xs mb-1.5 flex items-center gap-1.5">
+                <div className="bg-slate-900/60 p-4 rounded-2xl border border-white/5">
+                  <span className="text-rose-300 font-semibold block text-xs mb-1.5 flex items-center gap-1.5">
                     <FileText className="w-3.5 h-3.5" />
                     <span>ملاحظات خاصة:</span>
                   </span>
@@ -258,14 +258,14 @@ export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({
           {childrenList.length > 0 && (
             <div className="bg-slate-900/60 p-4 rounded-2xl border border-white/5">
               <span className="text-slate-400 font-semibold block text-xs mb-2 flex items-center gap-1.5">
-                <Users2 className="w-3.5 h-3.5 text-emerald-400" />
+                <Users2 className="w-3.5 h-3.5 text-sky-400" />
                 <span>الذرية المسجلة في الشجرة ({childrenList.length} فرد):</span>
               </span>
               <div className="flex flex-wrap gap-2">
                 {childrenList.map(c => (
                   <span
                     key={c.id}
-                    className="px-2.5 py-1 rounded-lg bg-emerald-950/60 border border-emerald-500/20 text-xs text-slate-200"
+                    className="px-2.5 py-1 rounded-lg bg-white/[0.06] border border-white/10 text-xs text-slate-200"
                   >
                     {c.full_name} ({c.gender === 'male' ? 'ابن' : 'ابنة'})
                   </span>
@@ -330,7 +330,7 @@ export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({
                     onEdit(member);
                   }
                 }}
-                className="glass-btn px-4 py-2 rounded-xl text-xs font-semibold text-emerald-300 hover:text-white flex items-center gap-1.5"
+                className="glass-btn px-4 py-2 rounded-xl text-xs font-semibold text-sky-300 hover:text-white flex items-center gap-1.5"
               >
                 {isAdmin ? <Edit3 className="w-4 h-4" /> : <Lock className="w-3.5 h-3.5 text-amber-400" />}
                 <span>{isAdmin ? 'تعديل السجل' : 'تعديل (إذن المدير)'}</span>

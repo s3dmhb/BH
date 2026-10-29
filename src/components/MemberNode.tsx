@@ -39,14 +39,14 @@ export const MemberNode: React.FC<MemberNodeProps> = ({
         className={`w-[260px] sm:w-[272px] md:w-72 rounded-2xl p-3 sm:p-3.5 cursor-pointer text-right transition-all duration-300 relative border ${
           isMale
             ? member.is_living
-              ? 'glass-card border-emerald-500/30'
-              : 'bg-slate-900/85 border-amber-600/35'
+              ? 'glass-card border-sky-400/25'
+              : 'bg-slate-900/85 border-slate-700/50'
             : member.is_living
-            ? 'glass-card-female border-rose-400/40'
-            : 'bg-slate-900/85 border-pink-900/50'
+            ? 'glass-card-female border-rose-400/35'
+            : 'bg-slate-900/85 border-purple-900/50'
         } ${
           isHighlighted
-            ? 'ring-2 ring-emerald-400 shadow-[0_0_25px_rgba(16,185,129,0.4)] scale-105'
+            ? 'ring-2 ring-sky-400 shadow-[0_0_24px_rgba(56,189,248,0.35)] scale-105'
             : 'hover:scale-[1.02] active:scale-[0.98]'
         }`}
       >
@@ -60,20 +60,20 @@ export const MemberNode: React.FC<MemberNodeProps> = ({
                   src={member.avatar_url}
                   alt={member.full_name}
                   referrerPolicy="no-referrer"
-                  className="w-12 h-12 rounded-xl object-cover border border-emerald-400/40 shadow-inner"
+                  className="w-12 h-12 rounded-xl object-cover border border-sky-400/30 shadow-inner"
                   onError={(e) => {
                     // Fallback to monogram if URL fails
                     (e.target as HTMLElement).style.display = 'none';
                   }}
                 />
               ) : (
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-800 to-emerald-950 border border-emerald-400/30 flex items-center justify-center text-emerald-200 font-bold text-lg shadow-inner">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-slate-800 to-slate-900 border border-sky-400/25 flex items-center justify-center text-sky-200 font-bold text-lg shadow-inner">
                   {firstLetter}
                 </div>
               )
             ) : (
               /* Strictly NO avatar for females: use dignified heritage rosette emblem */
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-pink-950/70 to-rose-950/90 border border-pink-500/30 flex items-center justify-center shadow-inner">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-950/60 to-rose-950/80 border border-rose-400/30 flex items-center justify-center shadow-inner">
                 <FemaleHeritageBadge size={28} />
               </div>
             )}
@@ -82,8 +82,8 @@ export const MemberNode: React.FC<MemberNodeProps> = ({
             <span
               className={`absolute -bottom-1 -left-1 text-[10px] font-mono px-1.5 py-0.2 rounded-md font-semibold ${
                 isMale
-                  ? 'bg-emerald-900/90 text-emerald-300 border border-emerald-500/30'
-                  : 'bg-rose-950/90 text-pink-300 border border-rose-500/30'
+                  ? 'bg-slate-900 text-sky-300 border border-sky-500/25'
+                  : 'bg-slate-900 text-rose-300 border border-rose-500/25'
               }`}
               title={`الجيل رقم ${member.generation || 1}`}
             >
@@ -98,11 +98,11 @@ export const MemberNode: React.FC<MemberNodeProps> = ({
                 className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${
                   member.is_living
                     ? isMale
-                      ? 'bg-emerald-950/80 text-emerald-300 border border-emerald-500/30'
-                      : 'bg-rose-950/80 text-rose-300 border border-rose-500/30'
+                      ? 'bg-sky-950/60 text-sky-300 border border-sky-500/25'
+                      : 'bg-rose-950/60 text-rose-300 border border-rose-500/25'
                     : isMale
-                    ? 'bg-amber-950/60 text-amber-300/90 border border-amber-700/40'
-                    : 'bg-pink-950/60 text-pink-300/80 border border-pink-800/40'
+                    ? 'bg-slate-800/80 text-amber-200/90 border border-amber-600/30'
+                    : 'bg-slate-800/80 text-rose-200/80 border border-rose-800/30'
                 }`}
               >
                 {member.is_living
@@ -121,7 +121,7 @@ export const MemberNode: React.FC<MemberNodeProps> = ({
             {member.nickname && (
               <p
                 className={`text-xs font-medium truncate mt-0.5 ${
-                  isMale ? 'text-emerald-400' : 'text-pink-300'
+                  isMale ? 'text-sky-300' : 'text-rose-300'
                 }`}
                 title={member.nickname}
               >
@@ -142,7 +142,7 @@ export const MemberNode: React.FC<MemberNodeProps> = ({
             <>
               {member.spouse_info && (
                 <div className="flex items-center gap-1.5 text-slate-300 truncate">
-                  <Heart className="w-3 h-3 text-emerald-400 shrink-0" />
+                  <Heart className="w-3 h-3 text-sky-400 shrink-0" />
                   <span className="text-slate-400 shrink-0">الزوجات:</span>
                   <span className="truncate">{member.spouse_info}</span>
                 </div>
@@ -157,14 +157,14 @@ export const MemberNode: React.FC<MemberNodeProps> = ({
             <>
               {member.spouse_info && (
                 <div className="flex items-center gap-1.5 text-slate-300 truncate">
-                  <Heart className="w-3 h-3 text-pink-400 shrink-0" />
+                  <Heart className="w-3 h-3 text-rose-400 shrink-0" />
                   <span className="text-slate-400 shrink-0">الزوج:</span>
                   <span className="truncate">{member.spouse_info}</span>
                 </div>
               )}
               {member.children_summary && (
                 <div className="flex items-center gap-1.5 text-slate-300 truncate">
-                  <Users2 className="w-3 h-3 text-pink-400 shrink-0" />
+                  <Users2 className="w-3 h-3 text-rose-400 shrink-0" />
                   <span className="text-slate-400 shrink-0">الأبناء:</span>
                   <span className="truncate">{member.children_summary}</span>
                 </div>
@@ -176,7 +176,7 @@ export const MemberNode: React.FC<MemberNodeProps> = ({
         {/* Click hint affordance */}
         <div className="mt-2 flex items-center justify-between text-[10px] text-slate-400 pt-1">
           <span className="text-slate-400">{member.branch || 'الفرع العام'}</span>
-          <span className="flex items-center gap-1 text-emerald-400 group-hover:underline">
+          <span className="flex items-center gap-1 text-sky-400 group-hover:underline">
             <Eye className="w-3 h-3" />
             <span>عرض السجل</span>
           </span>
@@ -192,7 +192,7 @@ export const MemberNode: React.FC<MemberNodeProps> = ({
               onToggleCollapse();
             }}
             title={isCollapsed ? 'توسيع الأبناء والذرية' : 'طي الأبناء والذرية'}
-            className="w-6 h-6 rounded-full bg-emerald-900 border border-emerald-400/50 text-emerald-200 flex items-center justify-center hover:bg-emerald-800 hover:scale-110 shadow-md transition-transform"
+            className="w-6 h-6 rounded-full bg-white/[0.08] hover:bg-white/[0.15] border border-white/10 text-white flex items-center justify-center hover:scale-110 shadow-md transition-all backdrop-blur-md"
           >
             {isCollapsed ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronUp className="w-3.5 h-3.5" />}
           </button>
@@ -203,13 +203,13 @@ export const MemberNode: React.FC<MemberNodeProps> = ({
       {isHovered && (
         <div
           className={`hidden md:block absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-80 p-4 rounded-2xl glass-panel shadow-2xl z-50 pointer-events-none text-right border ${
-            isMale ? 'border-emerald-500/30' : 'border-pink-500/30'
+            isMale ? 'border-sky-400/25' : 'border-rose-400/25'
           } animate-in fade-in duration-200`}
         >
           <div className="flex items-center justify-between border-b border-white/10 pb-2 mb-2">
             <div>
               <h4 className="text-sm font-bold text-white">{member.full_name}</h4>
-              <p className={`text-xs font-medium ${isMale ? 'text-emerald-400' : 'text-pink-300'}`}>
+              <p className={`text-xs font-medium ${isMale ? 'text-sky-300' : 'text-rose-300'}`}>
                 {member.nickname || 'عائلة البوحسون'}
               </p>
               <div className="mt-1">
@@ -219,7 +219,9 @@ export const MemberNode: React.FC<MemberNodeProps> = ({
             <span
               className={`text-[10px] px-2 py-0.5 rounded-full ${
                 member.is_living
-                  ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/30'
+                  ? isMale
+                    ? 'bg-sky-950/60 text-sky-300 border border-sky-500/25'
+                    : 'bg-rose-950/60 text-rose-300 border border-rose-500/25'
                   : 'bg-slate-800 text-slate-400'
               }`}
             >
@@ -240,7 +242,7 @@ export const MemberNode: React.FC<MemberNodeProps> = ({
                 {member.spouse_info && (
                   <div>
                     <span className="text-slate-400 block text-[11px] font-semibold mb-0.5">أسماء الزوجات:</span>
-                    <p className="text-slate-200 text-xs bg-slate-900/60 p-1.5 rounded-lg border border-emerald-500/10">
+                    <p className="text-slate-200 text-xs bg-slate-900/60 p-1.5 rounded-lg border border-white/5">
                       {member.spouse_info}
                     </p>
                   </div>
@@ -248,7 +250,7 @@ export const MemberNode: React.FC<MemberNodeProps> = ({
                 {member.bio && (
                   <div>
                     <span className="text-slate-400 block text-[11px] font-semibold mb-0.5">السيرة الذاتية:</span>
-                    <p className="text-slate-200 text-xs leading-relaxed bg-slate-900/60 p-2 rounded-lg border border-emerald-500/10 max-h-32 overflow-y-auto">
+                    <p className="text-slate-200 text-xs leading-relaxed bg-slate-900/60 p-2 rounded-lg border border-white/5 max-h-32 overflow-y-auto">
                       {member.bio}
                     </p>
                   </div>
@@ -259,7 +261,7 @@ export const MemberNode: React.FC<MemberNodeProps> = ({
                 {member.spouse_info && (
                   <div>
                     <span className="text-slate-400 block text-[11px] font-semibold mb-0.5">اسم الزوج:</span>
-                    <p className="text-slate-200 text-xs bg-slate-900/60 p-1.5 rounded-lg border border-pink-500/10">
+                    <p className="text-slate-200 text-xs bg-slate-900/60 p-1.5 rounded-lg border border-white/5">
                       {member.spouse_info}
                     </p>
                   </div>
@@ -267,7 +269,7 @@ export const MemberNode: React.FC<MemberNodeProps> = ({
                 {member.children_summary && (
                   <div>
                     <span className="text-slate-400 block text-[11px] font-semibold mb-0.5">ملخص الأبناء:</span>
-                    <p className="text-slate-200 text-xs bg-slate-900/60 p-1.5 rounded-lg border border-pink-500/10">
+                    <p className="text-slate-200 text-xs bg-slate-900/60 p-1.5 rounded-lg border border-white/5">
                       {member.children_summary}
                     </p>
                   </div>
@@ -275,7 +277,7 @@ export const MemberNode: React.FC<MemberNodeProps> = ({
                 {member.notes && (
                   <div>
                     <span className="text-slate-400 block text-[11px] font-semibold mb-0.5">ملاحظات خاصة:</span>
-                    <p className="text-slate-200 text-xs leading-relaxed bg-slate-900/60 p-2 rounded-lg border border-pink-500/10">
+                    <p className="text-slate-200 text-xs leading-relaxed bg-slate-900/60 p-2 rounded-lg border border-white/5">
                       {member.notes}
                     </p>
                   </div>
@@ -286,7 +288,7 @@ export const MemberNode: React.FC<MemberNodeProps> = ({
 
           <div className="mt-2.5 pt-2 border-t border-white/10 flex items-center justify-between text-[10px] text-slate-400">
             <span>انقر لفتح الملف والنسب الكامل</span>
-            <Sparkles className="w-3 h-3 text-emerald-400" />
+            <Sparkles className="w-3 h-3 text-sky-400" />
           </div>
         </div>
       )}
