@@ -1,6 +1,7 @@
 import React from 'react';
-import { ViewMode } from '../types/family';
+import { ViewMode, FamilyMember } from '../types/family';
 import { HeritageCrest } from './HeritageCrest';
+import { HeaderQuickSearch } from './HeaderQuickSearch';
 import { User } from 'firebase/auth';
 import { Network, GitFork, Users, BarChart3, Plus, Settings2, Printer, Lock, LogOut, Cloud, Sparkles, FileImage } from 'lucide-react';
 
@@ -17,6 +18,9 @@ interface HeaderProps {
   cloudSyncStatus?: 'connecting' | 'connected' | 'offline' | 'error';
   onOpenLoginModal: () => void;
   onLogout: () => void;
+  members: FamilyMember[];
+  memberMap?: Map<string, FamilyMember>;
+  onSelectMember: (member: FamilyMember) => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -31,7 +35,10 @@ export const Header: React.FC<HeaderProps> = ({
   isCloudConnected = true,
   cloudSyncStatus = 'connected',
   onOpenLoginModal,
-  onLogout
+  onLogout,
+  members,
+  memberMap,
+  onSelectMember
 }) => {
   return (
     <>
@@ -61,6 +68,14 @@ export const Header: React.FC<HeaderProps> = ({
               </span>
             </div>
           </div>
+
+          {/* Quick Instant Search Bar */}
+          <HeaderQuickSearch
+            members={members}
+            memberMap={memberMap}
+            onSelectMember={onSelectMember}
+            className="flex-1 max-w-[180px] sm:max-w-[220px] md:max-w-[240px] lg:max-w-xs xl:max-w-sm mx-1 sm:mx-2"
+          />
 
           {/* Zone 2: Navigation Views (Desktop Segmented Apple Bar) */}
           <nav className="hidden md:flex items-center gap-1 p-1 bg-white/[0.04] border border-white/[0.08] rounded-2xl backdrop-blur-md">

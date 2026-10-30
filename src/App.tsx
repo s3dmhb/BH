@@ -112,6 +112,9 @@ export default function App() {
           cloudSyncStatus={cloudSyncStatus}
           onOpenLoginModal={() => setIsLoginModalOpen(true)}
           onLogout={logout}
+          members={members}
+          memberMap={memberMap}
+          onSelectMember={(m) => setSelectedMember(m)}
         />
 
         {/* Main Content Area */}
