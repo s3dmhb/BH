@@ -34,7 +34,8 @@ import {
   Gem,
   Flame,
   Waves,
-  FileImage
+  FileImage,
+  Focus
 } from 'lucide-react';
 
 interface TreeViewProps {
@@ -67,8 +68,9 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
 
   // Touch gesture tracking for pinch zoom & pan
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
-  const touchDistanceRef = useRef<number | null>(null);
-  const initialScaleRef = useRef<number>(0.85);
+  const pinchStartDistRef = useRef<number | null>(null);
+  const pinchStartScaleRef = useRef<number>(0.85);
+  const pinchCanvasCenterRef = useRef<{ x: number; y: number } | null>(null);
 
   // Filters & Interactivity
   const [searchQuery, setSearchQuery] = useState('');
@@ -502,62 +504,152 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
 
   const handleMouseUp = () => setIsDragging(false);
 
-  // Wheel Zoom
+  // Anchor-Point Zoom Helper (Zooms smoothly around cursor or center of screen)
+  const zoomAtPoint = useCallback((targetScale: number, screenPoint?: { x: number; y: number }) => {
+    const clampedScale = Math.min(Math.max(0.2, targetScale), 2.2);
+    const container = containerRef.current;
+    if (!container) {
+      setScale(clampedScale);
+      return;
+    }
+    const rect = container.getBoundingClientRect();
+    const sx = screenPoint ? screenPoint.x - rect.left : rect.width / 2;
+    const sy = screenPoint ? screenPoint.y - rect.top : rect.height / 2;
+
+    const cx = (sx - position.x) / scale;
+    const cy = (sy - position.y) / scale;
+
+    const newX = sx - cx * clampedScale;
+    const newY = sy - cy * clampedScale;
+
+    setScale(clampedScale);
+    setPosition({ x: newX, y: newY });
+  }, [position, scale]);
+
+  // Wheel Zoom (Zoom directly towards cursor)
   const handleWheel = (e: React.WheelEvent) => {
     e.preventDefault();
-    const zoomFactor = e.deltaY < 0 ? 1.08 : 0.92;
-    setScale(prev => Math.min(Math.max(0.2, prev * zoomFactor), 1.8));
+    const zoomFactor = e.deltaY < 0 ? 1.1 : 0.9;
+    zoomAtPoint(scale * zoomFactor, { x: e.clientX, y: e.clientY });
   };
 
-  // Touch Handlers
+  // Touch Handlers for Fluid Mobile Navigation (1-Finger Pan + 2-Finger Centered Pinch Zoom)
   const handleTouchStart = (e: React.TouchEvent) => {
     if ((e.target as HTMLElement).closest('button, input, select, a, .node-card')) return;
+
+    const container = containerRef.current;
+    const rect = container ? container.getBoundingClientRect() : { left: 0, top: 0, width: window.innerWidth, height: window.innerHeight };
 
     if (e.touches.length === 1) {
       touchStartRef.current = {
         x: e.touches[0].clientX - position.x,
         y: e.touches[0].clientY - position.y
       };
-      touchDistanceRef.current = null;
-    } else if (e.touches.length === 2) {
-      const dx = e.touches[0].clientX - e.touches[1].clientX;
-      const dy = e.touches[0].clientY - e.touches[1].clientY;
-      touchDistanceRef.current = Math.hypot(dx, dy);
-      initialScaleRef.current = scale;
+      pinchStartDistRef.current = null;
+      pinchCanvasCenterRef.current = null;
+    } else if (e.touches.length >= 2) {
+      const t0 = e.touches[0];
+      const t1 = e.touches[1];
+      const dist = Math.hypot(t0.clientX - t1.clientX, t0.clientY - t1.clientY);
+      pinchStartDistRef.current = dist > 0 ? dist : 1;
+      pinchStartScaleRef.current = scale;
+
+      const midX = (t0.clientX + t1.clientX) / 2 - rect.left;
+      const midY = (t0.clientY + t1.clientY) / 2 - rect.top;
+
+      pinchCanvasCenterRef.current = {
+        x: (midX - position.x) / scale,
+        y: (midY - position.y) / scale
+      };
     }
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
+    const container = containerRef.current;
+    const rect = container ? container.getBoundingClientRect() : { left: 0, top: 0, width: window.innerWidth, height: window.innerHeight };
+
     if (e.touches.length === 1 && touchStartRef.current) {
+      // 1-Finger Pan
       setPosition({
         x: e.touches[0].clientX - touchStartRef.current.x,
         y: e.touches[0].clientY - touchStartRef.current.y
       });
-    } else if (e.touches.length === 2 && touchDistanceRef.current) {
-      const dx = e.touches[0].clientX - e.touches[1].clientX;
-      const dy = e.touches[0].clientY - e.touches[1].clientY;
-      const newDistance = Math.hypot(dx, dy);
-      const ratio = newDistance / touchDistanceRef.current;
-      setScale(Math.min(Math.max(0.2, initialScaleRef.current * ratio), 1.8));
+    } else if (e.touches.length >= 2 && pinchStartDistRef.current && pinchCanvasCenterRef.current) {
+      // 2-Finger Pinch Zoom centered under fingers
+      const t0 = e.touches[0];
+      const t1 = e.touches[1];
+      const dist = Math.hypot(t0.clientX - t1.clientX, t0.clientY - t1.clientY);
+      const ratio = dist / pinchStartDistRef.current;
+      const targetScale = Math.min(Math.max(0.2, pinchStartScaleRef.current * ratio), 2.2);
+
+      const currMidX = (t0.clientX + t1.clientX) / 2 - rect.left;
+      const currMidY = (t0.clientY + t1.clientY) / 2 - rect.top;
+
+      const cx = pinchCanvasCenterRef.current.x;
+      const cy = pinchCanvasCenterRef.current.y;
+
+      setScale(targetScale);
+      setPosition({
+        x: currMidX - cx * targetScale,
+        y: currMidY - cy * targetScale
+      });
     }
   };
 
-  const handleTouchEnd = () => {
-    touchStartRef.current = null;
-    touchDistanceRef.current = null;
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (e.touches.length === 1) {
+      // Finger lifted: seamlessly transition back to 1-finger panning without snapping
+      touchStartRef.current = {
+        x: e.touches[0].clientX - position.x,
+        y: e.touches[0].clientY - position.y
+      };
+      pinchStartDistRef.current = null;
+      pinchCanvasCenterRef.current = null;
+    } else if (e.touches.length === 0) {
+      touchStartRef.current = null;
+      pinchStartDistRef.current = null;
+      pinchCanvasCenterRef.current = null;
+    }
   };
 
+  // Fit Entire Family Tree into Viewport
+  const handleFitView = useCallback(() => {
+    const container = containerRef.current;
+    const containerW = container?.clientWidth || window.innerWidth;
+    const containerH = container?.clientHeight || window.innerHeight;
+
+    const treeW = bounds.maxX - bounds.minX + CARD_WIDTH + 80;
+    const treeH = bounds.maxY - bounds.minY + CARD_HEIGHT + 140;
+
+    if (treeW <= 0 || treeH <= 0) return;
+
+    const scaleX = (containerW - 40) / treeW;
+    const scaleY = (containerH - 140) / treeH;
+    const optimalScale = Math.min(Math.max(Math.min(scaleX, scaleY), 0.25), 1.15);
+
+    const centerX = (bounds.minX + bounds.maxX) / 2;
+    const centerY = (bounds.minY + bounds.maxY) / 2;
+
+    setScale(optimalScale);
+    setPosition({
+      x: containerW / 2 - centerX * optimalScale,
+      y: containerH / 2 - centerY * optimalScale + 25
+    });
+    setFocusedMemberId(null);
+  }, [bounds]);
+
   // Reset & Center View
-  const handleResetView = () => {
+  const handleResetView = useCallback(() => {
     const isMobile = window.innerWidth < 768;
-    setScale(isMobile ? 0.6 : 0.85);
+    const defaultScale = isMobile ? 0.6 : 0.85;
+    setScale(defaultScale);
     if (layoutMode === 'horizontal') {
       setPosition({ x: isMobile ? 80 : 350, y: isMobile ? 120 : 250 });
     } else {
       setPosition({ x: window.innerWidth / 2, y: 140 });
     }
     setFocusedMemberId(null);
-  };
+  }, [layoutMode]);
 
   // Jump to specific member and center canvas
   const handleCenterOnMember = (memberId: string) => {
@@ -616,7 +708,7 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
 
   return (
     <div
-      className={`relative w-full h-[calc(100vh-125px)] min-h-[580px] overflow-hidden bg-radial from-[#121c2e]/45 via-[#0c1017] to-[#070a0f] flex flex-col font-sans select-none ${
+      className={`relative w-full h-[calc(100vh-125px)] min-h-[580px] overflow-hidden bg-[#f8fafc] flex flex-col font-sans select-none ${
         isFullscreen ? 'fixed inset-0 z-50 h-screen' : ''
       }`}
     >
@@ -746,23 +838,31 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
             {layoutMode !== 'flow' && (
               <>
                 <button
-                  onClick={() => setScale(prev => Math.min(prev + 0.15, 1.8))}
+                  onClick={() => zoomAtPoint(scale + 0.18)}
                   title="تكبير المخطط"
-                  className="w-8 h-8 rounded-xl glass-btn flex items-center justify-center text-slate-200 hover:text-white active:scale-95"
+                  className="w-8 h-8 rounded-xl bg-white/95 border border-slate-200/90 shadow-xs flex items-center justify-center text-slate-700 hover:text-sky-600 hover:border-sky-300 active:scale-95 transition-all"
                 >
                   <ZoomIn className="w-3.5 h-3.5" />
                 </button>
                 <button
-                  onClick={() => setScale(prev => Math.max(prev - 0.15, 0.2))}
+                  onClick={() => zoomAtPoint(scale - 0.18)}
                   title="تصغير المخطط"
-                  className="w-8 h-8 rounded-xl glass-btn flex items-center justify-center text-slate-200 hover:text-white active:scale-95"
+                  className="w-8 h-8 rounded-xl bg-white/95 border border-slate-200/90 shadow-xs flex items-center justify-center text-slate-700 hover:text-sky-600 hover:border-sky-300 active:scale-95 transition-all"
                 >
                   <ZoomOut className="w-3.5 h-3.5" />
                 </button>
                 <button
+                  onClick={handleFitView}
+                  title="ملاءمة كامل الشجرة للشاشة"
+                  className="h-8 px-2 rounded-xl bg-white/95 border border-slate-200/90 shadow-xs hidden sm:flex items-center gap-1 text-[11px] font-semibold text-slate-700 hover:text-sky-600 hover:border-sky-300 active:scale-95 transition-all"
+                >
+                  <Focus className="w-3.5 h-3.5 text-sky-600" />
+                  <span className="hidden md:inline">ملاءمة</span>
+                </button>
+                <button
                   onClick={handleResetView}
                   title="إعادة التوسيط والتكبير الافتراضي"
-                  className="w-8 h-8 rounded-xl glass-btn flex items-center justify-center text-slate-200 hover:text-white active:scale-95"
+                  className="w-8 h-8 rounded-xl bg-white/95 border border-slate-200/90 shadow-xs flex items-center justify-center text-slate-700 hover:text-sky-600 hover:border-sky-300 active:scale-95 transition-all"
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
                 </button>
@@ -773,7 +873,7 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
             <button
               onClick={handleExpandAll}
               title="توسيع كافة فروع وذرية الشجرة"
-              className="hidden lg:flex px-2 h-8 rounded-xl glass-btn text-[11px] font-medium text-emerald-300 items-center gap-1"
+              className="hidden lg:flex px-2 h-8 rounded-xl bg-white/95 border border-slate-200/90 shadow-xs text-[11px] font-semibold text-emerald-700 hover:text-emerald-800 hover:border-emerald-300 items-center gap-1 active:scale-95 transition-all"
             >
               <Maximize2 className="w-3 h-3" />
               <span>توسيع</span>
@@ -781,7 +881,7 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
             <button
               onClick={handleCollapseAll}
               title="طي كافة الفروع"
-              className="hidden lg:flex px-2 h-8 rounded-xl glass-btn text-[11px] font-medium text-slate-300 items-center gap-1"
+              className="hidden lg:flex px-2 h-8 rounded-xl bg-white/95 border border-slate-200/90 shadow-xs text-[11px] font-semibold text-slate-700 hover:text-slate-900 hover:border-slate-300 items-center gap-1 active:scale-95 transition-all"
             >
               <Minimize2 className="w-3 h-3" />
               <span>طي</span>
@@ -791,9 +891,9 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
             <button
               onClick={() => setIsFullscreen(!isFullscreen)}
               title={isFullscreen ? 'تصغير الشاشة' : 'ملء الشاشة الكاملة'}
-              className="w-8 h-8 rounded-xl glass-btn flex items-center justify-center text-slate-300 hover:text-white"
+              className="w-8 h-8 rounded-xl bg-white/95 border border-slate-200/90 shadow-xs flex items-center justify-center text-slate-700 hover:text-slate-900 active:scale-95 transition-all"
             >
-              {isFullscreen ? <Shrink className="w-3.5 h-3.5 text-amber-400" /> : <Expand className="w-3.5 h-3.5" />}
+              {isFullscreen ? <Shrink className="w-3.5 h-3.5 text-amber-500" /> : <Expand className="w-3.5 h-3.5" />}
             </button>
 
             {/* Export as Image Button */}
@@ -801,9 +901,9 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
               <button
                 onClick={onOpenExportImage}
                 title="تصدير شجرة العائلة كصورة (PNG) عالي الجودة للطباعة أو المشاركة"
-                className="h-8 px-2.5 rounded-xl glass-btn text-xs font-semibold text-emerald-300 hover:text-white flex items-center gap-1.5 transition-all active:scale-95 shadow-md shadow-emerald-950/40 bg-emerald-950/60 border border-emerald-500/40"
+                className="h-8 px-2.5 rounded-xl text-xs font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 flex items-center gap-1.5 transition-all active:scale-95 shadow-xs"
               >
-                <FileImage className="w-3.5 h-3.5 text-emerald-400" />
+                <FileImage className="w-3.5 h-3.5 text-emerald-600" />
                 <span className="hidden sm:inline">تصدير كصورة</span>
               </button>
             )}
@@ -939,12 +1039,13 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
             isDragging ? 'cursor-grabbing' : ''
           }`}
         >
-          {/* Eye-Comfort Subtle Light Canvas Grid */}
+          {/* Eye-Comfort Pure Restful Light Canvas (No harsh dots) */}
+          <div className="absolute inset-0 bg-[#f8fafc] pointer-events-none" />
           <div
-            className="absolute inset-0 opacity-70 pointer-events-none"
+            className="absolute inset-0 opacity-30 pointer-events-none"
             style={{
-              backgroundImage: `radial-gradient(circle, #cbd5e1 1.2px, transparent 1.2px)`,
-              backgroundSize: '28px 28px'
+              backgroundImage: `linear-gradient(to right, #cbd5e1 1px, transparent 1px), linear-gradient(to bottom, #cbd5e1 1px, transparent 1px)`,
+              backgroundSize: '48px 48px'
             }}
           />
 
@@ -952,8 +1053,8 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
           <div
             style={{
               transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
-              transformOrigin: 'top center',
-              transition: isDragging || touchDistanceRef.current ? 'none' : 'transform 0.12s cubic-bezier(0.16, 1, 0.3, 1)'
+              transformOrigin: '0 0',
+              transition: isDragging || pinchStartDistRef.current ? 'none' : 'transform 0.12s cubic-bezier(0.16, 1, 0.3, 1)'
             }}
             className="absolute top-0 left-0 w-full h-full pointer-events-auto"
           >
@@ -970,12 +1071,7 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
               <defs>
                 {/* Glow Filter for Active Lineage */}
                 <filter id="goldGlow" x="-20%" y="-20%" width="140%" height="140%">
-                  <feGaussianBlur stdDeviation="2.5" result="blur" />
-                  <feComposite in="SourceGraphic" in2="blur" operator="over" />
-                </filter>
-                <filter id="cyanGlow" x="-20%" y="-20%" width="140%" height="140%">
-                  <feGaussianBlur stdDeviation="2.5" result="blur" />
-                  <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                  <feDropShadow dx="0" dy="1" stdDeviation="2.5" floodColor="#d97706" floodOpacity="0.5" />
                 </filter>
                 <linearGradient id="activeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                   <stop offset="0%" stopColor="#d97706" />
@@ -1082,10 +1178,11 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
                     <path
                       d={pathData}
                       fill="none"
-                      stroke={isActiveLink ? '#d97706' : '#475569'}
-                      strokeWidth={isActiveLink ? 3.8 : 2}
-                      strokeOpacity={isActiveLink ? 1 : 0.45}
+                      stroke={isActiveLink ? '#b45309' : '#64748b'}
+                      strokeWidth={isActiveLink ? 3.6 : 2.2}
+                      strokeOpacity={isActiveLink ? 1 : 0.72}
                       strokeLinecap="round"
+                      strokeLinejoin="round"
                       filter={isActiveLink ? 'url(#goldGlow)' : undefined}
                       className="transition-all duration-300"
                     />
@@ -1095,7 +1192,7 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
                       <path
                         d={pathData}
                         fill="none"
-                        stroke="#fef08a"
+                        stroke="#f59e0b"
                         strokeWidth={2}
                         strokeDasharray="6 8"
                         className="animate-pulse"
@@ -1106,8 +1203,10 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
                     <circle
                       cx={link.sourceX}
                       cy={link.sourceY}
-                      r={isActiveLink ? 4 : 2.5}
+                      r={isActiveLink ? 4.5 : 3.5}
                       fill={isActiveLink ? '#d97706' : '#0284c7'}
+                      stroke="#ffffff"
+                      strokeWidth={1.5}
                       className="transition-all duration-300"
                     />
 
@@ -1115,8 +1214,10 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
                     <circle
                       cx={link.targetX}
                       cy={link.targetY}
-                      r={isActiveLink ? 4.5 : 3}
-                      fill={isActiveLink ? '#d97706' : '#475569'}
+                      r={isActiveLink ? 4.5 : 3.5}
+                      fill={isActiveLink ? '#d97706' : '#64748b'}
+                      stroke="#ffffff"
+                      strokeWidth={1.5}
                       className="transition-all duration-300"
                     />
                   </g>
@@ -1409,31 +1510,49 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
         </div>
       )}
 
-      {/* Floating Canvas Quick Mobile Zoom Dock (Within Easy Thumb Reach) */}
+      {/* Floating Canvas Quick Mobile Zoom & Pan Control Dock */}
       {layoutMode !== 'flow' && (
-        <div className="sm:hidden absolute top-20 left-3 z-30 flex flex-col gap-1.5 pointer-events-auto">
+        <aside
+          aria-label="أدوات التكبير والتنقل السريع للجوال"
+          className="sm:hidden absolute bottom-28 left-3 z-30 flex flex-col gap-1 bg-white/95 backdrop-blur-md p-1.5 rounded-2xl border border-slate-200/90 shadow-lg pointer-events-auto"
+        >
           <button
-            onClick={() => setScale(prev => Math.min(prev + 0.15, 1.8))}
-            title="تكبير"
-            className="w-11 h-11 rounded-xl glass-btn flex items-center justify-center text-slate-700 font-bold shadow-md active:scale-95"
+            onClick={() => zoomAtPoint(scale + 0.2)}
+            title="تكبير المخطط"
+            className="w-10 h-10 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-800 font-bold active:scale-95 transition-all shadow-xs"
           >
             <ZoomIn className="w-5 h-5 text-sky-600" />
           </button>
           <button
-            onClick={() => setScale(prev => Math.max(prev - 0.15, 0.2))}
-            title="تصغير"
-            className="w-11 h-11 rounded-xl glass-btn flex items-center justify-center text-slate-700 font-bold shadow-md active:scale-95"
+            onClick={() => zoomAtPoint(1.0)}
+            title="مقياس 100%"
+            className="w-10 h-6 rounded-lg bg-sky-50 text-[10px] font-mono font-bold text-sky-800 flex items-center justify-center border border-sky-200 active:scale-95"
+          >
+            {Math.round(scale * 100)}%
+          </button>
+          <button
+            onClick={() => zoomAtPoint(scale - 0.2)}
+            title="تصغير المخطط"
+            className="w-10 h-10 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-800 font-bold active:scale-95 transition-all shadow-xs"
           >
             <ZoomOut className="w-5 h-5 text-sky-600" />
           </button>
+          <div className="w-full h-px bg-slate-200 my-0.5" />
+          <button
+            onClick={handleFitView}
+            title="ملاءمة كامل الشجرة للشاشة"
+            className="w-10 h-10 rounded-xl bg-sky-50 hover:bg-sky-100 border border-sky-200 flex items-center justify-center text-sky-700 active:scale-95 transition-all shadow-xs"
+          >
+            <Focus className="w-5 h-5 text-sky-600" />
+          </button>
           <button
             onClick={handleResetView}
-            title="إعادة ضبط وتوسيط الشجرة"
-            className="w-11 h-11 rounded-xl glass-btn flex items-center justify-center text-slate-700 font-bold shadow-md active:scale-95"
+            title="إعادة التوسيط الافتراضي"
+            className="w-10 h-10 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-700 active:scale-95 transition-all shadow-xs"
           >
             <RotateCcw className="w-4 h-4 text-slate-600" />
           </button>
-        </div>
+        </aside>
       )}
 
       {/* ---------------------------------------------------- */}
