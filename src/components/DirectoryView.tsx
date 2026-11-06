@@ -118,25 +118,25 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
   }, [members, memberMap, genderFilter, statusFilter, subFamilyFilter, selectedBranch, selectedGen, searchQuery, sortBy]);
 
   return (
-    <div className="w-full max-w-7xl 2xl:max-w-[1700px] mx-auto px-3 sm:px-6 py-6 pb-24 md:pb-10">
+    <div className="w-full max-w-7xl 2xl:max-w-[1700px] mx-auto px-3 sm:px-6 py-5 pb-24 md:pb-10">
       {/* Control & Search Bar */}
-      <div className="glass-panel rounded-3xl p-4 sm:p-6 mb-6 sm:mb-8 border border-white/10 shadow-xl space-y-4">
+      <div className="glass-panel rounded-3xl p-4 sm:p-6 mb-6 sm:mb-8 border border-slate-200/90 shadow-sm space-y-4">
         
         {/* Title & Live Counter */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
           <div>
-            <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-white tracking-tight flex items-center gap-2">
-              <Users className="w-5 h-5 sm:w-6 sm:h-6 text-sky-400" />
+            <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+              <Users className="w-5 h-5 sm:w-6 sm:h-6 text-sky-600" />
               <span>دليل أفراد عائلة البوحسون</span>
             </h2>
-            <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5">
+            <p className="text-[11px] sm:text-xs text-slate-600 mt-0.5">
               بحث متقدم وتصفية شاملة لجميع السجلات والبيانات الأسرية
             </p>
           </div>
 
           <div className="flex items-center gap-2 text-xs">
-            <span className="text-slate-400">النتائج المعروضة:</span>
-            <span className="px-3 py-1 rounded-full bg-white/[0.06] text-sky-300 font-mono font-bold border border-white/10">
+            <span className="text-slate-600">النتائج المعروضة:</span>
+            <span className="px-3 py-1 rounded-full bg-slate-100 text-sky-700 font-mono font-bold border border-slate-200">
               {filteredMembers.length} من {members.length} فرد
             </span>
           </div>
@@ -144,34 +144,34 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
 
         {/* Search input with live clear */}
         <div className="relative">
-          <Search className="w-4 h-4 sm:w-5 sm:h-5 text-sky-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <Search className="w-4 h-4 sm:w-5 sm:h-5 text-sky-600 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="ابحث بالاسم الكامل أو اسم الشهرة أو الأب أو الزوجة (مثال: الوجيه، أبو حسن، النوخذة)..."
-            className="w-full bg-slate-900/60 border border-white/10 rounded-2xl pr-10 sm:pr-12 pl-4 py-2.5 sm:py-3 text-xs sm:text-sm text-white placeholder-slate-400 focus:outline-none focus:border-sky-400/50 shadow-inner"
+            className="w-full bg-white border border-slate-300 rounded-2xl pr-10 sm:pr-12 pl-4 py-2.5 sm:py-3 text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100 shadow-sm"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white text-xs bg-slate-800 px-2 py-1 rounded-lg"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-800 text-xs bg-slate-100 hover:bg-slate-200 px-2 py-1 rounded-lg transition-colors"
             >
               مسح
             </button>
           )}
         </div>
 
-        {/* Filter Strip (Apple Style Segmented Controls) */}
-        <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-white/5">
+        {/* Filter Strip */}
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-100">
           {/* Sub-Family Lineage Filter */}
-          <div className="flex items-center gap-1 bg-slate-900/60 p-1 rounded-xl border border-white/10 shadow-inner overflow-x-auto max-w-full">
+          <div className="flex items-center gap-1 bg-slate-100/80 p-1 rounded-xl border border-slate-200/80 overflow-x-auto max-w-full">
             <button
               onClick={() => setSubFamilyFilter('all')}
-              className={`px-2.5 py-1.5 text-xs font-medium rounded-lg transition-all whitespace-nowrap ${
+              className={`px-2.5 py-1.5 text-xs font-semibold rounded-lg transition-all whitespace-nowrap ${
                 subFamilyFilter === 'all'
-                  ? 'bg-white/15 text-white font-bold shadow-sm'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-white text-slate-900 shadow-sm font-bold'
+                  : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               كافة الوسوم
@@ -180,98 +180,98 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
               onClick={() => setSubFamilyFilter('albuhasson')}
               className={`flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold rounded-lg transition-all whitespace-nowrap ${
                 subFamilyFilter === 'albuhasson'
-                  ? 'bg-sky-500 text-slate-950 font-bold shadow-md'
-                  : 'text-sky-300 hover:text-white'
+                  ? 'bg-sky-600 text-white shadow-sm'
+                  : 'text-sky-800 hover:bg-white/60'
               }`}
               title="تصفية حسب وسم البوحسون"
             >
-              <Award className="w-3.5 h-3.5 text-sky-300" />
+              <Award className="w-3.5 h-3.5 text-sky-600" />
               <span>البوحسون</span>
             </button>
             <button
               onClick={() => setSubFamilyFilter('alnesf')}
               className={`flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold rounded-lg transition-all whitespace-nowrap ${
                 subFamilyFilter === 'alnesf'
-                  ? 'bg-indigo-500 text-white font-bold shadow-md'
-                  : 'text-indigo-300 hover:text-white'
+                  ? 'bg-indigo-600 text-white shadow-sm'
+                  : 'text-indigo-800 hover:bg-white/60'
               }`}
               title="تصفية حسب وسم النصف"
             >
-              <Gem className="w-3.5 h-3.5 text-indigo-300" />
+              <Gem className="w-3.5 h-3.5 text-indigo-600" />
               <span>النصف</span>
             </button>
             <button
               onClick={() => setSubFamilyFilter('aldarwish')}
               className={`flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold rounded-lg transition-all whitespace-nowrap ${
                 subFamilyFilter === 'aldarwish'
-                  ? 'bg-orange-500 text-slate-950 font-bold shadow-md'
-                  : 'text-orange-300 hover:text-white'
+                  ? 'bg-amber-600 text-white shadow-sm'
+                  : 'text-amber-800 hover:bg-white/60'
               }`}
               title="تصفية حسب وسم الدرويش"
             >
-              <Flame className="w-3.5 h-3.5 text-orange-400" />
+              <Flame className="w-3.5 h-3.5 text-amber-600" />
               <span>الدرويش</span>
             </button>
             <button
               onClick={() => setSubFamilyFilter('alazraq')}
               className={`flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold rounded-lg transition-all whitespace-nowrap ${
                 subFamilyFilter === 'alazraq'
-                  ? 'bg-cyan-500 text-slate-950 font-bold shadow-md'
-                  : 'text-cyan-300 hover:text-white'
+                  ? 'bg-cyan-600 text-white shadow-sm'
+                  : 'text-cyan-800 hover:bg-white/60'
               }`}
               title="تصفية حسب وسم الأزرق"
             >
-              <Waves className="w-3.5 h-3.5 text-cyan-300" />
+              <Waves className="w-3.5 h-3.5 text-cyan-600" />
               <span>الأزرق</span>
             </button>
             <button
               onClick={() => setSubFamilyFilter('jaber')}
               className={`flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold rounded-lg transition-all whitespace-nowrap ${
                 subFamilyFilter === 'jaber'
-                  ? 'bg-amber-500 text-slate-950 font-bold shadow-md'
-                  : 'text-amber-300 hover:text-white'
+                  ? 'bg-amber-700 text-white shadow-sm'
+                  : 'text-amber-900 hover:bg-white/60'
               }`}
               title="تصفية حسب وسم آل جابر"
             >
-              <Crown className="w-3.5 h-3.5 text-amber-400" />
+              <Crown className="w-3.5 h-3.5 text-amber-600" />
               <span>آل جابر</span>
             </button>
             <button
               onClick={() => setSubFamilyFilter('nawasir')}
               className={`flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold rounded-lg transition-all whitespace-nowrap ${
                 subFamilyFilter === 'nawasir'
-                  ? 'bg-teal-500 text-slate-950 font-bold shadow-md'
-                  : 'text-teal-300 hover:text-white'
+                  ? 'bg-teal-600 text-white shadow-sm'
+                  : 'text-teal-800 hover:bg-white/60'
               }`}
               title="تصفية حسب وسم النواصر"
             >
-              <Shield className="w-3.5 h-3.5 text-teal-300" />
+              <Shield className="w-3.5 h-3.5 text-teal-600" />
               <span>النواصر</span>
             </button>
           </div>
 
           {/* Gender filters */}
-          <div className="flex items-center gap-1 bg-slate-900/60 p-1 rounded-xl border border-white/10">
+          <div className="flex items-center gap-1 bg-slate-100/80 p-1 rounded-xl border border-slate-200/80">
             <button
               onClick={() => setGenderFilter('all')}
-              className={`px-2.5 sm:px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
-                genderFilter === 'all' ? 'bg-white/15 text-white font-semibold' : 'text-slate-400 hover:text-white'
+              className={`px-2.5 sm:px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                genderFilter === 'all' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               الكل
             </button>
             <button
               onClick={() => setGenderFilter('male')}
-              className={`px-2.5 sm:px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
-                genderFilter === 'male' ? 'bg-sky-500/30 text-sky-200 border border-sky-400/30 font-semibold' : 'text-slate-400 hover:text-white'
+              className={`px-2.5 sm:px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                genderFilter === 'male' ? 'bg-sky-50 text-sky-800 border border-sky-300 font-bold shadow-sm' : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               الذكور
             </button>
             <button
               onClick={() => setGenderFilter('female')}
-              className={`px-2.5 sm:px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
-                genderFilter === 'female' ? 'bg-rose-500/30 text-rose-200 border border-rose-400/30 font-semibold' : 'text-slate-400 hover:text-white'
+              className={`px-2.5 sm:px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                genderFilter === 'female' ? 'bg-rose-50 text-rose-800 border border-rose-300 font-bold shadow-sm' : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               الإناث
@@ -279,27 +279,27 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
           </div>
 
           {/* Status filters */}
-          <div className="flex items-center gap-1 bg-slate-900/60 p-1 rounded-xl border border-white/10">
+          <div className="flex items-center gap-1 bg-slate-100/80 p-1 rounded-xl border border-slate-200/80">
             <button
               onClick={() => setStatusFilter('all')}
-              className={`px-2.5 sm:px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
-                statusFilter === 'all' ? 'bg-white/15 text-white font-semibold' : 'text-slate-400 hover:text-white'
+              className={`px-2.5 sm:px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                statusFilter === 'all' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               كافة الحالات
             </button>
             <button
               onClick={() => setStatusFilter('living')}
-              className={`px-2.5 sm:px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
-                statusFilter === 'living' ? 'bg-emerald-500/25 text-emerald-200 border border-emerald-400/30 font-semibold' : 'text-slate-400 hover:text-white'
+              className={`px-2.5 sm:px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                statusFilter === 'living' ? 'bg-emerald-50 text-emerald-800 border border-emerald-300 font-bold shadow-sm' : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               أحياء
             </button>
             <button
               onClick={() => setStatusFilter('deceased')}
-              className={`px-2.5 sm:px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
-                statusFilter === 'deceased' ? 'bg-slate-700/80 text-slate-200 border border-white/10 font-semibold' : 'text-slate-400 hover:text-white'
+              className={`px-2.5 sm:px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                statusFilter === 'deceased' ? 'bg-slate-200 text-slate-800 border border-slate-300 font-bold shadow-sm' : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               متوفون
@@ -311,7 +311,7 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
             <select
               value={selectedBranch}
               onChange={(e) => setSelectedBranch(e.target.value)}
-              className="bg-slate-900/80 border border-white/10 text-slate-200 text-xs rounded-xl px-2.5 sm:px-3 py-2 focus:outline-none focus:border-sky-400/50"
+              className="bg-white border border-slate-300 text-slate-800 text-xs rounded-xl px-2.5 sm:px-3 py-2 focus:outline-none focus:border-sky-500 shadow-sm"
             >
               <option value="all">كافة الفروع</option>
               {branches.map(b => (
@@ -322,7 +322,7 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
             <select
               value={selectedGen}
               onChange={(e) => setSelectedGen(e.target.value)}
-              className="bg-slate-900/80 border border-white/10 text-slate-200 text-xs rounded-xl px-2.5 sm:px-3 py-2 focus:outline-none focus:border-sky-400/50"
+              className="bg-white border border-slate-300 text-slate-800 text-xs rounded-xl px-2.5 sm:px-3 py-2 focus:outline-none focus:border-sky-500 shadow-sm"
             >
               <option value="all">كافة الأجيال</option>
               {generations.map(g => (
@@ -330,12 +330,12 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
               ))}
             </select>
 
-            <div className="flex items-center gap-1 bg-slate-900/80 border border-white/10 rounded-xl px-2 py-1">
-              <ArrowUpDown className="w-3.5 h-3.5 text-sky-400" />
+            <div className="flex items-center gap-1 bg-white border border-slate-300 rounded-xl px-2.5 py-1.5 shadow-sm">
+              <ArrowUpDown className="w-3.5 h-3.5 text-sky-600" />
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as any)}
-                className="bg-transparent text-slate-200 text-xs focus:outline-none"
+                className="bg-transparent text-slate-800 text-xs focus:outline-none font-medium"
               >
                 <option value="generation">الأجيال</option>
                 <option value="birth">الميلاد</option>
@@ -348,8 +348,8 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
 
       {/* Members Cards Grid */}
       {filteredMembers.length === 0 ? (
-        <div className="glass-panel rounded-3xl p-12 sm:p-16 text-center text-slate-400 border border-white/10">
-          <p className="text-base text-slate-300 mb-2">لا توجد نتائج مطابقة لمعايير البحث الحالية.</p>
+        <div className="glass-panel rounded-3xl p-12 sm:p-16 text-center text-slate-600 border border-slate-200">
+          <p className="text-base text-slate-800 font-semibold mb-2">لا توجد نتائج مطابقة لمعايير البحث الحالية.</p>
           <button
             onClick={() => {
               setSearchQuery('');
@@ -358,7 +358,7 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
               setSelectedBranch('all');
               setSelectedGen('all');
             }}
-            className="text-xs text-sky-400 hover:underline font-semibold"
+            className="text-xs text-sky-700 hover:underline font-bold"
           >
             إعادة تعيين كافة المرشحات
           </button>
@@ -375,11 +375,11 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
                 className={`rounded-2xl p-5 flex flex-col justify-between border transition-all duration-300 hover:-translate-y-1 ${
                   isMale
                     ? member.is_living
-                      ? 'glass-card border-sky-400/25'
-                      : 'bg-slate-900/85 border-slate-700/50'
+                      ? 'glass-card border-sky-300/80 shadow-sm'
+                      : 'bg-white border-slate-300 shadow-sm'
                     : member.is_living
-                    ? 'glass-card-female border-rose-400/35'
-                    : 'bg-slate-900/85 border-purple-900/50'
+                    ? 'glass-card-female border-rose-300/90 shadow-sm'
+                    : 'bg-white border-purple-200 shadow-sm'
                 }`}
               >
                 <div>
@@ -393,20 +393,20 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
                             src={member.avatar_url}
                             alt={member.full_name}
                             referrerPolicy="no-referrer"
-                            className="w-13 h-13 rounded-xl object-cover border border-sky-400/30 shadow-sm"
+                            className="w-13 h-13 rounded-xl object-cover border border-sky-300 shadow-sm"
                           />
                         ) : (
-                          <div className="w-13 h-13 rounded-xl bg-gradient-to-br from-slate-800 to-slate-900 border border-sky-400/25 flex items-center justify-center text-sky-200 font-bold text-lg shadow-inner">
+                          <div className="w-13 h-13 rounded-xl bg-gradient-to-br from-sky-50 to-slate-100 border border-sky-200 flex items-center justify-center text-sky-800 font-bold text-lg shadow-inner">
                             {member.full_name.charAt(0)}
                           </div>
                         )
                       ) : (
                         /* Strictly NO photo for females */
-                        <div className="w-13 h-13 rounded-xl bg-gradient-to-br from-purple-950/60 to-rose-950/80 border border-rose-400/30 flex items-center justify-center shadow-inner">
+                        <div className="w-13 h-13 rounded-xl bg-rose-50 border border-rose-200 flex items-center justify-center shadow-inner">
                           <FemaleHeritageBadge size={30} />
                         </div>
                       )}
-                      <span className="absolute -bottom-1 -left-1 text-[9px] font-mono px-1.5 py-0.2 rounded font-bold bg-slate-900 border border-white/10 text-slate-300">
+                      <span className="absolute -bottom-1 -left-1 text-[9px] font-mono px-1.5 py-0.2 rounded font-bold bg-white border border-slate-300 text-slate-700 shadow-xs">
                         G{member.generation || 1}
                       </span>
                     </div>
@@ -415,31 +415,31 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-1 mb-1">
                         <span
-                          className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${
+                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                             member.is_living
                               ? isMale
-                                ? 'bg-sky-950/60 text-sky-300 border border-sky-500/25'
-                                : 'bg-rose-950/60 text-rose-300 border border-rose-500/25'
+                                ? 'bg-sky-50 text-sky-800 border border-sky-200'
+                                : 'bg-rose-50 text-rose-800 border border-rose-200'
                               : isMale
-                              ? 'bg-slate-800/80 text-amber-200/90 border border-amber-600/30'
-                              : 'bg-slate-800/80 text-rose-200/80 border border-rose-800/30'
+                              ? 'bg-slate-100 text-amber-900 border border-amber-300'
+                              : 'bg-slate-100 text-rose-900 border border-rose-300'
                           }`}
                         >
                           {member.is_living
                             ? isMale ? '● حي يُرزق' : '● حفظها الله'
                             : isMale ? 'رحمه الله' : 'رحمها الله'}
                         </span>
-                        <span className="text-[11px] text-slate-400 font-mono">
+                        <span className="text-[11px] text-slate-500 font-mono">
                           {member.birth_date} {member.death_date ? `- ${member.death_date}` : ''}
                         </span>
                       </div>
 
-                      <h3 className="text-sm font-bold text-white truncate" title={member.full_name}>
+                      <h3 className="text-sm font-bold text-slate-900 truncate" title={member.full_name}>
                         {member.full_name}
                       </h3>
 
                       {member.nickname && (
-                        <p className={`text-xs font-medium truncate ${isMale ? 'text-sky-300' : 'text-rose-300'}`}>
+                        <p className={`text-xs font-semibold truncate ${isMale ? 'text-sky-700' : 'text-rose-700'}`}>
                           {member.nickname}
                         </p>
                       )}
@@ -451,43 +451,43 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
                   </div>
 
                   {/* Father & Branch metadata */}
-                  <div className="text-xs text-slate-300 space-y-1.5 mb-3 bg-slate-950/40 p-2.5 rounded-xl border border-white/5">
+                  <div className="text-xs text-slate-700 space-y-1.5 mb-3 bg-slate-50/80 p-2.5 rounded-xl border border-slate-200/70">
                     <div className="flex items-center justify-between text-[11px]">
-                      <span className="text-slate-400">الأب:</span>
-                      <span className="text-slate-200 font-medium truncate max-w-[180px]">
+                      <span className="text-slate-500">الأب:</span>
+                      <span className="text-slate-900 font-semibold truncate max-w-[180px]">
                         {father ? father.full_name : 'الجد المؤسس (الأصل)'}
                       </span>
                     </div>
 
                     <div className="flex items-center justify-between text-[11px]">
-                      <span className="text-slate-400">الفرع العائلي:</span>
-                      <span className="text-sky-300 font-medium">{member.branch || 'الفرع العام'}</span>
+                      <span className="text-slate-500">الفرع العائلي:</span>
+                      <span className="text-sky-800 font-semibold">{member.branch || 'الفرع العام'}</span>
                     </div>
 
                     <div className="flex items-center justify-between text-[11px]">
-                      <span className="text-slate-400">وسم النسب:</span>
+                      <span className="text-slate-500">وسم النسب:</span>
                       <SubFamilyBadge member={member} memberMap={memberMap} size="xs" />
                     </div>
 
                     {isMale ? (
                       member.spouse_info && (
                         <div className="flex items-center justify-between text-[11px] truncate">
-                          <span className="text-slate-400 shrink-0">الزوجات:</span>
-                          <span className="text-slate-200 truncate">{member.spouse_info}</span>
+                          <span className="text-slate-500 shrink-0">الزوجات:</span>
+                          <span className="text-slate-800 truncate">{member.spouse_info}</span>
                         </div>
                       )
                     ) : (
                       <>
                         {member.spouse_info && (
                           <div className="flex items-center justify-between text-[11px] truncate">
-                            <span className="text-slate-400 shrink-0">الزوج:</span>
-                            <span className="text-slate-200 truncate">{member.spouse_info}</span>
+                            <span className="text-slate-500 shrink-0">الزوج:</span>
+                            <span className="text-slate-800 truncate">{member.spouse_info}</span>
                           </div>
                         )}
                         {member.children_summary && (
                           <div className="flex items-center justify-between text-[11px] truncate">
-                            <span className="text-slate-400 shrink-0">الأبناء:</span>
-                            <span className="text-slate-200 truncate">{member.children_summary}</span>
+                            <span className="text-slate-500 shrink-0">الأبناء:</span>
+                            <span className="text-slate-800 truncate">{member.children_summary}</span>
                           </div>
                         )}
                       </>
@@ -496,33 +496,33 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
 
                   {/* Bio or Notes Preview */}
                   {isMale && member.bio && (
-                    <p className="text-xs text-slate-300/90 leading-relaxed line-clamp-2 mb-3">
+                    <p className="text-xs text-slate-600 leading-relaxed line-clamp-2 mb-3">
                       {member.bio}
                     </p>
                   )}
                   {!isMale && member.notes && (
-                    <p className="text-xs text-slate-300/90 leading-relaxed line-clamp-2 mb-3">
+                    <p className="text-xs text-slate-600 leading-relaxed line-clamp-2 mb-3">
                       {member.notes}
                     </p>
                   )}
                 </div>
 
                 {/* Card Action Buttons */}
-                <div className="flex items-center justify-between gap-2 pt-3 border-t border-white/10 text-xs">
+                <div className="flex items-center justify-between gap-2 pt-3 border-t border-slate-200 text-xs">
                   <button
                     onClick={() => onViewLineage(member)}
                     title="تتبع مسار نسب الأجداد حتى المؤسس"
-                    className="flex-1 py-1.5 px-2 rounded-xl glass-btn text-slate-200 hover:text-white flex items-center justify-center gap-1 text-[11px]"
+                    className="flex-1 py-1.5 px-2 rounded-xl glass-btn text-slate-700 hover:text-slate-900 flex items-center justify-center gap-1 text-[11px] font-semibold"
                   >
-                    <GitFork className="w-3.5 h-3.5 text-sky-400" />
+                    <GitFork className="w-3.5 h-3.5 text-sky-600" />
                     <span>مسار النسب</span>
                   </button>
 
                   <button
                     onClick={() => onSelectMember(member)}
-                    className="flex-1 py-1.5 px-2 rounded-xl bg-white/[0.08] hover:bg-white/[0.15] border border-white/10 text-white flex items-center justify-center gap-1 text-[11px] font-medium shadow-sm transition-all"
+                    className="flex-1 py-1.5 px-2 rounded-xl bg-sky-50 hover:bg-sky-100 border border-sky-300 text-sky-900 flex items-center justify-center gap-1 text-[11px] font-bold shadow-xs transition-all"
                   >
-                    <Eye className="w-3.5 h-3.5" />
+                    <Eye className="w-3.5 h-3.5 text-sky-700" />
                     <span>تفاصيل السجل</span>
                   </button>
                 </div>

@@ -168,23 +168,26 @@ export const ExportTreeImageModal: React.FC<ExportTreeImageModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-6xl max-h-[94vh] flex flex-col glass-panel rounded-3xl border border-emerald-500/30 shadow-2xl overflow-hidden text-right">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="relative w-full max-w-6xl max-h-[96dvh] sm:max-h-[94vh] flex flex-col bg-white rounded-t-3xl sm:rounded-3xl border border-slate-200 shadow-2xl overflow-hidden text-right">
         
+        {/* Mobile drag handle */}
+        <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mt-2 sm:hidden" />
+
         {/* Modal Top Header */}
-        <div className="flex items-center justify-between p-4 sm:p-5 border-b border-white/10 shrink-0">
+        <div className="flex items-center justify-between p-4 sm:p-5 border-b border-slate-200 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-800 flex items-center justify-center text-white shadow-lg shadow-emerald-950/50">
+            <div className="w-10 h-10 rounded-2xl bg-emerald-100 border border-emerald-300 flex items-center justify-center text-emerald-800 shadow-sm">
               <FileImage className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+              <h2 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
                 <span>تصدير شجرة العائلة كصورة (PNG) عالية الجودة</span>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-mono">
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 font-mono font-bold">
                   جاهزة للطباعة والمشاركة
                 </span>
               </h2>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-500">
                 المخطط الهيكلي الرأسي عالي الدقة، جاهز للطباعة الفاخرة والمشاركة والتأطير
               </p>
             </div>
@@ -192,38 +195,38 @@ export const ExportTreeImageModal: React.FC<ExportTreeImageModalProps> = ({
 
           <button
             onClick={onClose}
-            className="w-9 h-9 rounded-full glass-btn flex items-center justify-center text-slate-400 hover:text-white"
+            className="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 hover:text-slate-900 transition-colors"
             title="إغلاق"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Modal Body: Split into Settings (Left on RTL) & Preview Canvas (Right on RTL) */}
-        <div className="flex-1 overflow-y-auto flex flex-col lg:flex-row divide-y lg:divide-y-0 lg:divide-x lg:divide-x-reverse divide-white/10">
+        {/* Modal Body: Split into Settings & Preview Canvas */}
+        <div className="flex-1 overflow-y-auto flex flex-col lg:flex-row divide-y lg:divide-y-0 lg:divide-x lg:divide-x-reverse divide-slate-200">
           
           {/* Controls & Configuration Sidebar */}
-          <div className="w-full lg:w-96 p-4 sm:p-5 space-y-5 shrink-0 bg-slate-950/40 overflow-y-auto">
+          <div className="w-full lg:w-96 p-4 sm:p-5 space-y-4 sm:space-y-5 shrink-0 bg-slate-50/70 overflow-y-auto">
             
-            {/* 1. Style Selection (Single Approved Choice: Vertical Hierarchical Chart) */}
+            {/* 1. Style Selection */}
             <div>
-              <label className="block text-xs font-bold text-emerald-400 mb-2 flex items-center gap-1.5">
+              <label className="block text-xs font-bold text-emerald-800 mb-2 flex items-center gap-1.5">
                 <GitBranch className="w-3.5 h-3.5" />
                 <span>نمط التصدير المعتمد:</span>
               </label>
 
-              <div className="p-3.5 rounded-2xl border bg-emerald-950/80 border-emerald-400 shadow-lg shadow-emerald-950/60 ring-1 ring-emerald-400/80 flex items-start gap-3">
-                <div className="p-2 rounded-xl mt-0.5 bg-emerald-500 text-emerald-950 shrink-0">
+              <div className="p-3.5 rounded-2xl border bg-emerald-50/80 border-emerald-300 shadow-xs flex items-start gap-3">
+                <div className="p-2 rounded-xl mt-0.5 bg-emerald-600 text-white shrink-0">
                   <GitBranch className="w-5 h-5" />
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-white">المخطط الهيكلي الرأسي</span>
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-semibold">
+                    <span className="text-xs font-bold text-slate-900">المخطط الهيكلي الرأسي</span>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold">
                       النمط المعتمد
                     </span>
                   </div>
-                  <p className="text-[11px] text-slate-300 mt-1 leading-relaxed">
+                  <p className="text-[11px] text-slate-600 mt-1 leading-relaxed">
                     يبدأ من الجد الأعلى في القمة ويتفرع رأسياً للأسفل عبر بطاقات الأجيال المنفصلة مع اسم الشهرة لكل شخص وتمييز الرجال والنساء والأحياء والمتوفين.
                   </p>
                 </div>
@@ -232,7 +235,7 @@ export const ExportTreeImageModal: React.FC<ExportTreeImageModalProps> = ({
 
             {/* 2. Theme & Colors */}
             <div>
-              <label className="block text-xs font-bold text-emerald-400 mb-2 flex items-center gap-1.5">
+              <label className="block text-xs font-bold text-emerald-800 mb-2 flex items-center gap-1.5">
                 <Palette className="w-3.5 h-3.5" />
                 <span>نمط المظهر والألوان:</span>
               </label>
@@ -240,47 +243,47 @@ export const ExportTreeImageModal: React.FC<ExportTreeImageModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setTheme('parchment')}
-                  className={`p-2 rounded-xl text-center text-xs font-medium border transition-all ${
+                  className={`p-2 rounded-xl text-center text-xs font-bold border transition-all ${
                     theme === 'parchment'
-                      ? 'bg-amber-950/50 border-amber-400 text-amber-200 ring-1 ring-amber-400'
-                      : 'bg-slate-900/60 border-white/10 text-slate-400'
+                      ? 'bg-amber-100/70 border-amber-400 text-amber-900 ring-1 ring-amber-400 shadow-xs'
+                      : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'
                   }`}
                 >
                   <span className="block w-4 h-4 mx-auto mb-1 rounded-full bg-[#f4ece1] border border-amber-600/50" />
-                  ورق ملكي عتيق
+                  ورق عتيق
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setTheme('emerald')}
-                  className={`p-2 rounded-xl text-center text-xs font-medium border transition-all ${
+                  className={`p-2 rounded-xl text-center text-xs font-bold border transition-all ${
                     theme === 'emerald'
-                      ? 'bg-emerald-950/70 border-emerald-400 text-emerald-200 ring-1 ring-emerald-400'
-                      : 'bg-slate-900/60 border-white/10 text-slate-400'
+                      ? 'bg-emerald-100/70 border-emerald-400 text-emerald-900 ring-1 ring-emerald-400 shadow-xs'
+                      : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'
                   }`}
                 >
                   <span className="block w-4 h-4 mx-auto mb-1 rounded-full bg-[#06261c] border border-emerald-400" />
-                  زمردي داكن فاخر
+                  زمردي فاخر
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setTheme('classic')}
-                  className={`p-2 rounded-xl text-center text-xs font-medium border transition-all ${
+                  className={`p-2 rounded-xl text-center text-xs font-bold border transition-all ${
                     theme === 'classic'
-                      ? 'bg-slate-800 border-white text-white ring-1 ring-white'
-                      : 'bg-slate-900/60 border-white/10 text-slate-400'
+                      ? 'bg-slate-100 border-slate-400 text-slate-900 ring-1 ring-slate-400 shadow-xs'
+                      : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'
                   }`}
                 >
                   <span className="block w-4 h-4 mx-auto mb-1 rounded-full bg-white border border-slate-300" />
-                  أبيض ناصع للطباعة
+                  أبيض ناصع
                 </button>
               </div>
             </div>
 
             {/* 3. Export Resolution */}
             <div>
-              <label className="block text-xs font-bold text-emerald-400 mb-2 flex items-center gap-1.5">
+              <label className="block text-xs font-bold text-emerald-800 mb-2 flex items-center gap-1.5">
                 <Printer className="w-3.5 h-3.5" />
                 <span>دقة وجودة الصورة عند التحميل:</span>
               </label>
@@ -290,15 +293,15 @@ export const ExportTreeImageModal: React.FC<ExportTreeImageModalProps> = ({
                   onClick={() => setResolution('ultra_4k')}
                   className={`p-2.5 rounded-xl text-right border text-xs transition-all ${
                     resolution === 'ultra_4k'
-                      ? 'bg-emerald-950/60 border-emerald-400 text-emerald-200 ring-1 ring-emerald-400'
-                      : 'bg-slate-900/60 border-white/10 text-slate-400'
+                      ? 'bg-emerald-100/80 border-emerald-400 text-emerald-950 ring-1 ring-emerald-400 shadow-xs'
+                      : 'bg-white border-slate-200 text-slate-600'
                   }`}
                 >
-                  <div className="font-bold text-white flex items-center justify-between">
+                  <div className="font-bold text-slate-900 flex items-center justify-between">
                     <span>فائقة الدقة (4K)</span>
-                    <span className="text-[10px] text-amber-300">موصى به</span>
+                    <span className="text-[10px] text-amber-700 font-bold">موصى به</span>
                   </div>
-                  <span className="text-[10px] text-slate-400 block mt-0.5">3200×4500px - للطباعة الكبيرة A3/A2</span>
+                  <span className="text-[10px] text-slate-500 block mt-0.5">3200×4500px - للطباعة A3/A2</span>
                 </button>
 
                 <button
@@ -306,12 +309,12 @@ export const ExportTreeImageModal: React.FC<ExportTreeImageModalProps> = ({
                   onClick={() => setResolution('hd')}
                   className={`p-2.5 rounded-xl text-right border text-xs transition-all ${
                     resolution === 'hd'
-                      ? 'bg-emerald-950/60 border-emerald-400 text-emerald-200 ring-1 ring-emerald-400'
-                      : 'bg-slate-900/60 border-white/10 text-slate-400'
+                      ? 'bg-emerald-100/80 border-emerald-400 text-emerald-950 ring-1 ring-emerald-400 shadow-xs'
+                      : 'bg-white border-slate-200 text-slate-600'
                   }`}
                 >
-                  <div className="font-bold text-white">دقة عالية (HD)</div>
-                  <span className="text-[10px] text-slate-400 block mt-0.5">2000×2800px - للواتساب والمشاركة</span>
+                  <div className="font-bold text-slate-900">دقة عالية (HD)</div>
+                  <span className="text-[10px] text-slate-500 block mt-0.5">2000×2800px - للمشاركة</span>
                 </button>
               </div>
             </div>
@@ -320,13 +323,13 @@ export const ExportTreeImageModal: React.FC<ExportTreeImageModalProps> = ({
             <div className="space-y-2.5">
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
                     العائلة الفرعية:
                   </label>
                   <select
                     value={selectedSubFamily}
                     onChange={(e) => setSelectedSubFamily(e.target.value)}
-                    className="w-full bg-slate-900 border border-emerald-500/30 rounded-xl p-2 text-xs text-white focus:outline-none"
+                    className="w-full bg-white border border-slate-300 rounded-xl p-2 text-xs text-slate-900 focus:outline-none focus:border-emerald-500 shadow-sm"
                   >
                     <option value="all">كافة العائلات</option>
                     {subFamilies.map(sf => (
@@ -336,13 +339,13 @@ export const ExportTreeImageModal: React.FC<ExportTreeImageModalProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
                     الفرع العائلي:
                   </label>
                   <select
                     value={selectedBranch}
                     onChange={(e) => setSelectedBranch(e.target.value)}
-                    className="w-full bg-slate-900 border border-emerald-500/30 rounded-xl p-2 text-xs text-white focus:outline-none"
+                    className="w-full bg-white border border-slate-300 rounded-xl p-2 text-xs text-slate-900 focus:outline-none focus:border-emerald-500 shadow-sm"
                   >
                     <option value="all">كافة الفروع</option>
                     {branches.map(b => (
@@ -353,13 +356,13 @@ export const ExportTreeImageModal: React.FC<ExportTreeImageModalProps> = ({
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">
                   تضمين الأفراد:
                 </label>
                 <select
                   value={genderFilter}
                   onChange={(e) => setGenderFilter(e.target.value as any)}
-                  className="w-full bg-slate-900 border border-emerald-500/30 rounded-xl p-2 text-xs text-white focus:outline-none"
+                  className="w-full bg-white border border-slate-300 rounded-xl p-2 text-xs text-slate-900 focus:outline-none focus:border-emerald-500 shadow-sm"
                 >
                   <option value="all">الذكور والإناث</option>
                   <option value="male">الذكور فقط</option>
@@ -367,37 +370,37 @@ export const ExportTreeImageModal: React.FC<ExportTreeImageModalProps> = ({
                 </select>
               </div>
 
-              <div className="p-2 rounded-xl bg-emerald-950/40 border border-emerald-500/20 text-[11px] text-emerald-300 flex items-center justify-between">
-                <span>نمط الأسماء: الاسم الأول فقط</span>
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold">
-                  تناسق مثالي مع المستطيلات
+              <div className="p-2 rounded-xl bg-emerald-50 border border-emerald-200 text-[11px] text-emerald-900 flex items-center justify-between">
+                <span className="font-semibold">نمط الأسماء: الاسم الأول فقط</span>
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold border border-emerald-200">
+                  تناسق مثالي
                 </span>
               </div>
             </div>
 
             {/* 5. Toggles */}
-            <div className="space-y-2 pt-1 border-t border-white/5">
-              <label className="flex items-center justify-between text-xs text-slate-300 cursor-pointer">
+            <div className="space-y-2 pt-1 border-t border-slate-200">
+              <label className="flex items-center justify-between text-xs text-slate-700 font-bold cursor-pointer">
                 <span>إظهار التواريخ وحالات الوفاة</span>
                 <input
                   type="checkbox"
                   checked={showDates}
                   onChange={(e) => setShowDates(e.target.checked)}
-                  className="w-4 h-4 rounded text-emerald-500 focus:ring-0 cursor-pointer"
+                  className="w-4 h-4 rounded text-emerald-600 focus:ring-0 cursor-pointer"
                 />
               </label>
             </div>
           </div>
 
           {/* Canvas Live Preview Container */}
-          <div className="flex-1 flex flex-col p-4 sm:p-6 bg-slate-950/70 items-center justify-center min-h-[420px] relative overflow-hidden">
+          <div className="flex-1 flex flex-col p-4 sm:p-6 bg-slate-100/70 items-center justify-center min-h-[380px] sm:min-h-[420px] relative overflow-hidden">
             
             {/* Preview Toolbar */}
-            <div className="absolute top-4 left-4 z-10 flex items-center gap-1.5 glass-panel p-1 rounded-xl border border-white/10 shadow-lg">
+            <div className="absolute top-4 left-4 z-10 flex items-center gap-1.5 bg-white/90 backdrop-blur-sm p-1 rounded-xl border border-slate-200 shadow-md">
               <button
                 type="button"
                 onClick={() => setPreviewScale(prev => Math.min(prev + 0.15, 2.0))}
-                className="w-7 h-7 rounded-lg glass-btn flex items-center justify-center text-slate-300 hover:text-white"
+                className="w-7 h-7 rounded-lg bg-slate-50 hover:bg-slate-100 flex items-center justify-center text-slate-700"
                 title="تكبير المعاينة"
               >
                 <ZoomIn className="w-3.5 h-3.5" />
@@ -405,7 +408,7 @@ export const ExportTreeImageModal: React.FC<ExportTreeImageModalProps> = ({
               <button
                 type="button"
                 onClick={() => setPreviewScale(prev => Math.max(prev - 0.15, 0.5))}
-                className="w-7 h-7 rounded-lg glass-btn flex items-center justify-center text-slate-300 hover:text-white"
+                className="w-7 h-7 rounded-lg bg-slate-50 hover:bg-slate-100 flex items-center justify-center text-slate-700"
                 title="تصغير المعاينة"
               >
                 <ZoomOut className="w-3.5 h-3.5" />
@@ -413,7 +416,7 @@ export const ExportTreeImageModal: React.FC<ExportTreeImageModalProps> = ({
               <button
                 type="button"
                 onClick={() => setPreviewScale(1)}
-                className="w-7 h-7 rounded-lg glass-btn flex items-center justify-center text-slate-300 hover:text-white"
+                className="w-7 h-7 rounded-lg bg-slate-50 hover:bg-slate-100 flex items-center justify-center text-slate-700"
                 title="إعادة التوسيط"
               >
                 <Maximize2 className="w-3.5 h-3.5" />
@@ -422,9 +425,9 @@ export const ExportTreeImageModal: React.FC<ExportTreeImageModalProps> = ({
 
             {/* Generating Indicator */}
             {isGenerating && (
-              <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/40 backdrop-blur-xs">
-                <div className="px-4 py-2 rounded-xl bg-slate-900 border border-emerald-500/40 text-xs text-emerald-300 flex items-center gap-2 shadow-2xl">
-                  <span className="w-3 h-3 rounded-full border-2 border-emerald-400 border-t-transparent animate-spin" />
+              <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/60 backdrop-blur-xs">
+                <div className="px-4 py-2 rounded-xl bg-white border border-emerald-300 text-xs text-emerald-800 font-bold flex items-center gap-2 shadow-lg">
+                  <span className="w-3 h-3 rounded-full border-2 border-emerald-600 border-t-transparent animate-spin" />
                   <span>جاري رسم المعاينة الحية...</span>
                 </div>
               </div>
@@ -438,7 +441,7 @@ export const ExportTreeImageModal: React.FC<ExportTreeImageModalProps> = ({
                   transformOrigin: 'center center',
                   transition: 'transform 0.15s ease-out'
                 }}
-                className="shadow-2xl rounded-2xl border-4 border-amber-600/30 overflow-hidden shrink-0 bg-[#fbf8f2]"
+                className="shadow-xl rounded-2xl border-4 border-amber-600/30 overflow-hidden shrink-0 bg-[#fbf8f2]"
               >
                 <canvas
                   ref={previewCanvasRef}
@@ -447,18 +450,18 @@ export const ExportTreeImageModal: React.FC<ExportTreeImageModalProps> = ({
               </div>
             </div>
 
-            <p className="text-[11px] text-slate-500 mt-2 text-center">
+            <p className="text-[11px] text-slate-500 mt-2 text-center font-medium">
               معاينة تفاعلية فورية · سيتم إنشاء وتحميل ملف PNG بدقة فائقة عند الضغط على زر التحميل أدناه
             </p>
           </div>
         </div>
 
         {/* Modal Bottom Action Bar */}
-        <div className="p-4 sm:p-5 border-t border-white/10 bg-slate-950/80 flex flex-wrap items-center justify-between gap-3 shrink-0">
-          <div className="flex items-center gap-2 text-xs text-slate-400">
-            <Sparkles className="w-4 h-4 text-amber-400" />
-            <span>المخطط الهيكلي الرأسي المتفرع</span>
-            <span className="text-slate-600">·</span>
+        <div className="p-4 sm:p-5 border-t border-slate-200 bg-slate-50 flex flex-wrap items-center justify-between gap-3 shrink-0">
+          <div className="flex items-center gap-2 text-xs text-slate-600 font-medium">
+            <Sparkles className="w-4 h-4 text-amber-600" />
+            <span className="font-bold text-slate-800">المخطط الهيكلي الرأسي المتفرع</span>
+            <span>·</span>
             <span>{resolution === 'ultra_4k' ? 'دقة فائقة (3200×4500px)' : 'دقة عالية (2000×2800px)'}</span>
           </div>
 
@@ -466,17 +469,17 @@ export const ExportTreeImageModal: React.FC<ExportTreeImageModalProps> = ({
             <button
               type="button"
               onClick={handleShare}
-              className="px-4 py-2.5 rounded-xl glass-btn text-xs font-semibold text-slate-200 hover:text-white flex items-center gap-1.5 transition-colors"
+              className="px-4 py-2.5 rounded-xl bg-white hover:bg-slate-100 border border-slate-300 text-xs font-bold text-slate-800 flex items-center gap-1.5 transition-colors shadow-xs"
               title="مشاركة الصورة أو نسخها"
             >
               {copiedSuccess ? (
                 <>
-                  <Check className="w-4 h-4 text-emerald-400" />
+                  <Check className="w-4 h-4 text-emerald-600" />
                   <span>تم نسخ الصورة للحافظة!</span>
                 </>
               ) : (
                 <>
-                  <Share2 className="w-4 h-4 text-emerald-400" />
+                  <Share2 className="w-4 h-4 text-emerald-600" />
                   <span>مشاركة / نسخ</span>
                 </>
               )}
@@ -486,17 +489,17 @@ export const ExportTreeImageModal: React.FC<ExportTreeImageModalProps> = ({
               type="button"
               onClick={handleDownload}
               disabled={isDownloading}
-              className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-emerald-950 font-bold text-xs sm:text-sm flex items-center gap-2 shadow-lg shadow-emerald-950/60 active:scale-[0.99] disabled:opacity-50 transition-all"
+              className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm flex items-center gap-2 shadow-md shadow-emerald-600/30 active:scale-[0.99] disabled:opacity-50 transition-all"
             >
               {isDownloading ? (
                 <>
-                  <span className="w-4 h-4 rounded-full border-2 border-emerald-950 border-t-transparent animate-spin" />
+                  <span className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
                   <span>جاري معالجة وتنزيل ملف PNG...</span>
                 </>
               ) : (
                 <>
                   <Download className="w-4 h-4" />
-                  <span>تحميل كصورة عالي الجودة (PNG)</span>
+                  <span>تحميل كصورة عالية الجودة (PNG)</span>
                 </>
               )}
             </button>

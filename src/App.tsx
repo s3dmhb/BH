@@ -88,13 +88,13 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0b0f17] text-slate-100 flex flex-col font-sans selection:bg-sky-500/25 selection:text-sky-100 relative overflow-x-hidden">
+    <div className="min-h-screen bg-[#f8fafc] text-slate-900 flex flex-col font-sans selection:bg-sky-500/20 selection:text-sky-900 relative overflow-x-hidden">
       
-      {/* Ambient Apple Cupertino Multi-Spectrum Luminous Auroras */}
-      <div className="fixed top-[-10%] right-[15%] w-[550px] h-[550px] bg-sky-500/[0.04] rounded-full blur-[120px] pointer-events-none -z-10" />
-      <div className="fixed bottom-[-10%] left-[10%] w-[600px] h-[600px] bg-indigo-500/[0.04] rounded-full blur-[140px] pointer-events-none -z-10" />
-      <div className="fixed top-1/3 left-1/4 w-[450px] h-[450px] bg-rose-500/[0.025] rounded-full blur-[130px] pointer-events-none -z-10" />
-      <div className="fixed top-1/2 right-1/3 w-[400px] h-[400px] bg-amber-500/[0.025] rounded-full blur-[120px] pointer-events-none -z-10" />
+      {/* Ambient Soft Luminous Pastel Auroras for Light Canvas */}
+      <div className="fixed top-[-10%] right-[15%] w-[550px] h-[550px] bg-sky-400/[0.05] rounded-full blur-[140px] pointer-events-none -z-10" />
+      <div className="fixed bottom-[-10%] left-[10%] w-[600px] h-[600px] bg-indigo-300/[0.04] rounded-full blur-[160px] pointer-events-none -z-10" />
+      <div className="fixed top-1/3 left-1/4 w-[450px] h-[450px] bg-rose-300/[0.03] rounded-full blur-[140px] pointer-events-none -z-10" />
+      <div className="fixed top-1/2 right-1/3 w-[400px] h-[400px] bg-amber-300/[0.035] rounded-full blur-[140px] pointer-events-none -z-10" />
 
       {/* Screen Interactive UI (Hidden during print) */}
       <div className="no-print flex flex-col flex-1">
@@ -156,22 +156,22 @@ export default function App() {
         </main>
 
         {/* Global Footer */}
-        <footer className="w-full border-t border-emerald-500/15 py-6 pb-20 md:pb-6 px-4 md:px-8 text-center text-xs text-slate-400 glass-panel">
+        <footer className="w-full border-t border-slate-200/80 py-5 pb-24 md:pb-6 px-4 md:px-8 text-center text-xs text-slate-500 glass-panel">
           <div className="max-w-7xl 2xl:max-w-[1700px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-400" />
-              <span className="font-semibold text-slate-200">
+              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+              <span className="font-semibold text-slate-800">
                 شجرة عائلة البوحسون
               </span>
               <span>· فخذ النواصر · آل جابر · قبيلة آل بوعينين</span>
             </div>
 
-            <div className="text-slate-400 flex items-center gap-3 text-[11px]">
+            <div className="text-slate-500 flex items-center gap-3 text-[11px]">
               <span>تطبيق الويب التفاعلي للتوثيق العائلي واستضافة GitHub Pages</span>
               <span>·</span>
               <button
                 onClick={() => setIsAdminPanelOpen(true)}
-                className="text-emerald-400 hover:underline"
+                className="text-sky-600 hover:text-sky-800 hover:underline font-medium"
               >
                 لوحة الإدارة والنسخ
               </button>

@@ -627,20 +627,20 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
         <div className="flex flex-wrap items-center justify-between gap-2">
           
           {/* Search Bar & Primary Filters */}
-          <div className="pointer-events-auto flex items-center gap-1.5 glass-panel p-1.5 rounded-2xl shadow-xl border border-white/10 flex-1 max-w-xl">
+          <div className="pointer-events-auto flex items-center gap-1.5 glass-panel p-1.5 rounded-2xl shadow-md border border-slate-200/90 flex-1 max-w-xl">
             <div className="relative flex-1 min-w-[140px] sm:min-w-[200px]">
-              <Search className="w-3.5 h-3.5 text-sky-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <Search className="w-3.5 h-3.5 text-sky-600 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="ابحث بالاسم أو اللقب لتتبع النسب..."
-                className="w-full bg-black/30 border border-white/10 rounded-xl pr-8 pl-2.5 py-1.5 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-sky-400/50"
+                placeholder="ابحث بالاسم لتتبع النسب..."
+                className="w-full bg-slate-50 border border-slate-300 rounded-xl pr-8 pl-2.5 py-1.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-sky-500 shadow-xs"
               />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery('')}
-                  className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white text-xs px-1"
+                  className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 text-xs px-1"
                 >
                   ✕
                 </button>
@@ -653,7 +653,7 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
               <select
                 value={subFamilyFilter}
                 onChange={(e) => setSubFamilyFilter(e.target.value)}
-                className="bg-black/30 border border-white/10 text-sky-200 text-xs rounded-xl px-2.5 py-1.5 focus:outline-none font-medium cursor-pointer"
+                className="bg-slate-50 border border-slate-300 text-sky-900 text-xs rounded-xl px-2.5 py-1.5 focus:outline-none font-semibold cursor-pointer shadow-xs"
                 title="تصفية حسب وسم العائلة الفرعية"
               >
                 <option value="all">كافة الوسوم الفرعية</option>
@@ -668,7 +668,7 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
               <select
                 value={selectedBranch}
                 onChange={(e) => setSelectedBranch(e.target.value)}
-                className="bg-black/30 border border-white/10 text-slate-200 text-xs rounded-xl px-2.5 py-1.5 focus:outline-none"
+                className="bg-slate-50 border border-slate-300 text-slate-800 text-xs rounded-xl px-2.5 py-1.5 focus:outline-none shadow-xs"
               >
                 <option value="all">كافة الفروع</option>
                 {branches.map(b => (
@@ -679,7 +679,7 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
               <select
                 value={genderFilter}
                 onChange={(e) => setGenderFilter(e.target.value as any)}
-                className="bg-black/30 border border-white/10 text-slate-200 text-xs rounded-xl px-2 py-1.5 focus:outline-none"
+                className="bg-slate-50 border border-slate-300 text-slate-800 text-xs rounded-xl px-2 py-1.5 focus:outline-none shadow-xs"
               >
                 <option value="all">الكل</option>
                 <option value="male">الذكور</option>
@@ -690,54 +690,54 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
             {/* Mobile Filter Toggle */}
             <button
               onClick={() => setShowFiltersModal(!showFiltersModal)}
-              className="sm:hidden w-8 h-8 rounded-xl glass-btn flex items-center justify-center text-slate-300"
+              className="sm:hidden min-h-[40px] min-w-[40px] rounded-xl glass-btn flex items-center justify-center text-slate-700"
               title="تصفية الفروع والحالات"
             >
-              <SlidersHorizontal className="w-3.5 h-3.5 text-sky-400" />
+              <SlidersHorizontal className="w-4 h-4 text-sky-600" />
             </button>
           </div>
 
           {/* Diagram Layout Mode & Zoom Controls */}
-          <div className="pointer-events-auto flex items-center gap-1.5 glass-panel p-1.5 rounded-2xl shadow-xl border border-white/10">
+          <div className="pointer-events-auto flex items-center gap-1.5 glass-panel p-1.5 rounded-2xl shadow-md border border-slate-200/90">
             
             {/* Diagram Mode Switcher (Cupertino Segmented Control) */}
-            <div className="flex items-center bg-black/30 rounded-xl p-0.5 border border-white/10">
+            <div className="flex items-center bg-slate-100 p-0.5 rounded-xl border border-slate-200 shadow-xs">
               <button
                 onClick={() => setLayoutMode('horizontal')}
-                className={`flex items-center gap-1.5 px-3 py-1 text-xs rounded-lg transition-all ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg transition-all ${
                   layoutMode === 'horizontal'
-                    ? 'bg-white/15 text-white font-semibold shadow-sm border border-white/10'
-                    : 'text-slate-400 hover:text-white'
+                    ? 'bg-white text-slate-900 font-bold shadow-xs border border-slate-200'
+                    : 'text-slate-600 hover:text-slate-900'
                 }`}
                 title="مخطط النسب الأفقي المتسلسل (الأنساب العربية من اليمين إلى اليسار)"
               >
-                <Compass className="w-3.5 h-3.5 text-sky-400" />
+                <Compass className="w-3.5 h-3.5 text-sky-600" />
                 <span className="hidden sm:inline">أفقي متسلسل</span>
               </button>
 
               <button
                 onClick={() => setLayoutMode('vertical')}
-                className={`flex items-center gap-1.5 px-3 py-1 text-xs rounded-lg transition-all ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg transition-all ${
                   layoutMode === 'vertical'
-                    ? 'bg-white/15 text-white font-semibold shadow-sm border border-white/10'
-                    : 'text-slate-400 hover:text-white'
+                    ? 'bg-white text-slate-900 font-bold shadow-xs border border-slate-200'
+                    : 'text-slate-600 hover:text-slate-900'
                 }`}
                 title="مخطط النسب الرأسي المتفرع (الشجرة الصاعدة والنازلة)"
               >
-                <GitBranch className="w-3.5 h-3.5 text-teal-400" />
+                <GitBranch className="w-3.5 h-3.5 text-teal-600" />
                 <span className="hidden sm:inline">رأسي متفرع</span>
               </button>
 
               <button
                 onClick={() => setLayoutMode('flow')}
-                className={`flex items-center gap-1.5 px-3 py-1 text-xs rounded-lg transition-all ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg transition-all ${
                   layoutMode === 'flow'
-                    ? 'bg-white/15 text-white font-semibold shadow-sm border border-white/10'
-                    : 'text-slate-400 hover:text-white'
+                    ? 'bg-white text-slate-900 font-bold shadow-xs border border-slate-200'
+                    : 'text-slate-600 hover:text-slate-900'
                 }`}
                 title="قائمة الأجيال المتسلسلة (للجوال)"
               >
-                <LayoutGrid className="w-3.5 h-3.5 text-amber-400" />
+                <LayoutGrid className="w-3.5 h-3.5 text-amber-600" />
                 <span className="hidden sm:inline">الأجيال</span>
               </button>
             </div>
@@ -812,13 +812,13 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
 
         {/* Mobile Filter Dropdown */}
         {showFiltersModal && (
-          <div className="sm:hidden pointer-events-auto glass-panel p-3 rounded-2xl border border-emerald-500/25 grid grid-cols-2 gap-2 animate-in fade-in duration-150">
+          <div className="sm:hidden pointer-events-auto bg-white/98 p-3 rounded-2xl border border-slate-200 shadow-xl grid grid-cols-2 gap-2 animate-in fade-in duration-150">
             <div>
-              <label className="text-[10px] text-slate-400 block mb-1">الفرع العائلي:</label>
+              <label className="text-[10px] text-slate-500 block mb-1">الفرع العائلي:</label>
               <select
                 value={selectedBranch}
                 onChange={(e) => setSelectedBranch(e.target.value)}
-                className="w-full bg-slate-900 border border-emerald-500/30 text-white text-xs rounded-lg p-1.5 focus:outline-none"
+                className="w-full bg-slate-50 border border-slate-300 text-slate-800 text-xs rounded-xl p-2 focus:outline-none"
               >
                 <option value="all">كافة الفروع</option>
                 {branches.map(b => (
@@ -827,27 +827,27 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
               </select>
             </div>
             <div>
-              <label className="text-[10px] text-slate-400 block mb-1">الجنس:</label>
+              <label className="text-[10px] text-slate-500 block mb-1">الجنس:</label>
               <select
                 value={genderFilter}
                 onChange={(e) => setGenderFilter(e.target.value as any)}
-                className="w-full bg-slate-900 border border-emerald-500/30 text-white text-xs rounded-lg p-1.5 focus:outline-none"
+                className="w-full bg-slate-50 border border-slate-300 text-slate-800 text-xs rounded-xl p-2 focus:outline-none"
               >
                 <option value="all">الكل</option>
                 <option value="male">الذكور</option>
                 <option value="female">الإناث</option>
               </select>
             </div>
-            <div className="col-span-2 pt-1 border-t border-white/5">
-              <label className="text-[10px] text-slate-400 block mb-1">وسم العائلة الفرعية:</label>
+            <div className="col-span-2 pt-1 border-t border-slate-100">
+              <label className="text-[10px] text-slate-500 block mb-1">وسم العائلة الفرعية:</label>
               <div className="flex gap-1.5">
                 <button
                   type="button"
                   onClick={() => setSubFamilyFilter('all')}
-                  className={`flex-1 py-1 rounded-lg text-xs font-medium border ${
+                  className={`flex-1 min-h-[38px] py-1 rounded-xl text-xs font-semibold border ${
                     subFamilyFilter === 'all'
-                      ? 'bg-emerald-600 border-emerald-400 text-white'
-                      : 'bg-slate-900 border-white/10 text-slate-300'
+                      ? 'bg-sky-600 border-sky-600 text-white'
+                      : 'bg-slate-50 border-slate-200 text-slate-700'
                   }`}
                 >
                   الكل
@@ -855,10 +855,10 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
                 <button
                   type="button"
                   onClick={() => setSubFamilyFilter('jaber')}
-                  className={`flex-1 py-1 rounded-lg text-xs font-bold border flex items-center justify-center gap-1 ${
+                  className={`flex-1 min-h-[38px] py-1 rounded-xl text-xs font-bold border flex items-center justify-center gap-1 ${
                     subFamilyFilter === 'jaber'
-                      ? 'bg-amber-500 border-amber-300 text-slate-950 shadow-sm'
-                      : 'bg-slate-900 border-amber-500/30 text-amber-300'
+                      ? 'bg-amber-500 border-amber-400 text-slate-950 shadow-xs'
+                      : 'bg-amber-50 border-amber-200 text-amber-900'
                   }`}
                 >
                   <Crown className="w-3 h-3" />
@@ -867,10 +867,10 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
                 <button
                   type="button"
                   onClick={() => setSubFamilyFilter('nawasir')}
-                  className={`flex-1 py-1 rounded-lg text-xs font-bold border flex items-center justify-center gap-1 ${
+                  className={`flex-1 min-h-[38px] py-1 rounded-xl text-xs font-bold border flex items-center justify-center gap-1 ${
                     subFamilyFilter === 'nawasir'
-                      ? 'bg-emerald-500 border-emerald-300 text-slate-950 shadow-sm'
-                      : 'bg-slate-900 border-emerald-500/30 text-emerald-300'
+                      ? 'bg-teal-600 border-teal-500 text-white shadow-xs'
+                      : 'bg-teal-50 border-teal-200 text-teal-900'
                   }`}
                 >
                   <Shield className="w-3 h-3" />
@@ -883,9 +883,9 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
 
         {/* Active Lineage Breadcrumb Ribbon */}
         {activeLineageChain.length > 0 && (
-          <div className="pointer-events-auto glass-panel px-3 sm:px-4 py-1.5 rounded-2xl border border-amber-500/40 shadow-xl flex items-center justify-between gap-2 max-w-4xl mx-auto overflow-hidden animate-in fade-in duration-200">
-            <div className="flex items-center gap-1.5 shrink-0 text-amber-300 text-xs font-bold">
-              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+          <div className="pointer-events-auto bg-white/95 backdrop-blur-md px-3 sm:px-4 py-2 rounded-2xl border border-amber-300 shadow-md flex items-center justify-between gap-2 max-w-4xl mx-auto overflow-hidden animate-in fade-in duration-200">
+            <div className="flex items-center gap-1.5 shrink-0 text-amber-800 text-xs font-bold">
+              <Sparkles className="w-3.5 h-3.5 text-amber-600" />
               <span>سلسلة النسب المتصلة:</span>
             </div>
             <div className="flex items-center gap-1 overflow-x-auto no-scrollbar text-xs">
@@ -898,21 +898,21 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
                         handleCenterOnMember(item.id);
                         onSelectMember(item);
                       }}
-                      className={`px-2.5 py-0.5 rounded-lg whitespace-nowrap transition-colors flex items-center gap-1 ${
+                      className={`px-2.5 py-1 rounded-lg whitespace-nowrap transition-colors flex items-center gap-1 ${
                         isTarget
-                          ? 'bg-emerald-600 text-white font-bold shadow-md'
-                          : 'text-slate-300 hover:text-amber-200 hover:bg-slate-800/80'
+                          ? 'bg-amber-600 text-white font-bold shadow-xs'
+                          : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100'
                       }`}
                     >
                       <span>{item.full_name.split(' ')[0]}</span>
                       {isTarget && (
-                        <span className="text-[10px] text-emerald-200 font-normal">
+                        <span className="text-[10px] text-amber-100 font-normal">
                           (الجيل {item.generation})
                         </span>
                       )}
                     </button>
                     {idx < activeLineageChain.length - 1 && (
-                      <span className="text-amber-400/80 text-[10px] font-mono"> بن </span>
+                      <span className="text-amber-700 font-bold text-[10px] font-mono"> بن </span>
                     )}
                   </React.Fragment>
                 );
@@ -939,12 +939,12 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
             isDragging ? 'cursor-grabbing' : ''
           }`}
         >
-          {/* Subtle Apple Obsidian Grid */}
+          {/* Eye-Comfort Subtle Light Canvas Grid */}
           <div
-            className="absolute inset-0 opacity-[0.06] pointer-events-none"
+            className="absolute inset-0 opacity-70 pointer-events-none"
             style={{
-              backgroundImage: `radial-gradient(circle, #64748b 1px, transparent 1px)`,
-              backgroundSize: '32px 32px'
+              backgroundImage: `radial-gradient(circle, #cbd5e1 1.2px, transparent 1.2px)`,
+              backgroundSize: '28px 28px'
             }}
           />
 
@@ -970,35 +970,35 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
               <defs>
                 {/* Glow Filter for Active Lineage */}
                 <filter id="goldGlow" x="-20%" y="-20%" width="140%" height="140%">
-                  <feGaussianBlur stdDeviation="3" result="blur" />
+                  <feGaussianBlur stdDeviation="2.5" result="blur" />
                   <feComposite in="SourceGraphic" in2="blur" operator="over" />
                 </filter>
                 <filter id="cyanGlow" x="-20%" y="-20%" width="140%" height="140%">
-                  <feGaussianBlur stdDeviation="3" result="blur" />
+                  <feGaussianBlur stdDeviation="2.5" result="blur" />
                   <feComposite in="SourceGraphic" in2="blur" operator="over" />
                 </filter>
                 <linearGradient id="activeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#f59e0b" />
-                  <stop offset="100%" stopColor="#38bdf8" />
+                  <stop offset="0%" stopColor="#d97706" />
+                  <stop offset="100%" stopColor="#0284c7" />
                 </linearGradient>
               </defs>
 
-              {/* Generational Guide Ribbons (Apple Frosted Glass Lanes) */}
+              {/* Generational Guide Ribbons (Clean Light Lanes) */}
               {layoutMode === 'vertical' && distinctGenerations.map(gen => {
                 const tierY = (gen - 1) * LEVEL_HEIGHT;
                 const leftX = bounds.minX - 350;
                 const rightX = bounds.maxX + 350;
                 return (
-                  <g key={`gen-guide-${gen}`} className="pointer-events-none opacity-40">
+                  <g key={`gen-guide-${gen}`} className="pointer-events-none opacity-60">
                     <line
                       x1={leftX}
                       y1={tierY}
                       x2={rightX}
                       y2={tierY}
-                      stroke="#38bdf8"
-                      strokeWidth={1}
-                      strokeDasharray="6 6"
-                      strokeOpacity={0.14}
+                      stroke="#cbd5e1"
+                      strokeWidth={1.5}
+                      strokeDasharray="4 4"
+                      strokeOpacity={0.8}
                     />
                     <rect
                       x={rightX - 110}
@@ -1006,15 +1006,15 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
                       width={100}
                       height={24}
                       rx={12}
-                      fill="rgba(15, 23, 42, 0.75)"
-                      stroke="rgba(255, 255, 255, 0.12)"
+                      fill="#ffffff"
+                      stroke="#cbd5e1"
                       strokeWidth={1}
                     />
                     <text
                       x={rightX - 60}
                       y={tierY + 4}
                       textAnchor="middle"
-                      fill="#94a3b8"
+                      fill="#475569"
                       fontSize={11}
                       fontWeight="bold"
                       fontFamily="Cairo, sans-serif"
@@ -1030,16 +1030,16 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
                 const topY = bounds.minY - 200;
                 const bottomY = bounds.maxY + 200;
                 return (
-                  <g key={`gen-guide-h-${gen}`} className="pointer-events-none opacity-40">
+                  <g key={`gen-guide-h-${gen}`} className="pointer-events-none opacity-60">
                     <line
                       x1={tierX}
                       y1={topY}
                       x2={tierX}
                       y2={bottomY}
-                      stroke="#38bdf8"
-                      strokeWidth={1}
-                      strokeDasharray="6 6"
-                      strokeOpacity={0.14}
+                      stroke="#cbd5e1"
+                      strokeWidth={1.5}
+                      strokeDasharray="4 4"
+                      strokeOpacity={0.8}
                     />
                     <rect
                       x={tierX - 45}
@@ -1047,15 +1047,15 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
                       width={90}
                       height={22}
                       rx={11}
-                      fill="rgba(15, 23, 42, 0.75)"
-                      stroke="rgba(255, 255, 255, 0.12)"
+                      fill="#ffffff"
+                      stroke="#cbd5e1"
                       strokeWidth={1}
                     />
                     <text
                       x={tierX}
                       y={topY - 11}
                       textAnchor="middle"
-                      fill="#94a3b8"
+                      fill="#475569"
                       fontSize={11}
                       fontWeight="bold"
                       fontFamily="Cairo, sans-serif"
@@ -1066,7 +1066,7 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
                 );
               })}
 
-              {/* Draw All D3-Hierarchy Links (Apple Cool Platinum/Cyan Cables) */}
+              {/* Draw All D3-Hierarchy Links (Refined High-Legibility Cables) */}
               {links.map((link, idx) => {
                 const isAncestorLink =
                   ancestorIds.has(link.target.id) || (link.target.id === activeId && ancestorIds.has(link.source.id));
@@ -1078,13 +1078,13 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
 
                 return (
                   <g key={`${link.source.id}-${link.target.id}-${idx}`}>
-                    {/* Shadow / Base Stroke */}
+                    {/* Main Lineage Cable */}
                     <path
                       d={pathData}
                       fill="none"
-                      stroke={isActiveLink ? '#fbbf24' : '#38bdf8'}
-                      strokeWidth={isActiveLink ? 3.5 : 1.6}
-                      strokeOpacity={isActiveLink ? 1 : 0.28}
+                      stroke={isActiveLink ? '#d97706' : '#475569'}
+                      strokeWidth={isActiveLink ? 3.8 : 2}
+                      strokeOpacity={isActiveLink ? 1 : 0.45}
                       strokeLinecap="round"
                       filter={isActiveLink ? 'url(#goldGlow)' : undefined}
                       className="transition-all duration-300"
@@ -1106,8 +1106,8 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
                     <circle
                       cx={link.sourceX}
                       cy={link.sourceY}
-                      r={isActiveLink ? 3.5 : 2.5}
-                      fill={isActiveLink ? '#fbbf24' : '#0284c7'}
+                      r={isActiveLink ? 4 : 2.5}
+                      fill={isActiveLink ? '#d97706' : '#0284c7'}
                       className="transition-all duration-300"
                     />
 
@@ -1116,7 +1116,7 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
                       cx={link.targetX}
                       cy={link.targetY}
                       r={isActiveLink ? 4.5 : 3}
-                      fill={isActiveLink ? '#fbbf24' : '#38bdf8'}
+                      fill={isActiveLink ? '#d97706' : '#475569'}
                       className="transition-all duration-300"
                     />
                   </g>
@@ -1171,32 +1171,32 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
                   {/* Kinship Relationship Label */}
                   {kinshipTag && (
                     <div className="absolute -top-3.5 right-4 z-20">
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-400 text-slate-950 shadow-md flex items-center gap-1 border border-amber-300">
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500 text-slate-950 shadow-md flex items-center gap-1 border border-amber-300">
                         <Sparkles className="w-2.5 h-2.5" />
                         <span>{kinshipTag}</span>
                       </span>
                     </div>
                   )}
 
-                  {/* Main Glass Card */}
+                  {/* Main Card (Light Theme with clear borders & soft shadows) */}
                   <div
                     className={`rounded-2xl p-3 text-right relative transition-all duration-300 border ${
                       isMale
                         ? member.is_living
-                          ? 'glass-card border-sky-400/25'
-                          : 'bg-slate-900/85 border-slate-700/50 shadow-none'
+                          ? 'glass-card border-sky-300 hover:border-sky-500'
+                          : 'bg-slate-50/95 border-slate-300 hover:border-slate-400 shadow-xs'
                         : member.is_living
-                        ? 'glass-card-female border-rose-400/35'
-                        : 'bg-slate-900/85 border-purple-900/50 shadow-none'
+                        ? 'glass-card-female border-rose-300 hover:border-rose-500'
+                        : 'bg-rose-50/60 border-rose-200 hover:border-rose-300 shadow-xs'
                     } ${
                       isTarget
-                        ? 'ring-2 ring-sky-400 shadow-[0_0_24px_rgba(56,189,248,0.35)] border-sky-400'
+                        ? 'ring-2 ring-sky-600 shadow-[0_0_24px_rgba(2,132,199,0.25)] border-sky-600'
                         : isAncestor
-                        ? 'ring-2 ring-amber-400/80 shadow-[0_0_20px_rgba(251,191,36,0.3)] border-amber-400/60'
+                        ? 'ring-2 ring-amber-500 shadow-[0_0_20px_rgba(217,119,6,0.25)] border-amber-500'
                         : isDescendant
-                        ? 'ring-2 ring-cyan-400/80 shadow-[0_0_20px_rgba(34,211,238,0.3)] border-cyan-400/60'
+                        ? 'ring-2 ring-teal-500 shadow-[0_0_20px_rgba(13,148,136,0.25)] border-teal-500'
                         : isMatch
-                        ? 'ring-2 ring-sky-300 border-sky-400 shadow-[0_0_20px_rgba(56,189,248,0.35)]'
+                        ? 'ring-2 ring-sky-400 border-sky-500 shadow-[0_0_20px_rgba(2,132,199,0.2)]'
                         : ''
                     }`}
                   >
@@ -1210,16 +1210,16 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
                               src={member.avatar_url}
                               alt={member.full_name}
                               referrerPolicy="no-referrer"
-                              className="w-11 h-11 rounded-xl object-cover border border-sky-400/30 shadow-sm"
+                              className="w-11 h-11 rounded-xl object-cover border border-sky-300 shadow-xs"
                             />
                           ) : (
-                            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-slate-800 to-slate-900 border border-sky-400/25 flex items-center justify-center text-sky-200 font-bold text-base shadow-inner">
+                            <div className="w-11 h-11 rounded-xl bg-sky-100 border border-sky-300 flex items-center justify-center text-sky-800 font-bold text-base shadow-xs">
                               {firstLetter}
                             </div>
                           )
                         ) : (
                           /* Female dignified crest badge (Strictly NO photo) */
-                          <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-purple-950/60 to-rose-950/80 border border-rose-400/30 flex items-center justify-center shadow-inner">
+                          <div className="w-11 h-11 rounded-xl bg-rose-50 border border-rose-200 flex items-center justify-center shadow-xs">
                             <FemaleHeritageBadge size={26} />
                           </div>
                         )}
@@ -1227,8 +1227,8 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
                         <span
                           className={`absolute -bottom-1 -left-1 text-[9px] font-mono px-1 py-0.2 rounded font-semibold ${
                             isMale
-                              ? 'bg-slate-900 text-sky-300 border border-sky-500/25'
-                              : 'bg-slate-900 text-rose-300 border border-rose-500/25'
+                              ? 'bg-slate-100 text-sky-800 border border-sky-200'
+                              : 'bg-rose-100 text-rose-800 border border-rose-200'
                           }`}
                         >
                           G{member.generation || 1}
@@ -1242,28 +1242,28 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
                             className={`text-[9px] font-medium px-2 py-0.2 rounded-full ${
                               member.is_living
                                 ? isMale
-                                  ? 'bg-sky-950/60 text-sky-300 border border-sky-500/25'
-                                  : 'bg-rose-950/60 text-rose-300 border border-rose-500/25'
+                                  ? 'bg-sky-50 text-sky-800 border border-sky-200'
+                                  : 'bg-rose-50 text-rose-800 border border-rose-200'
                                 : isMale
-                                ? 'bg-slate-800/80 text-amber-200/90 border border-amber-600/30'
-                                : 'bg-slate-800/80 text-rose-200/80 border border-rose-800/30'
+                                ? 'bg-slate-100 text-slate-700 border border-slate-300'
+                                : 'bg-rose-100/60 text-rose-800 border border-rose-200'
                             }`}
                           >
                             {member.is_living
                               ? isMale ? '● حي يُرزق' : '● حفظها الله'
                               : isMale ? 'رحمه الله' : 'رحمها الله'}
                           </span>
-                          <span className="text-[10px] text-slate-400 font-mono">
+                          <span className="text-[10px] text-slate-500 font-mono">
                             {member.birth_date || 'غير مدون'}
                           </span>
                         </div>
 
-                        <h3 className="text-xs font-bold text-white truncate" title={member.full_name}>
+                        <h3 className="text-xs font-bold text-slate-900 truncate" title={member.full_name}>
                           {member.full_name}
                         </h3>
 
                         {member.nickname && (
-                          <p className={`text-[11px] font-medium truncate ${isMale ? 'text-sky-300' : 'text-rose-300'}`}>
+                          <p className={`text-[11px] font-medium truncate ${isMale ? 'text-sky-700' : 'text-rose-700'}`}>
                             {member.nickname}
                           </p>
                         )}
@@ -1276,8 +1276,8 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
                     </div>
 
                     {/* Metadata Strip */}
-                    <div className="mt-2 pt-1.5 border-t border-white/5 flex items-center justify-between text-[10px] text-slate-300">
-                      <span className="truncate max-w-[140px] text-slate-400">
+                    <div className="mt-2 pt-1.5 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-600">
+                      <span className="truncate max-w-[140px] text-slate-500">
                         {member.branch || 'الفرع العام'}
                       </span>
 
@@ -1285,23 +1285,23 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
                       {hasChildren ? (
                         <button
                           onClick={(e) => handleToggleCollapse(member.id, e)}
-                          className="px-2 py-0.5 rounded-md bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 text-slate-200 flex items-center gap-1 text-[10px] active:scale-95 transition-all"
+                          className="px-2 py-0.5 rounded-md bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 flex items-center gap-1 text-[10px] active:scale-95 transition-all"
                           title={isCollapsed ? 'توسيع فروع الذرية' : 'طي فروع الذرية'}
                         >
                           {isCollapsed ? (
                             <>
-                              <ChevronDown className="w-3 h-3 text-sky-400" />
+                              <ChevronDown className="w-3 h-3 text-sky-600" />
                               <span>+{(childrenMap.get(member.id) || []).length} ذرية</span>
                             </>
                           ) : (
                             <>
-                              <ChevronUp className="w-3 h-3 text-slate-300" />
+                              <ChevronUp className="w-3 h-3 text-slate-500" />
                               <span>طي</span>
                             </>
                           )}
                         </button>
                       ) : (
-                        <span className="text-[10px] text-slate-400 flex items-center gap-1 group-hover:text-sky-400">
+                        <span className="text-[10px] text-slate-500 flex items-center gap-1 group-hover:text-sky-600">
                           <Eye className="w-3 h-3" />
                           <span>السجل</span>
                         </span>
@@ -1317,7 +1317,7 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
         /* ---------------------------------------------------- */
         /* COMPACT GENERATIONAL FLOW VIEW (Mobile & Accessibility) */
         /* ---------------------------------------------------- */
-        <div className="w-full h-full flex-1 overflow-y-auto px-4 py-24 max-w-5xl mx-auto space-y-8">
+        <div className="w-full h-full flex-1 overflow-y-auto px-4 py-20 pb-28 max-w-5xl mx-auto space-y-8">
           {Array.from({ length: generationTiers.maxGen }, (_, i) => i + 1).map(genNum => {
             const rawMembersInGen = generationTiers.tiers[genNum] || [];
 
@@ -1334,14 +1334,14 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
 
             return (
               <section key={genNum} className="space-y-3">
-                <div className="flex items-center justify-between border-b border-white/10 pb-2">
+                <div className="flex items-center justify-between border-b border-slate-200 pb-2">
                   <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-sky-400 shadow-[0_0_8px_rgba(56,189,248,0.5)]" />
-                    <h3 className="text-sm sm:text-base font-bold text-white">
+                    <span className="w-2.5 h-2.5 rounded-full bg-sky-600" />
+                    <h3 className="text-sm sm:text-base font-bold text-slate-900">
                       {getGenerationLabel(genNum)}
                     </h3>
                   </div>
-                  <span className="text-xs font-mono text-sky-300 bg-white/[0.05] px-2.5 py-0.5 rounded-full border border-white/10">
+                  <span className="text-xs font-mono font-semibold text-sky-800 bg-sky-50 px-2.5 py-0.5 rounded-full border border-sky-200">
                     {filteredMembers.length} فرد
                   </span>
                 </div>
@@ -1357,8 +1357,8 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
                           setFocusedMemberId(member.id);
                           onSelectMember(member);
                         }}
-                        className={`rounded-2xl p-3.5 cursor-pointer border text-right transition-all hover:scale-102 ${
-                          isMale ? 'glass-card border-sky-400/25' : 'glass-card-female border-rose-400/35'
+                        className={`rounded-2xl p-3.5 cursor-pointer border text-right transition-all hover:scale-102 bg-white shadow-xs ${
+                          isMale ? 'border-sky-300 hover:border-sky-500' : 'border-rose-300 hover:border-rose-500'
                         }`}
                       >
                         <div className="flex items-start gap-3">
@@ -1369,31 +1369,31 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
                                   src={member.avatar_url}
                                   alt={member.full_name}
                                   referrerPolicy="no-referrer"
-                                  className="w-11 h-11 rounded-xl object-cover border border-sky-400/30"
+                                  className="w-11 h-11 rounded-xl object-cover border border-sky-300"
                                 />
                               ) : (
-                                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-slate-800 to-slate-900 border border-sky-400/25 flex items-center justify-center text-sky-200 font-bold text-base">
+                                <div className="w-11 h-11 rounded-xl bg-sky-100 border border-sky-300 flex items-center justify-center text-sky-800 font-bold text-base">
                                   {member.full_name.charAt(0)}
                                 </div>
                               )
                             ) : (
-                              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-purple-950/60 to-rose-950/80 border border-rose-400/30 flex items-center justify-center">
+                              <div className="w-11 h-11 rounded-xl bg-rose-50 border border-rose-200 flex items-center justify-center">
                                 <FemaleHeritageBadge size={26} />
                               </div>
                             )}
                           </div>
 
                           <div className="flex-1 min-w-0">
-                            <h4 className="text-sm font-bold text-white truncate">{member.full_name}</h4>
+                            <h4 className="text-sm font-bold text-slate-900 truncate">{member.full_name}</h4>
                             {member.nickname && (
-                              <p className={`text-xs ${isMale ? 'text-sky-300' : 'text-rose-300'}`}>
+                              <p className={`text-xs ${isMale ? 'text-sky-700 font-semibold' : 'text-rose-700 font-semibold'}`}>
                                 {member.nickname}
                               </p>
                             )}
                             <div className="mt-1">
                               <SubFamilyBadge member={member} memberMap={memberMap} size="xs" />
                             </div>
-                            <div className="flex items-center justify-between text-[11px] text-slate-400 mt-1">
+                            <div className="flex items-center justify-between text-[11px] text-slate-500 mt-1">
                               <span>{member.branch || 'الفرع العام'}</span>
                               <span className="font-mono">{member.birth_date || ''}</span>
                             </div>
@@ -1409,55 +1409,82 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
         </div>
       )}
 
+      {/* Floating Canvas Quick Mobile Zoom Dock (Within Easy Thumb Reach) */}
+      {layoutMode !== 'flow' && (
+        <div className="sm:hidden absolute top-20 left-3 z-30 flex flex-col gap-1.5 pointer-events-auto">
+          <button
+            onClick={() => setScale(prev => Math.min(prev + 0.15, 1.8))}
+            title="تكبير"
+            className="w-11 h-11 rounded-xl glass-btn flex items-center justify-center text-slate-700 font-bold shadow-md active:scale-95"
+          >
+            <ZoomIn className="w-5 h-5 text-sky-600" />
+          </button>
+          <button
+            onClick={() => setScale(prev => Math.max(prev - 0.15, 0.2))}
+            title="تصغير"
+            className="w-11 h-11 rounded-xl glass-btn flex items-center justify-center text-slate-700 font-bold shadow-md active:scale-95"
+          >
+            <ZoomOut className="w-5 h-5 text-sky-600" />
+          </button>
+          <button
+            onClick={handleResetView}
+            title="إعادة ضبط وتوسيط الشجرة"
+            className="w-11 h-11 rounded-xl glass-btn flex items-center justify-center text-slate-700 font-bold shadow-md active:scale-95"
+          >
+            <RotateCcw className="w-4 h-4 text-slate-600" />
+          </button>
+        </div>
+      )}
+
       {/* ---------------------------------------------------- */}
       {/* Floating Canvas Footer Status & Kinship Legend */}
       {/* ---------------------------------------------------- */}
       {layoutMode !== 'flow' && (
-        <div className="absolute bottom-3 left-4 right-4 z-20 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-300 glass-panel px-4 py-2 rounded-2xl border border-white/10 pointer-events-none">
-          <div className="flex items-center gap-3">
-            <span className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-sky-400 shadow-[0_0_8px_rgba(56,189,248,0.5)]" />
-              <span className="text-sky-200 font-medium">رجال (أحياء)</span>
+        <div className="absolute bottom-20 md:bottom-3 left-3 right-3 sm:left-4 sm:right-4 z-20 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-600 bg-white/95 backdrop-blur-md px-3.5 py-1.5 sm:py-2 rounded-2xl border border-slate-200/90 shadow-md pointer-events-none">
+          <div className="flex items-center gap-2.5 sm:gap-3 overflow-x-auto no-scrollbar">
+            <span className="flex items-center gap-1.5 shrink-0">
+              <span className="w-2.5 h-2.5 rounded-full bg-sky-500" />
+              <span className="text-sky-900 font-semibold">رجال (أحياء)</span>
             </span>
-            <span className="flex items-center gap-1.5 hidden sm:flex">
-              <span className="w-2.5 h-2.5 rounded-full bg-slate-500 border border-slate-400/50" />
-              <span className="text-slate-300">رجال (رحمه الله)</span>
+            <span className="flex items-center gap-1.5 hidden sm:flex shrink-0">
+              <span className="w-2.5 h-2.5 rounded-full bg-slate-400" />
+              <span className="text-slate-600 font-medium">رجال (رحمه الله)</span>
             </span>
-            <span className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-rose-400 shadow-[0_0_8px_rgba(251,113,133,0.5)]" />
-              <span className="text-rose-200 font-medium">نساء (أحياء)</span>
+            <span className="flex items-center gap-1.5 shrink-0">
+              <span className="w-2.5 h-2.5 rounded-full bg-rose-500" />
+              <span className="text-rose-900 font-semibold">نساء (أحياء)</span>
             </span>
-            <span className="flex items-center gap-1.5 hidden sm:flex">
-              <span className="w-2.5 h-2.5 rounded-full bg-purple-500 border border-purple-400/50" />
-              <span className="text-purple-300">نساء (رحمها الله)</span>
+            <span className="flex items-center gap-1.5 hidden sm:flex shrink-0">
+              <span className="w-2.5 h-2.5 rounded-full bg-purple-400" />
+              <span className="text-purple-800 font-medium">نساء (رحمها الله)</span>
             </span>
-            <span className="flex items-center gap-1.5 hidden md:flex border-r border-white/10 pr-3">
-              <span className="w-2.5 h-2.5 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.5)]" />
-              <span className="text-amber-200 font-medium">سلسلة النسب المتصلة</span>
+            <span className="flex items-center gap-1.5 hidden md:flex border-r border-slate-200 pr-3 shrink-0">
+              <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+              <span className="text-amber-800 font-bold">سلسلة النسب المتصلة</span>
             </span>
-            <span className="flex items-center gap-1.5 hidden lg:flex">
-              <Flame className="w-3 h-3 text-orange-400" />
-              <span className="text-orange-300 font-medium">الدرويش</span>
+            <span className="flex items-center gap-1 hidden lg:flex shrink-0">
+              <Flame className="w-3 h-3 text-orange-500" />
+              <span className="text-orange-800 font-semibold">الدرويش</span>
             </span>
-            <span className="flex items-center gap-1.5 hidden lg:flex">
-              <Waves className="w-3 h-3 text-cyan-300" />
-              <span className="text-cyan-300 font-medium">الأزرق</span>
+            <span className="flex items-center gap-1 hidden lg:flex shrink-0">
+              <Waves className="w-3 h-3 text-sky-500" />
+              <span className="text-sky-800 font-semibold">الأزرق</span>
             </span>
-            <span className="flex items-center gap-1.5 hidden xl:flex">
-              <Crown className="w-3 h-3 text-amber-400" />
-              <span className="text-amber-300 font-medium">آل جابر</span>
+            <span className="flex items-center gap-1 hidden xl:flex shrink-0">
+              <Crown className="w-3 h-3 text-amber-500" />
+              <span className="text-amber-800 font-semibold">آل جابر</span>
             </span>
-            <span className="flex items-center gap-1.5 hidden xl:flex">
-              <Shield className="w-3 h-3 text-teal-400" />
-              <span className="text-teal-300 font-medium">النواصر</span>
+            <span className="flex items-center gap-1 hidden xl:flex shrink-0">
+              <Shield className="w-3 h-3 text-teal-600" />
+              <span className="text-teal-800 font-semibold">النواصر</span>
             </span>
           </div>
 
-          <div className="flex items-center gap-3 shrink-0">
+          <div className="flex items-center gap-2 shrink-0">
             <span className="text-slate-400 text-[10px] hidden md:inline">
-              اسحب للتنقل · قرّب بأصبعين أو العجلة · انقر لفتح السجل والحذف/التعديل
+              اسحب للتنقل · قرّب بأصبعين · انقر لفتح السجل
             </span>
-            <span className="font-mono text-slate-300 text-xs bg-white/[0.06] px-2 py-0.5 rounded-lg border border-white/10">
+            <span className="font-mono text-slate-700 text-xs bg-slate-100 px-2 py-0.5 rounded-lg border border-slate-200 font-semibold">
               {Math.round(scale * 100)}%
             </span>
           </div>

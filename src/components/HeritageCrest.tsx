@@ -136,7 +136,7 @@ export const FemaleHeritageBadge: React.FC<{ size?: number; className?: string }
         </linearGradient>
       </defs>
 
-      <circle cx="50" cy="50" r="46" fill="rgba(80, 15, 45, 0.5)" stroke="url(#femaleRose)" strokeWidth="2" />
+      <circle cx="50" cy="50" r="46" fill="rgba(255, 241, 242, 0.95)" stroke="url(#femaleRose)" strokeWidth="2" />
       <circle cx="50" cy="50" r="38" stroke="url(#femaleGold)" strokeWidth="1" strokeDasharray="2 2" />
 
       {/* Feminine Islamic Arabesque Motif */}

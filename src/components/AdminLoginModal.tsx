@@ -64,28 +64,31 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-md glass-panel rounded-3xl p-6 md:p-8 border border-white/10 shadow-2xl text-right">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="relative w-full max-w-md bg-white rounded-t-3xl sm:rounded-3xl p-6 md:p-8 border border-slate-200 shadow-2xl text-right">
         
+        {/* Mobile handle */}
+        <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-3 sm:hidden" />
+
         {/* Close Button */}
         <button
           onClick={onClose}
           type="button"
-          className="absolute top-5 left-5 w-8 h-8 rounded-full glass-btn flex items-center justify-center text-slate-300 hover:text-white"
+          className="absolute top-5 left-5 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 hover:text-slate-900 transition-colors"
         >
           <X className="w-4 h-4" />
         </button>
 
         {/* Modal Header */}
-        <div className="flex items-center gap-3 border-b border-white/10 pb-4 mb-6">
-          <div className="w-12 h-12 rounded-2xl bg-white/[0.06] border border-white/10 flex items-center justify-center text-sky-300 shadow-lg">
+        <div className="flex items-center gap-3 border-b border-slate-200 pb-4 mb-5">
+          <div className="w-12 h-12 rounded-2xl bg-sky-50 border border-sky-200 flex items-center justify-center text-sky-700 shadow-sm">
             <Lock className="w-6 h-6" />
           </div>
           <div>
-            <h2 className="text-lg md:text-xl font-bold text-white">
+            <h2 className="text-lg md:text-xl font-bold text-slate-900">
               تسجيل دخول إدارة الشجرة
             </h2>
-            <p className="text-xs text-sky-300 font-medium">
+            <p className="text-xs text-sky-800 font-bold">
               تفعيل المزامنة السحابية الفورية (Firebase Firestore)
             </p>
           </div>
@@ -93,8 +96,8 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
 
         {/* Error notification */}
         {errorMessage && (
-          <div className="mb-4 p-3 rounded-xl bg-rose-950/70 border border-rose-500/40 text-xs text-rose-200 flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+          <div className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-300 text-xs text-rose-800 font-semibold flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
             <span>{errorMessage}</span>
           </div>
         )}
@@ -106,7 +109,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
               type="button"
               onClick={handleGoogleSignIn}
               disabled={isGoogleLoading}
-              className="w-full py-3 px-4 rounded-2xl bg-white hover:bg-slate-100 text-slate-900 font-bold text-xs md:text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-white/10 transition-all active:scale-[0.99] disabled:opacity-50"
+              className="w-full py-3 px-4 rounded-2xl bg-white hover:bg-slate-50 border border-slate-300 text-slate-900 font-bold text-xs md:text-sm flex items-center justify-center gap-2.5 shadow-sm transition-all active:scale-[0.99] disabled:opacity-50"
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -116,15 +119,15 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
               </svg>
               <span>{isGoogleLoading ? 'جاري تسجيل الدخول...' : 'تسجيل الدخول السريع بحساب Google'}</span>
             </button>
-            <p className="text-[11px] text-sky-300/90 text-center mt-2 flex items-center justify-center gap-1">
-              <Sparkles className="w-3 h-3 text-amber-300" />
+            <p className="text-[11px] text-sky-800 text-center mt-2 flex items-center justify-center gap-1 font-semibold">
+              <Sparkles className="w-3 h-3 text-amber-500" />
               <span>موصى به للمزامنة السحابية المباشرة بين كافة المتصفحات والجوالات</span>
             </p>
 
             <div className="flex items-center gap-3 my-4">
-              <div className="flex-1 h-px bg-white/10" />
+              <div className="flex-1 h-px bg-slate-200" />
               <span className="text-[11px] text-slate-500 font-medium">أو عبر كلمة المرور المحلية</span>
-              <div className="flex-1 h-px bg-white/10" />
+              <div className="flex-1 h-px bg-slate-200" />
             </div>
           </div>
         )}
@@ -132,8 +135,8 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
         {/* Passcode Form */}
         <form onSubmit={handleSubmit} className="space-y-4 text-xs md:text-sm">
           <div>
-            <label className="block text-slate-300 font-semibold mb-1.5 flex items-center gap-1.5">
-              <User className="w-3.5 h-3.5 text-sky-400" />
+            <label className="block text-slate-700 font-bold mb-1.5 flex items-center gap-1.5">
+              <User className="w-3.5 h-3.5 text-sky-600" />
               <span>اسم المستخدم (Username):</span>
             </label>
             <input
@@ -142,13 +145,13 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
               onChange={(e) => setUsername(e.target.value)}
               placeholder="اسم المستخدم..."
               required
-              className="w-full bg-slate-900/80 border border-white/10 rounded-xl px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-sky-400/50 font-mono text-sm"
+              className="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-sky-500 font-mono text-sm shadow-sm"
             />
           </div>
 
           <div>
-            <label className="block text-slate-300 font-semibold mb-1.5 flex items-center gap-1.5">
-              <KeyRound className="w-3.5 h-3.5 text-sky-400" />
+            <label className="block text-slate-700 font-bold mb-1.5 flex items-center gap-1.5">
+              <KeyRound className="w-3.5 h-3.5 text-sky-600" />
               <span>كلمة المرور (Password):</span>
             </label>
             <div className="relative">
@@ -158,12 +161,12 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="•••••"
                 required
-                className="w-full bg-slate-900/80 border border-white/10 rounded-xl pr-3.5 pl-10 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-sky-400/50 font-mono text-sm tracking-wider"
+                className="w-full bg-white border border-slate-300 rounded-xl pr-3.5 pl-10 py-2.5 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-sky-500 font-mono text-sm tracking-wider shadow-sm"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700"
                 title={showPassword ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور'}
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -174,7 +177,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
           <div className="pt-2">
             <button
               type="submit"
-              className="w-full py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs md:text-sm flex items-center justify-center gap-2 shadow-lg shadow-sky-950/50 transition-all active:scale-[0.99]"
+              className="w-full py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs md:text-sm flex items-center justify-center gap-2 shadow-md shadow-sky-600/30 transition-all active:scale-[0.99]"
             >
               <ShieldCheck className="w-4 h-4" />
               <span>دخول بكلمة المرور</span>
@@ -182,7 +185,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
           </div>
         </form>
 
-        <div className="mt-5 pt-4 border-t border-white/5 text-[11px] text-slate-400 text-center leading-relaxed">
+        <div className="mt-5 pt-4 border-t border-slate-200 text-[11px] text-slate-500 text-center leading-relaxed font-medium">
           <span>هذه المنطقة مخصصة لمدير قاعدة البيانات لحفظ وتوثيق أنساب الأسرة سحابياً.</span>
         </div>
       </div>
