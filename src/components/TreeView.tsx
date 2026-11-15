@@ -19,7 +19,6 @@ import {
   SlidersHorizontal,
   Sparkles,
   ChevronDown,
-  ChevronUp,
   Eye,
   Heart,
   Users2,
@@ -35,7 +34,9 @@ import {
   Flame,
   Waves,
   FileImage,
-  Focus
+  Focus,
+  ChevronLeft,
+  Plus
 } from 'lucide-react';
 
 interface TreeViewProps {
@@ -72,37 +73,26 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
   const pinchStartScaleRef = useRef<number>(0.85);
   const pinchCanvasCenterRef = useRef<{ x: number; y: number } | null>(null);
 
-  // Filters & Interactivity
+  // Filters & Interactivity (All descendants collapsed by default for clean mobile browsing)
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedBranch, setSelectedBranch] = useState<string>('all');
   const [subFamilyFilter, setSubFamilyFilter] = useState<string>('all');
   const [genderFilter, setGenderFilter] = useState<'all' | 'male' | 'female'>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'living' | 'deceased'>('all');
-  const [collapsedIds, setCollapsedIds] = useState<Set<string>>(new Set());
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(() => new Set());
   const [showFiltersModal, setShowFiltersModal] = useState(false);
   const [showMiniMap, setShowMiniMap] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
+  // Refs for smart framing on initial load and branch expansion
+  const hasCenteredInitialRef = useRef(false);
+  const pendingFocusExpandIdRef = useRef<string | null>(null);
+  const prevLayoutModeRef = useRef<'horizontal' | 'vertical' | 'flow'>(layoutMode);
+  const lastCenteredSearchRef = useRef<string>('');
+
   // Active Lineage Tracing (Hover / Selected)
   const [hoveredMemberId, setHoveredMemberId] = useState<string | null>(null);
   const [focusedMemberId, setFocusedMemberId] = useState<string | null>(null);
-
-  // Responsive scale initialization
-  useEffect(() => {
-    const handleResize = () => {
-      const w = window.innerWidth;
-      if (w < 768) {
-        setScale(0.6);
-        setPosition({ x: 20, y: 120 });
-      } else if (w >= 1440) {
-        setScale(0.9);
-        setPosition({ x: 150, y: 180 });
-      }
-    };
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   // Quick lookup maps
   const { memberMap, childrenMap, rootMembers } = useMemo(() => {
@@ -126,6 +116,31 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
 
     return { memberMap: map, childrenMap: cMap, rootMembers: roots };
   }, [members]);
+
+  // Direct & total descendants count per member (used for continuation badges)
+  const descendantsCountMap = useMemo(() => {
+    const counts = new Map<string, { direct: number; total: number }>();
+
+    const computeTotal = (id: string, visited = new Set<string>()): number => {
+      if (counts.has(id)) return counts.get(id)!.total;
+      if (visited.has(id)) return 0;
+      visited.add(id);
+
+      const directChildren = childrenMap.get(id) || [];
+      let total = directChildren.length;
+      for (const child of directChildren) {
+        total += computeTotal(child.id, visited);
+      }
+      counts.set(id, { direct: directChildren.length, total });
+      return total;
+    };
+
+    members.forEach(m => {
+      computeTotal(m.id);
+    });
+
+    return counts;
+  }, [members, childrenMap]);
 
   // Branches list
   const branches = useMemo(() => {
@@ -226,23 +241,79 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
     [focusedMember, ancestorIds, descendantIds, childrenMap, memberMap]
   );
 
-  // Toggle node collapse
+  // Automatically open ancestor chains when searching or filtering so matches stay reachable
+  const autoExpandedIds = useMemo(() => {
+    const set = new Set<string>();
+    const hasSearch = searchQuery.trim().length > 0;
+    const hasFilter =
+      selectedBranch !== 'all' ||
+      subFamilyFilter !== 'all' ||
+      genderFilter !== 'all' ||
+      statusFilter !== 'all';
+
+    if (!hasSearch && !hasFilter) return set;
+
+    members.forEach(m => {
+      const matchesSearch = !hasSearch || searchMatchIds.has(m.id);
+      const matchesBranch = selectedBranch === 'all' || m.branch === selectedBranch;
+      const matchesSubFamily = subFamilyFilter === 'all' || matchesSubFamilyFilter(m, subFamilyFilter, memberMap);
+      const matchesGender = genderFilter === 'all' || m.gender === genderFilter;
+      const matchesStatus =
+        statusFilter === 'all' ||
+        (statusFilter === 'living' && m.is_living) ||
+        (statusFilter === 'deceased' && !m.is_living);
+
+      if (matchesSearch && matchesBranch && matchesSubFamily && matchesGender && matchesStatus) {
+        let currentFatherId = m.father_id;
+        const visited = new Set<string>();
+        while (currentFatherId && !visited.has(currentFatherId)) {
+          visited.add(currentFatherId);
+          set.add(currentFatherId);
+          const father = memberMap.get(currentFatherId);
+          currentFatherId = father?.father_id || null;
+        }
+      }
+    });
+
+    return set;
+  }, [members, searchQuery, searchMatchIds, selectedBranch, subFamilyFilter, genderFilter, statusFilter, memberMap]);
+
+  const effectiveExpandedIds = useMemo(() => {
+    if (autoExpandedIds.size === 0) return expandedIds;
+    const merged = new Set(expandedIds);
+    autoExpandedIds.forEach(id => merged.add(id));
+    return merged;
+  }, [expandedIds, autoExpandedIds]);
+
+  // Toggle node expand/collapse
   const handleToggleCollapse = (id: string, e?: React.MouseEvent) => {
     e?.stopPropagation();
-    setCollapsedIds(prev => {
+    const isCurrentlyOpen = effectiveExpandedIds.has(id);
+
+    setExpandedIds(prev => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
+      if (isCurrentlyOpen) {
+        next.delete(id);
+      } else {
+        next.add(id);
+        pendingFocusExpandIdRef.current = id;
+      }
       return next;
     });
   };
 
   // Expand all / Collapse all
-  const handleExpandAll = () => setCollapsedIds(new Set());
-  const handleCollapseAll = () => {
+  const handleExpandAll = () => {
     const idsWithChildren = new Set<string>();
     childrenMap.forEach((_, parentId) => idsWithChildren.add(parentId));
-    setCollapsedIds(idsWithChildren);
+    setExpandedIds(idsWithChildren);
+    pendingFocusExpandIdRef.current = '__FIT_ALL__';
+  };
+
+  const handleCollapseAll = () => {
+    setExpandedIds(new Set());
+    setFocusedMemberId(null);
+    pendingFocusExpandIdRef.current = '__RESET_ROOT__';
   };
 
   // Build D3 Hierarchical tree model
@@ -281,8 +352,8 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
     };
 
     const buildSubtree = (m: FamilyMember): TreeNodeData => {
-      const isCollapsed = collapsedIds.has(m.id);
-      if (isCollapsed) {
+      const isExpanded = effectiveExpandedIds.has(m.id);
+      if (!isExpanded) {
         return { id: m.id, member: m };
       }
 
@@ -320,15 +391,15 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
       member: virtualPatriarch,
       children: rootMembers.filter(isMemberVisible).map(buildSubtree)
     };
-  }, [rootMembers, childrenMap, memberMap, selectedBranch, subFamilyFilter, genderFilter, statusFilter, collapsedIds]);
+  }, [rootMembers, childrenMap, memberMap, selectedBranch, subFamilyFilter, genderFilter, statusFilter, effectiveExpandedIds]);
 
   // Compute D3 Tree Layout with D3-Hierarchy
-  // Fixed card dimensions and clean generational tier heights
+  // Card dimensions tuned to fit continuation button cleanly without cable overlap
   const CARD_WIDTH = 270;
-  const CARD_HEIGHT = 110;
-  const LEVEL_GAP_Y = 120; // 120px clean gap between generation levels
-  const LEVEL_HEIGHT = CARD_HEIGHT + LEVEL_GAP_Y; // 230px total height per generational tier
-  const LEVEL_WIDTH = CARD_WIDTH + 110; // 380px total width per generational tier in horizontal
+  const CARD_HEIGHT = 152;
+  const LEVEL_GAP_Y = 96; // 96px clean gap between generation levels
+  const LEVEL_HEIGHT = CARD_HEIGHT + LEVEL_GAP_Y; // 248px total height per generational tier
+  const LEVEL_WIDTH = CARD_WIDTH + 96; // 366px total width per generational tier in horizontal
 
   const { nodes, links, bounds, distinctGenerations } = useMemo(() => {
     if (!d3TreeData) {
@@ -349,16 +420,16 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
     if (layoutMode === 'horizontal') {
       // Horizontal Arab Kinship Layout (founders on right, branches flowing left)
       layout = tree<TreeNodeData>()
-        .nodeSize([CARD_HEIGHT + 50, LEVEL_WIDTH])
-        .separation((a, b) => (a.parent === b.parent ? 1.12 : 1.35));
+        .nodeSize([CARD_HEIGHT + 44, LEVEL_WIDTH])
+        .separation((a, b) => (a.parent === b.parent ? 1.1 : 1.32));
 
       treeRoot = layout(rootHierarchy);
       computedNodes = treeRoot.descendants();
     } else {
       // Vertical Pedigree Layout (founders at top, branches descending)
       layout = tree<TreeNodeData>()
-        .nodeSize([CARD_WIDTH + 60, LEVEL_HEIGHT])
-        .separation((a, b) => (a.parent === b.parent ? 1.08 : 1.25));
+        .nodeSize([CARD_WIDTH + 54, LEVEL_HEIGHT])
+        .separation((a, b) => (a.parent === b.parent ? 1.08 : 1.3));
 
       treeRoot = layout(rootHierarchy);
       computedNodes = treeRoot.descendants();
@@ -638,18 +709,151 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
     setFocusedMemberId(null);
   }, [bounds]);
 
-  // Reset & Center View
+  // Reset & Center View (Centers collapsed root or fits current layout cleanly)
   const handleResetView = useCallback(() => {
-    const isMobile = window.innerWidth < 768;
-    const defaultScale = isMobile ? 0.6 : 0.85;
-    setScale(defaultScale);
-    if (layoutMode === 'horizontal') {
-      setPosition({ x: isMobile ? 80 : 350, y: isMobile ? 120 : 250 });
+    const container = containerRef.current;
+    const containerW = container?.clientWidth || window.innerWidth;
+    const containerH = container?.clientHeight || window.innerHeight;
+    const isMobile = containerW < 768;
+
+    if (nodes.length <= 1) {
+      const targetScale = isMobile ? 0.92 : 1.0;
+      setScale(targetScale);
+      setPosition({
+        x: containerW / 2,
+        y: containerH / 2 - 10
+      });
     } else {
-      setPosition({ x: window.innerWidth / 2, y: 140 });
+      handleFitView();
     }
     setFocusedMemberId(null);
-  }, [layoutMode]);
+  }, [nodes.length, handleFitView]);
+
+  // Smooth Auto-Framing: centers on initial mount, layout mode switch, and whenever a branch is expanded
+  useEffect(() => {
+    if (layoutMode === 'flow' || nodes.length === 0) {
+      prevLayoutModeRef.current = layoutMode;
+      return;
+    }
+
+    const container = containerRef.current;
+    const containerW = container?.clientWidth || window.innerWidth;
+    const containerH = container?.clientHeight || window.innerHeight;
+    const isMobile = containerW < 768;
+
+    const getNodeScreenCoords = (n: HierarchyPointNode<TreeNodeData>) =>
+      layoutMode === 'horizontal' ? { x: -n.y, y: n.x } : { x: n.x, y: n.y };
+
+    // 1) Initial mount framing (centers root card cleanly in viewport)
+    if (!hasCenteredInitialRef.current) {
+      hasCenteredInitialRef.current = true;
+      const initialScale = isMobile ? 0.92 : 1.0;
+      const centerX = (bounds.minX + bounds.maxX) / 2;
+      const centerY = (bounds.minY + bounds.maxY) / 2;
+      setScale(initialScale);
+      setPosition({
+        x: containerW / 2 - centerX * initialScale,
+        y: containerH / 2 - centerY * initialScale - 10
+      });
+      prevLayoutModeRef.current = layoutMode;
+      return;
+    }
+
+    // 2) Layout mode switched (horizontal <-> vertical)
+    if (prevLayoutModeRef.current !== layoutMode) {
+      prevLayoutModeRef.current = layoutMode;
+      handleResetView();
+      return;
+    }
+
+    // 3) User triggered Expand All / Collapse All / Individual Node Expand
+    const pendingId = pendingFocusExpandIdRef.current;
+    if (!pendingId) return;
+    pendingFocusExpandIdRef.current = null;
+
+    if (pendingId === '__FIT_ALL__') {
+      handleFitView();
+      return;
+    }
+
+    if (pendingId === '__RESET_ROOT__') {
+      const targetScale = isMobile ? 0.92 : 1.0;
+      const centerX = (bounds.minX + bounds.maxX) / 2;
+      const centerY = (bounds.minY + bounds.maxY) / 2;
+      setScale(targetScale);
+      setPosition({
+        x: containerW / 2 - centerX * targetScale,
+        y: containerH / 2 - centerY * targetScale - 10
+      });
+      return;
+    }
+
+    // Frame the newly expanded parent together with its direct children inside the screen
+    const parentNode = nodes.find(n => n.data.id === pendingId);
+    if (!parentNode) return;
+    const childNodes = nodes.filter(n => n.parent?.data.id === pendingId);
+    const focusGroup = [parentNode, ...childNodes];
+
+    let minX = Infinity;
+    let maxX = -Infinity;
+    let minY = Infinity;
+    let maxY = -Infinity;
+    focusGroup.forEach(n => {
+      const pt = getNodeScreenCoords(n);
+      if (pt.x < minX) minX = pt.x;
+      if (pt.x > maxX) maxX = pt.x;
+      if (pt.y < minY) minY = pt.y;
+      if (pt.y > maxY) maxY = pt.y;
+    });
+
+    minX -= CARD_WIDTH / 2 + 40;
+    maxX += CARD_WIDTH / 2 + 40;
+    minY -= CARD_HEIGHT / 2 + 30;
+    maxY += CARD_HEIGHT / 2 + 30;
+
+    const boxW = Math.max(maxX - minX, CARD_WIDTH);
+    const boxH = Math.max(maxY - minY, CARD_HEIGHT);
+
+    const usableW = Math.max(containerW - 28, 260);
+    const usableH = Math.max(containerH - (isMobile ? 210 : 160), 260);
+
+    const fitScale = Math.min(usableW / boxW, usableH / boxH);
+    const targetScale = Math.min(Math.max(Math.min(scale, fitScale), 0.42), 1.05);
+
+    const boxCenterX = (minX + maxX) / 2;
+    const boxCenterY = (minY + maxY) / 2;
+
+    setScale(targetScale);
+    setPosition({
+      x: containerW / 2 - boxCenterX * targetScale,
+      y: containerH / 2 - boxCenterY * targetScale + (isMobile ? 15 : 10)
+    });
+  }, [nodes, bounds, layoutMode, scale, handleFitView, handleResetView]);
+
+  // Center on first search match whenever searchQuery changes
+  useEffect(() => {
+    const trimmed = searchQuery.trim();
+    if (!trimmed) {
+      if (lastCenteredSearchRef.current) {
+        lastCenteredSearchRef.current = '';
+      }
+      return;
+    }
+    if (trimmed === lastCenteredSearchRef.current || layoutMode === 'flow' || searchMatchIds.size === 0) return;
+
+    const firstMatchId = Array.from(searchMatchIds)[0];
+    const node = nodes.find(n => n.data.member.id === firstMatchId);
+    if (!node) return;
+
+    lastCenteredSearchRef.current = trimmed;
+    const pt = layoutMode === 'horizontal' ? { x: -node.y, y: node.x } : { x: node.x, y: node.y };
+    const containerW = containerRef.current?.clientWidth || window.innerWidth;
+    const containerH = containerRef.current?.clientHeight || window.innerHeight;
+    setPosition({
+      x: containerW / 2 - pt.x * scale,
+      y: containerH / 2 - pt.y * scale
+    });
+  }, [searchQuery, searchMatchIds, nodes, layoutMode, scale]);
 
   // Jump to specific member and center canvas
   const handleCenterOnMember = (memberId: string) => {
@@ -834,20 +1038,20 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
               </button>
             </div>
 
-            {/* Canvas Zoom & Pan Actions */}
+            {/* Canvas Zoom & Pan Actions (Desktop/Tablet; mobile has dedicated thumb dock) */}
             {layoutMode !== 'flow' && (
               <>
                 <button
                   onClick={() => zoomAtPoint(scale + 0.18)}
                   title="تكبير المخطط"
-                  className="w-8 h-8 rounded-xl bg-white/95 border border-slate-200/90 shadow-xs flex items-center justify-center text-slate-700 hover:text-sky-600 hover:border-sky-300 active:scale-95 transition-all"
+                  className="hidden sm:flex w-8 h-8 rounded-xl bg-white/95 border border-slate-200/90 shadow-xs items-center justify-center text-slate-700 hover:text-sky-600 hover:border-sky-300 active:scale-95 transition-all"
                 >
                   <ZoomIn className="w-3.5 h-3.5" />
                 </button>
                 <button
                   onClick={() => zoomAtPoint(scale - 0.18)}
                   title="تصغير المخطط"
-                  className="w-8 h-8 rounded-xl bg-white/95 border border-slate-200/90 shadow-xs flex items-center justify-center text-slate-700 hover:text-sky-600 hover:border-sky-300 active:scale-95 transition-all"
+                  className="hidden sm:flex w-8 h-8 rounded-xl bg-white/95 border border-slate-200/90 shadow-xs items-center justify-center text-slate-700 hover:text-sky-600 hover:border-sky-300 active:scale-95 transition-all"
                 >
                   <ZoomOut className="w-3.5 h-3.5" />
                 </button>
@@ -862,30 +1066,36 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
                 <button
                   onClick={handleResetView}
                   title="إعادة التوسيط والتكبير الافتراضي"
-                  className="w-8 h-8 rounded-xl bg-white/95 border border-slate-200/90 shadow-xs flex items-center justify-center text-slate-700 hover:text-sky-600 hover:border-sky-300 active:scale-95 transition-all"
+                  className="hidden sm:flex w-8 h-8 rounded-xl bg-white/95 border border-slate-200/90 shadow-xs items-center justify-center text-slate-700 hover:text-sky-600 hover:border-sky-300 active:scale-95 transition-all"
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
                 </button>
               </>
             )}
 
-            {/* Expand / Collapse All */}
-            <button
-              onClick={handleExpandAll}
-              title="توسيع كافة فروع وذرية الشجرة"
-              className="hidden lg:flex px-2 h-8 rounded-xl bg-white/95 border border-slate-200/90 shadow-xs text-[11px] font-semibold text-emerald-700 hover:text-emerald-800 hover:border-emerald-300 items-center gap-1 active:scale-95 transition-all"
-            >
-              <Maximize2 className="w-3 h-3" />
-              <span>توسيع</span>
-            </button>
-            <button
-              onClick={handleCollapseAll}
-              title="طي كافة الفروع"
-              className="hidden lg:flex px-2 h-8 rounded-xl bg-white/95 border border-slate-200/90 shadow-xs text-[11px] font-semibold text-slate-700 hover:text-slate-900 hover:border-slate-300 items-center gap-1 active:scale-95 transition-all"
-            >
-              <Minimize2 className="w-3 h-3" />
-              <span>طي</span>
-            </button>
+            {/* Expand / Collapse All (Always accessible on mobile & desktop) */}
+            {layoutMode !== 'flow' && (
+              <>
+                {effectiveExpandedIds.size > 0 && (
+                  <button
+                    onClick={handleCollapseAll}
+                    title="طي كافة الفروع والأعقاب"
+                    className="flex px-2.5 h-8 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-300 shadow-xs text-[11px] font-bold text-amber-900 items-center gap-1 active:scale-95 transition-all whitespace-nowrap shrink-0"
+                  >
+                    <Minimize2 className="w-3.5 h-3.5 text-amber-700" />
+                    <span>طي الكل</span>
+                  </button>
+                )}
+                <button
+                  onClick={handleExpandAll}
+                  title="توسيع كافة فروع وذرية الشجرة"
+                  className="hidden lg:flex px-2 h-8 rounded-xl bg-white/95 border border-slate-200/90 shadow-xs text-[11px] font-semibold text-emerald-700 hover:text-emerald-800 hover:border-emerald-300 items-center gap-1 active:scale-95 transition-all whitespace-nowrap shrink-0"
+                >
+                  <Maximize2 className="w-3 h-3" />
+                  <span>فتح الكل</span>
+                </button>
+              </>
+            )}
 
             {/* Fullscreen Toggle */}
             <button
@@ -1228,8 +1438,9 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
             {/* Render Member Node Cards */}
             {nodes.map(node => {
               const member = node.data.member;
-              const hasChildren = (childrenMap.get(member.id) || []).length > 0;
-              const isCollapsed = collapsedIds.has(member.id);
+              const counts = descendantsCountMap.get(member.id) || { direct: 0, total: 0 };
+              const hasChildren = counts.direct > 0;
+              const isCollapsed = hasChildren && !effectiveExpandedIds.has(member.id);
               const isMatch = searchMatchIds.has(member.id);
               const isTarget = activeId === member.id;
               const isAncestor = ancestorIds.has(member.id);
@@ -1279,9 +1490,58 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
                     </div>
                   )}
 
+                  {/* Folded Stack Silhouette (Subtle depth indicator showing hidden descendants) */}
+                  {isCollapsed && (
+                    <div
+                      aria-hidden="true"
+                      className={`absolute inset-0 rounded-2xl border pointer-events-none transition-transform ${
+                        layoutMode === 'horizontal'
+                          ? '-translate-x-1.5 translate-y-1.5'
+                          : 'translate-y-1.5 scale-[0.97]'
+                      } ${
+                        isMale
+                          ? 'bg-sky-50/90 border-sky-200/90'
+                          : 'bg-rose-50/90 border-rose-200/90'
+                      }`}
+                    />
+                  )}
+
+                  {/* Outgoing Branch Continuation Stub & Tactile +N Handle */}
+                  {isCollapsed && (
+                    <button
+                      type="button"
+                      onClick={(e) => handleToggleCollapse(member.id, e)}
+                      aria-label={`فتح ذرية ${member.full_name} (${counts.direct} مباشر)`}
+                      title={`يوجد ${counts.direct} أبناء (${counts.total} ذرية) — اضغط للفتح`}
+                      className={`absolute z-30 min-w-[44px] min-h-[44px] flex items-center justify-center group/stub focus:outline-none ${
+                        layoutMode === 'horizontal'
+                          ? '-left-8 top-1/2 -translate-y-1/2'
+                          : '-bottom-8 left-1/2 -translate-x-1/2 flex-col'
+                      }`}
+                    >
+                      {layoutMode === 'horizontal' ? (
+                        <div className="flex items-center">
+                          <span className="h-7 px-2 rounded-full bg-sky-600 group-hover/stub:bg-sky-700 text-white shadow-md border-2 border-white flex items-center gap-0.5 text-[11px] font-bold tabular-nums transition-transform group-hover/stub:scale-105 active:scale-95">
+                            <ChevronLeft className="w-3.5 h-3.5 -mr-0.5" />
+                            <span>+{counts.direct}</span>
+                          </span>
+                          <span className="w-2.5 h-0.5 bg-sky-500" />
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center">
+                          <span className="w-0.5 h-2.5 bg-sky-500" />
+                          <span className="h-7 px-2.5 rounded-full bg-sky-600 group-hover/stub:bg-sky-700 text-white shadow-md border-2 border-white flex items-center gap-0.5 text-[11px] font-bold tabular-nums transition-transform group-hover/stub:scale-105 active:scale-95">
+                            <span>+{counts.direct}</span>
+                            <ChevronDown className="w-3.5 h-3.5 -ml-0.5" />
+                          </span>
+                        </div>
+                      )}
+                    </button>
+                  )}
+
                   {/* Main Card (Light Theme with clear borders & soft shadows) */}
                   <div
-                    className={`rounded-2xl p-3 text-right relative transition-all duration-300 border ${
+                    className={`relative z-10 min-h-[152px] flex flex-col justify-between rounded-2xl p-3 text-right transition-all duration-300 border ${
                       isMale
                         ? member.is_living
                           ? 'glass-card border-sky-300 hover:border-sky-500'
@@ -1338,23 +1598,21 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
 
                       {/* Info & Names */}
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between gap-1 mb-0.5">
+                        <div className="flex items-center justify-between gap-1 mb-0.5 text-[10px]">
                           <span
-                            className={`text-[9px] font-medium px-2 py-0.2 rounded-full ${
+                            className={`font-semibold ${
                               member.is_living
                                 ? isMale
-                                  ? 'bg-sky-50 text-sky-800 border border-sky-200'
-                                  : 'bg-rose-50 text-rose-800 border border-rose-200'
-                                : isMale
-                                ? 'bg-slate-100 text-slate-700 border border-slate-300'
-                                : 'bg-rose-100/60 text-rose-800 border border-rose-200'
+                                  ? 'text-sky-700'
+                                  : 'text-rose-700'
+                                : 'text-slate-500'
                             }`}
                           >
                             {member.is_living
-                              ? isMale ? '● حي يُرزق' : '● حفظها الله'
+                              ? isMale ? 'حي يُرزق' : 'حفظها الله'
                               : isMale ? 'رحمه الله' : 'رحمها الله'}
                           </span>
-                          <span className="text-[10px] text-slate-500 font-mono">
+                          <span className="text-slate-500 font-mono tabular-nums">
                             {member.birth_date || 'غير مدون'}
                           </span>
                         </div>
@@ -1376,33 +1634,40 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
                       </div>
                     </div>
 
-                    {/* Metadata Strip */}
-                    <div className="mt-2 pt-1.5 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-600">
-                      <span className="truncate max-w-[140px] text-slate-500">
+                    {/* Metadata & Descendant Expansion Action Strip */}
+                    <div className="mt-2 pt-1.5 border-t border-slate-100 flex items-center justify-between gap-2 text-[10px] text-slate-600">
+                      <span className="truncate max-w-[105px] text-slate-500">
                         {member.branch || 'الفرع العام'}
                       </span>
 
-                      {/* Expand / Collapse Subtree */}
+                      {/* Expand / Collapse Descendants Button */}
                       {hasChildren ? (
                         <button
+                          type="button"
                           onClick={(e) => handleToggleCollapse(member.id, e)}
-                          className="px-2 py-0.5 rounded-md bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 flex items-center gap-1 text-[10px] active:scale-95 transition-all"
-                          title={isCollapsed ? 'توسيع فروع الذرية' : 'طي فروع الذرية'}
+                          className={`min-h-[32px] px-2.5 py-1 rounded-xl border flex items-center gap-1.5 text-[11px] font-bold active:scale-95 transition-all whitespace-nowrap shrink-0 ${
+                            isCollapsed
+                              ? 'bg-sky-50 hover:bg-sky-100 border-sky-300 text-sky-800 shadow-xs'
+                              : 'bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-700'
+                          }`}
+                          title={isCollapsed ? 'فتح وعرض الذرية والأعقاب' : 'طي فروع الذرية'}
                         >
                           {isCollapsed ? (
                             <>
-                              <ChevronDown className="w-3 h-3 text-sky-600" />
-                              <span>+{(childrenMap.get(member.id) || []).length} ذرية</span>
+                              <Plus className="w-3 h-3 text-sky-600" />
+                              <span className="tabular-nums">
+                                فتح الذرية ({counts.total > counts.direct ? `${counts.direct} · ${counts.total}` : counts.direct})
+                              </span>
                             </>
                           ) : (
                             <>
-                              <ChevronUp className="w-3 h-3 text-slate-500" />
-                              <span>طي</span>
+                              <Minimize2 className="w-3 h-3 text-slate-500" />
+                              <span className="tabular-nums">طي ({counts.direct})</span>
                             </>
                           )}
                         </button>
                       ) : (
-                        <span className="text-[10px] text-slate-500 flex items-center gap-1 group-hover:text-sky-600">
+                        <span className="text-[10px] text-slate-500 flex items-center gap-1 group-hover:text-sky-600 py-1">
                           <Eye className="w-3 h-3" />
                           <span>السجل</span>
                         </span>
@@ -1510,7 +1775,7 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
         </div>
       )}
 
-      {/* Floating Canvas Quick Mobile Zoom & Pan Control Dock */}
+      {/* Floating Canvas Quick Mobile Zoom & Collapse Control Dock */}
       {layoutMode !== 'flow' && (
         <aside
           aria-label="أدوات التكبير والتنقل السريع للجوال"
@@ -1519,39 +1784,49 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
           <button
             onClick={() => zoomAtPoint(scale + 0.2)}
             title="تكبير المخطط"
-            className="w-10 h-10 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-800 font-bold active:scale-95 transition-all shadow-xs"
+            className="w-11 h-11 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-800 font-bold active:scale-95 transition-all shadow-xs"
           >
             <ZoomIn className="w-5 h-5 text-sky-600" />
           </button>
           <button
             onClick={() => zoomAtPoint(1.0)}
             title="مقياس 100%"
-            className="w-10 h-6 rounded-lg bg-sky-50 text-[10px] font-mono font-bold text-sky-800 flex items-center justify-center border border-sky-200 active:scale-95"
+            className="w-11 h-6 rounded-lg bg-sky-50 text-[10px] font-mono font-bold text-sky-800 flex items-center justify-center border border-sky-200 active:scale-95 tabular-nums"
           >
             {Math.round(scale * 100)}%
           </button>
           <button
             onClick={() => zoomAtPoint(scale - 0.2)}
             title="تصغير المخطط"
-            className="w-10 h-10 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-800 font-bold active:scale-95 transition-all shadow-xs"
+            className="w-11 h-11 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-800 font-bold active:scale-95 transition-all shadow-xs"
           >
             <ZoomOut className="w-5 h-5 text-sky-600" />
           </button>
           <div className="w-full h-px bg-slate-200 my-0.5" />
           <button
             onClick={handleFitView}
-            title="ملاءمة كامل الشجرة للشاشة"
-            className="w-10 h-10 rounded-xl bg-sky-50 hover:bg-sky-100 border border-sky-200 flex items-center justify-center text-sky-700 active:scale-95 transition-all shadow-xs"
+            title="ملاءمة المعروض للشاشة"
+            className="w-11 h-11 rounded-xl bg-sky-50 hover:bg-sky-100 border border-sky-200 flex items-center justify-center text-sky-700 active:scale-95 transition-all shadow-xs"
           >
             <Focus className="w-5 h-5 text-sky-600" />
           </button>
-          <button
-            onClick={handleResetView}
-            title="إعادة التوسيط الافتراضي"
-            className="w-10 h-10 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-700 active:scale-95 transition-all shadow-xs"
-          >
-            <RotateCcw className="w-4 h-4 text-slate-600" />
-          </button>
+          {effectiveExpandedIds.size > 0 ? (
+            <button
+              onClick={handleCollapseAll}
+              title="طي كافة الفروع المفتوحة"
+              className="w-11 h-11 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-300 flex items-center justify-center text-amber-800 active:scale-95 transition-all shadow-xs"
+            >
+              <Minimize2 className="w-5 h-5 text-amber-700" />
+            </button>
+          ) : (
+            <button
+              onClick={handleResetView}
+              title="إعادة التوسيط الافتراضي"
+              className="w-11 h-11 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-700 active:scale-95 transition-all shadow-xs"
+            >
+              <RotateCcw className="w-4 h-4 text-slate-600" />
+            </button>
+          )}
         </aside>
       )}
 
