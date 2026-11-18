@@ -119,40 +119,42 @@ export default function App() {
 
         {/* Main Content Area */}
         <main className="flex-1 flex flex-col">
-          {currentView === 'tree' && (
-            <TreeView
-              members={members}
-              onSelectMember={(m) => setSelectedMember(m)}
-              onOpenExportImage={() => setIsExportImageModalOpen(true)}
-            />
-          )}
+          <div key={currentView} className="animate-apple-view flex-1 flex flex-col">
+            {currentView === 'tree' && (
+              <TreeView
+                members={members}
+                onSelectMember={(m) => setSelectedMember(m)}
+                onOpenExportImage={() => setIsExportImageModalOpen(true)}
+              />
+            )}
 
-          {currentView === 'lineage' && (
-            <LineagePathView
-              members={members}
-              memberMap={memberMap}
-              getPaternalLineage={getPaternalLineage}
-              onSelectMember={(m) => setSelectedMember(m)}
-            />
-          )}
+            {currentView === 'lineage' && (
+              <LineagePathView
+                members={members}
+                memberMap={memberMap}
+                getPaternalLineage={getPaternalLineage}
+                onSelectMember={(m) => setSelectedMember(m)}
+              />
+            )}
 
-          {currentView === 'directory' && (
-            <DirectoryView
-              members={members}
-              memberMap={memberMap}
-              onSelectMember={(m) => setSelectedMember(m)}
-              onViewLineage={handleViewLineage}
-              onDelete={deleteMember}
-              isAdmin={isAdmin}
-            />
-          )}
+            {currentView === 'directory' && (
+              <DirectoryView
+                members={members}
+                memberMap={memberMap}
+                onSelectMember={(m) => setSelectedMember(m)}
+                onViewLineage={handleViewLineage}
+                onDelete={deleteMember}
+                isAdmin={isAdmin}
+              />
+            )}
 
-          {currentView === 'stats' && (
-            <StatisticsDashboard
-              stats={stats}
-              members={members}
-            />
-          )}
+            {currentView === 'stats' && (
+              <StatisticsDashboard
+                stats={stats}
+                members={members}
+              />
+            )}
+          </div>
         </main>
 
         {/* Global Footer */}

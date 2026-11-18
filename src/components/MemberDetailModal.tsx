@@ -55,7 +55,7 @@ export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
       {/* Modal Card - Bottom sheet on mobile, rounded card on desktop */}
-      <div className="relative w-full max-w-2xl max-h-[92dvh] sm:max-h-[88dvh] overflow-y-auto bg-white rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 md:p-8 border border-slate-200 shadow-2xl text-right">
+      <div className="animate-apple-modal relative w-full max-w-2xl max-h-[92dvh] sm:max-h-[88dvh] overflow-y-auto bg-white rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 md:p-8 border border-slate-200 shadow-2xl text-right">
         
         {/* Mobile Drag Indicator */}
         <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-3 sm:hidden" />

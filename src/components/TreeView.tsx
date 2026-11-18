@@ -3,7 +3,7 @@ import { hierarchy, tree, HierarchyPointNode } from 'd3-hierarchy';
 import { linkVertical, linkHorizontal } from 'd3-shape';
 import { FamilyMember } from '../types/family';
 import { FemaleHeritageBadge } from './HeritageCrest';
-import { matchesArabic } from '../utils/arabicUtils';
+import { matchesArabic, getTreeCardDisplayName } from '../utils/arabicUtils';
 import { SubFamilyBadge } from './SubFamilyBadge';
 import { matchesSubFamilyFilter } from '../utils/subFamilyUtils';
 import {
@@ -65,13 +65,22 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
   const [scale, setScale] = useState(0.85);
   const [position, setPosition] = useState({ x: 100, y: 150 });
   const [isDragging, setIsDragging] = useState(false);
+  const [isTouchInteracting, setIsTouchInteracting] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
-  // Touch gesture tracking for pinch zoom & pan
+  // Touch gesture tracking for fluid mobile pan, centered pinch zoom, inertia & double-tap
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+  const touchOriginClientRef = useRef<{ x: number; y: number } | null>(null);
+  const touchMovedRef = useRef<boolean>(false);
+  const suppressNextClickRef = useRef<boolean>(false);
+  const mouseDownClientRef = useRef<{ x: number; y: number } | null>(null);
   const pinchStartDistRef = useRef<number | null>(null);
   const pinchStartScaleRef = useRef<number>(0.85);
   const pinchCanvasCenterRef = useRef<{ x: number; y: number } | null>(null);
+  const lastTouchSampleRef = useRef<{ x: number; y: number; time: number } | null>(null);
+  const touchVelocityRef = useRef<{ vx: number; vy: number }>({ vx: 0, vy: 0 });
+  const inertiaRafRef = useRef<number | null>(null);
+  const lastTapRef = useRef<{ x: number; y: number; time: number } | null>(null);
 
   // Filters & Interactivity (All descendants collapsed by default for clean mobile browsing)
   const [searchQuery, setSearchQuery] = useState('');
@@ -394,12 +403,12 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
   }, [rootMembers, childrenMap, memberMap, selectedBranch, subFamilyFilter, genderFilter, statusFilter, effectiveExpandedIds]);
 
   // Compute D3 Tree Layout with D3-Hierarchy
-  // Card dimensions tuned to fit continuation button cleanly without cable overlap
-  const CARD_WIDTH = 270;
-  const CARD_HEIGHT = 152;
-  const LEVEL_GAP_Y = 96; // 96px clean gap between generation levels
-  const LEVEL_HEIGHT = CARD_HEIGHT + LEVEL_GAP_Y; // 248px total height per generational tier
-  const LEVEL_WIDTH = CARD_WIDTH + 96; // 366px total width per generational tier in horizontal
+  // Compact card proportions tailored around first-name display so tree branches fit cleanly on mobile & desktop
+  const CARD_WIDTH = 176;
+  const CARD_HEIGHT = 110;
+  const LEVEL_GAP_Y = 70; // Clean gap between generation levels (leaves room for +N continuation handles)
+  const LEVEL_HEIGHT = CARD_HEIGHT + LEVEL_GAP_Y; // 180px total height per generational tier
+  const LEVEL_WIDTH = CARD_WIDTH + 72; // 248px total width per generational tier in horizontal
 
   const { nodes, links, bounds, distinctGenerations } = useMemo(() => {
     if (!d3TreeData) {
@@ -420,16 +429,16 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
     if (layoutMode === 'horizontal') {
       // Horizontal Arab Kinship Layout (founders on right, branches flowing left)
       layout = tree<TreeNodeData>()
-        .nodeSize([CARD_HEIGHT + 44, LEVEL_WIDTH])
-        .separation((a, b) => (a.parent === b.parent ? 1.1 : 1.32));
+        .nodeSize([CARD_HEIGHT + 34, LEVEL_WIDTH])
+        .separation((a, b) => (a.parent === b.parent ? 1.1 : 1.3));
 
       treeRoot = layout(rootHierarchy);
       computedNodes = treeRoot.descendants();
     } else {
       // Vertical Pedigree Layout (founders at top, branches descending)
       layout = tree<TreeNodeData>()
-        .nodeSize([CARD_WIDTH + 54, LEVEL_HEIGHT])
-        .separation((a, b) => (a.parent === b.parent ? 1.08 : 1.3));
+        .nodeSize([CARD_WIDTH + 32, LEVEL_HEIGHT])
+        .separation((a, b) => (a.parent === b.parent ? 1.08 : 1.28));
 
       treeRoot = layout(rootHierarchy);
       computedNodes = treeRoot.descendants();
@@ -557,26 +566,59 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
     [layoutMode]
   );
 
-  // Pan handlers
+  // Cancel any active swipe momentum animation
+  const stopInertia = useCallback(() => {
+    if (inertiaRafRef.current !== null) {
+      cancelAnimationFrame(inertiaRafRef.current);
+      inertiaRafRef.current = null;
+    }
+  }, []);
+
+  useEffect(() => {
+    return () => stopInertia();
+  }, [stopInertia]);
+
+  // Pan handlers (Mouse — allows dragging even starting over a card; distinguishes click vs drag)
   const handleMouseDown = (e: React.MouseEvent) => {
     if (e.button !== 0) return;
-    if ((e.target as HTMLElement).closest('button, input, select, a, .node-card')) return;
+    if ((e.target as HTMLElement).closest('button, input, select, a')) return;
+    stopInertia();
+    mouseDownClientRef.current = { x: e.clientX, y: e.clientY };
+    suppressNextClickRef.current = false;
     setIsDragging(true);
     setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!isDragging) return;
+    if (mouseDownClientRef.current) {
+      const dist = Math.hypot(
+        e.clientX - mouseDownClientRef.current.x,
+        e.clientY - mouseDownClientRef.current.y
+      );
+      if (dist > 6) {
+        suppressNextClickRef.current = true;
+      }
+    }
     setPosition({
       x: e.clientX - dragStart.x,
       y: e.clientY - dragStart.y
     });
   };
 
-  const handleMouseUp = () => setIsDragging(false);
+  const handleMouseUp = () => {
+    setIsDragging(false);
+    mouseDownClientRef.current = null;
+    if (suppressNextClickRef.current) {
+      setTimeout(() => {
+        suppressNextClickRef.current = false;
+      }, 60);
+    }
+  };
 
   // Anchor-Point Zoom Helper (Zooms smoothly around cursor or center of screen)
   const zoomAtPoint = useCallback((targetScale: number, screenPoint?: { x: number; y: number }) => {
+    stopInertia();
     const clampedScale = Math.min(Math.max(0.2, targetScale), 2.2);
     const container = containerRef.current;
     if (!container) {
@@ -595,35 +637,60 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
 
     setScale(clampedScale);
     setPosition({ x: newX, y: newY });
-  }, [position, scale]);
+  }, [position, scale, stopInertia]);
 
-  // Wheel Zoom (Zoom directly towards cursor)
-  const handleWheel = (e: React.WheelEvent) => {
-    e.preventDefault();
-    const zoomFactor = e.deltaY < 0 ? 1.1 : 0.9;
-    zoomAtPoint(scale * zoomFactor, { x: e.clientX, y: e.clientY });
-  };
+  // Non-passive Wheel / Trackpad Zoom listener (prevents page scroll while zooming canvas)
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el || layoutMode === 'flow') return;
 
-  // Touch Handlers for Fluid Mobile Navigation (1-Finger Pan + 2-Finger Centered Pinch Zoom)
+    const onWheelNative = (e: WheelEvent) => {
+      e.preventDefault();
+      const zoomFactor = e.deltaY < 0 ? 1.1 : 0.9;
+      zoomAtPoint(scale * zoomFactor, { x: e.clientX, y: e.clientY });
+    };
+
+    el.addEventListener('wheel', onWheelNative, { passive: false });
+    return () => el.removeEventListener('wheel', onWheelNative);
+  }, [layoutMode, scale, zoomAtPoint]);
+
+  // Touch Handlers for Fluid Mobile Navigation:
+  // - 1-Finger Pan anywhere on canvas (including over cards, with tap-vs-drag detection)
+  // - 2-Finger Centered Pinch-to-Zoom + simultaneous pan
+  // - Swipe Inertia / Momentum decay on release
+  // - Double-tap on canvas to zoom in/out
   const handleTouchStart = (e: React.TouchEvent) => {
-    if ((e.target as HTMLElement).closest('button, input, select, a, .node-card')) return;
+    if ((e.target as HTMLElement).closest('button, input, select, a')) return;
 
+    stopInertia();
     const container = containerRef.current;
-    const rect = container ? container.getBoundingClientRect() : { left: 0, top: 0, width: window.innerWidth, height: window.innerHeight };
+    const rect = container
+      ? container.getBoundingClientRect()
+      : { left: 0, top: 0, width: window.innerWidth, height: window.innerHeight };
 
     if (e.touches.length === 1) {
+      const t = e.touches[0];
       touchStartRef.current = {
-        x: e.touches[0].clientX - position.x,
-        y: e.touches[0].clientY - position.y
+        x: t.clientX - position.x,
+        y: t.clientY - position.y
       };
+      touchOriginClientRef.current = { x: t.clientX, y: t.clientY };
+      touchMovedRef.current = false;
+      suppressNextClickRef.current = false;
       pinchStartDistRef.current = null;
       pinchCanvasCenterRef.current = null;
+      lastTouchSampleRef.current = { x: t.clientX, y: t.clientY, time: performance.now() };
+      touchVelocityRef.current = { vx: 0, vy: 0 };
+      setIsTouchInteracting(true);
     } else if (e.touches.length >= 2) {
       const t0 = e.touches[0];
       const t1 = e.touches[1];
       const dist = Math.hypot(t0.clientX - t1.clientX, t0.clientY - t1.clientY);
       pinchStartDistRef.current = dist > 0 ? dist : 1;
       pinchStartScaleRef.current = scale;
+      touchMovedRef.current = true;
+      suppressNextClickRef.current = true;
+      touchVelocityRef.current = { vx: 0, vy: 0 };
 
       const midX = (t0.clientX + t1.clientX) / 2 - rect.left;
       const midY = (t0.clientY + t1.clientY) / 2 - rect.top;
@@ -632,21 +699,51 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
         x: (midX - position.x) / scale,
         y: (midY - position.y) / scale
       };
+      setIsTouchInteracting(true);
     }
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
     const container = containerRef.current;
-    const rect = container ? container.getBoundingClientRect() : { left: 0, top: 0, width: window.innerWidth, height: window.innerHeight };
+    const rect = container
+      ? container.getBoundingClientRect()
+      : { left: 0, top: 0, width: window.innerWidth, height: window.innerHeight };
 
     if (e.touches.length === 1 && touchStartRef.current) {
-      // 1-Finger Pan
-      setPosition({
-        x: e.touches[0].clientX - touchStartRef.current.x,
-        y: e.touches[0].clientY - touchStartRef.current.y
-      });
+      const t = e.touches[0];
+      if (touchOriginClientRef.current) {
+        const movedDist = Math.hypot(
+          t.clientX - touchOriginClientRef.current.x,
+          t.clientY - touchOriginClientRef.current.y
+        );
+        if (movedDist > 8) {
+          touchMovedRef.current = true;
+          suppressNextClickRef.current = true;
+        }
+      }
+
+      if (touchMovedRef.current) {
+        const now = performance.now();
+        if (lastTouchSampleRef.current) {
+          const dt = Math.max(now - lastTouchSampleRef.current.time, 8);
+          if (dt < 80) {
+            const instVx = (t.clientX - lastTouchSampleRef.current.x) / dt;
+            const instVy = (t.clientY - lastTouchSampleRef.current.y) / dt;
+            touchVelocityRef.current = {
+              vx: touchVelocityRef.current.vx * 0.4 + instVx * 0.6,
+              vy: touchVelocityRef.current.vy * 0.4 + instVy * 0.6
+            };
+          }
+        }
+        lastTouchSampleRef.current = { x: t.clientX, y: t.clientY, time: now };
+
+        setPosition({
+          x: t.clientX - touchStartRef.current.x,
+          y: t.clientY - touchStartRef.current.y
+        });
+      }
     } else if (e.touches.length >= 2 && pinchStartDistRef.current && pinchCanvasCenterRef.current) {
-      // 2-Finger Pinch Zoom centered under fingers
+      // 2-Finger Pinch Zoom centered under fingers + smooth simultaneous pan
       const t0 = e.touches[0];
       const t1 = e.touches[1];
       const dist = Math.hypot(t0.clientX - t1.clientX, t0.clientY - t1.clientY);
@@ -659,6 +756,9 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
       const cx = pinchCanvasCenterRef.current.x;
       const cy = pinchCanvasCenterRef.current.y;
 
+      touchMovedRef.current = true;
+      suppressNextClickRef.current = true;
+
       setScale(targetScale);
       setPosition({
         x: currMidX - cx * targetScale,
@@ -669,17 +769,78 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
 
   const handleTouchEnd = (e: React.TouchEvent) => {
     if (e.touches.length === 1) {
-      // Finger lifted: seamlessly transition back to 1-finger panning without snapping
+      // Transition cleanly from 2-finger pinch back to 1-finger pan without jumping
+      const t = e.touches[0];
       touchStartRef.current = {
-        x: e.touches[0].clientX - position.x,
-        y: e.touches[0].clientY - position.y
+        x: t.clientX - position.x,
+        y: t.clientY - position.y
       };
+      touchOriginClientRef.current = { x: t.clientX, y: t.clientY };
+      lastTouchSampleRef.current = { x: t.clientX, y: t.clientY, time: performance.now() };
       pinchStartDistRef.current = null;
       pinchCanvasCenterRef.current = null;
     } else if (e.touches.length === 0) {
+      const wasMoved = touchMovedRef.current;
+      const targetEl = e.target as HTMLElement;
+      const tappedOnCard = Boolean(targetEl.closest('.node-card'));
+
+      // Double-tap on empty canvas smoothly toggles zoom at tap point
+      if (!wasMoved && !tappedOnCard && e.changedTouches.length === 1) {
+        const ct = e.changedTouches[0];
+        const now = performance.now();
+        const prevTap = lastTapRef.current;
+        if (
+          prevTap &&
+          now - prevTap.time < 300 &&
+          Math.hypot(ct.clientX - prevTap.x, ct.clientY - prevTap.y) < 32
+        ) {
+          lastTapRef.current = null;
+          setIsTouchInteracting(false);
+          const nextScale = scale < 1.15 ? Math.min(scale * 1.45, 1.55) : 0.78;
+          zoomAtPoint(nextScale, { x: ct.clientX, y: ct.clientY });
+        } else {
+          lastTapRef.current = { x: ct.clientX, y: ct.clientY, time: now };
+        }
+      }
+
+      // Gentle inertial glide after quick swipe
+      if (wasMoved && !pinchStartDistRef.current) {
+        let { vx, vy } = touchVelocityRef.current;
+        const speed = Math.hypot(vx, vy);
+        if (speed > 0.15) {
+          let lastTime = performance.now();
+          const step = (now: number) => {
+            const dt = Math.min(now - lastTime, 32);
+            lastTime = now;
+            const friction = Math.pow(0.92, dt / 16);
+            vx *= friction;
+            vy *= friction;
+            if (Math.hypot(vx, vy) < 0.03) {
+              inertiaRafRef.current = null;
+              return;
+            }
+            setPosition(prev => ({
+              x: prev.x + vx * dt,
+              y: prev.y + vy * dt
+            }));
+            inertiaRafRef.current = requestAnimationFrame(step);
+          };
+          inertiaRafRef.current = requestAnimationFrame(step);
+        }
+      }
+
       touchStartRef.current = null;
+      touchOriginClientRef.current = null;
+      lastTouchSampleRef.current = null;
       pinchStartDistRef.current = null;
       pinchCanvasCenterRef.current = null;
+      setIsTouchInteracting(false);
+
+      if (suppressNextClickRef.current) {
+        setTimeout(() => {
+          suppressNextClickRef.current = false;
+        }, 80);
+      }
     }
   };
 
@@ -1241,10 +1402,11 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
-          onWheel={handleWheel}
+          onMouseLeave={handleMouseUp}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
+          onTouchCancel={handleTouchEnd}
           className={`w-full h-full flex-1 cursor-grab select-none relative touch-none overflow-hidden ${
             isDragging ? 'cursor-grabbing' : ''
           }`}
@@ -1264,7 +1426,7 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
             style={{
               transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
               transformOrigin: '0 0',
-              transition: isDragging || pinchStartDistRef.current ? 'none' : 'transform 0.12s cubic-bezier(0.16, 1, 0.3, 1)'
+              transition: isDragging || isTouchInteracting ? 'none' : 'transform 0.22s cubic-bezier(0.16, 1, 0.3, 1)'
             }}
             className="absolute top-0 left-0 w-full h-full pointer-events-auto"
           >
@@ -1448,7 +1610,9 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
               const kinshipTag = getKinshipLabel(member.id);
 
               const isMale = member.gender === 'male';
-              const firstLetter = member.full_name.trim().charAt(0) || 'ب';
+              const isRootNode = !member.father_id;
+              const displayCardName = getTreeCardDisplayName(member);
+              const firstLetter = displayCardName.trim().charAt(0) || 'ب';
 
               let posX = 0;
               let posY = 0;
@@ -1473,6 +1637,10 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
                   onMouseEnter={() => setHoveredMemberId(member.id)}
                   onMouseLeave={() => setHoveredMemberId(null)}
                   onClick={() => {
+                    if (suppressNextClickRef.current) {
+                      suppressNextClickRef.current = false;
+                      return;
+                    }
                     setFocusedMemberId(member.id);
                     onSelectMember(member);
                   }}
@@ -1539,9 +1707,9 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
                     </button>
                   )}
 
-                  {/* Main Card (Light Theme with clear borders & soft shadows) */}
+                  {/* Main Compact Card (First-Name Focus for Tighter Tree Footprint) */}
                   <div
-                    className={`relative z-10 min-h-[152px] flex flex-col justify-between rounded-2xl p-3 text-right transition-all duration-300 border ${
+                    className={`relative z-10 h-[110px] flex flex-col justify-between rounded-2xl p-2.5 text-right transition-all duration-200 border ${
                       isMale
                         ? member.is_living
                           ? 'glass-card border-sky-300 hover:border-sky-500'
@@ -1561,8 +1729,8 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
                         : ''
                     }`}
                   >
-                    {/* Header: Badge/Photo + Names + Status */}
-                    <div className="flex items-start gap-2.5">
+                    {/* Header: Compact Emblem + First Name + Status */}
+                    <div className="flex items-center gap-2">
                       {/* Avatar or Emblem */}
                       <div className="shrink-0 relative">
                         {isMale ? (
@@ -1571,22 +1739,22 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
                               src={member.avatar_url}
                               alt={member.full_name}
                               referrerPolicy="no-referrer"
-                              className="w-11 h-11 rounded-xl object-cover border border-sky-300 shadow-xs"
+                              className="w-9 h-9 rounded-xl object-cover border border-sky-300 shadow-xs"
                             />
                           ) : (
-                            <div className="w-11 h-11 rounded-xl bg-sky-100 border border-sky-300 flex items-center justify-center text-sky-800 font-bold text-base shadow-xs">
+                            <div className="w-9 h-9 rounded-xl bg-sky-100 border border-sky-300 flex items-center justify-center text-sky-800 font-bold text-sm shadow-xs">
                               {firstLetter}
                             </div>
                           )
                         ) : (
                           /* Female dignified crest badge (Strictly NO photo) */
-                          <div className="w-11 h-11 rounded-xl bg-rose-50 border border-rose-200 flex items-center justify-center shadow-xs">
-                            <FemaleHeritageBadge size={26} />
+                          <div className="w-9 h-9 rounded-xl bg-rose-50 border border-rose-200 flex items-center justify-center shadow-xs">
+                            <FemaleHeritageBadge size={22} />
                           </div>
                         )}
 
                         <span
-                          className={`absolute -bottom-1 -left-1 text-[9px] font-mono px-1 py-0.2 rounded font-semibold ${
+                          className={`absolute -bottom-1 -left-1 text-[8.5px] font-mono px-1 rounded font-semibold ${
                             isMale
                               ? 'bg-slate-100 text-sky-800 border border-sky-200'
                               : 'bg-rose-100 text-rose-800 border border-rose-200'
@@ -1596,11 +1764,11 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
                         </span>
                       </div>
 
-                      {/* Info & Names */}
+                      {/* First Name & Quiet Metadata */}
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between gap-1 mb-0.5 text-[10px]">
+                        <div className="flex items-center justify-between gap-1 text-[9.5px] leading-tight">
                           <span
-                            className={`font-semibold ${
+                            className={`font-semibold truncate ${
                               member.is_living
                                 ? isMale
                                   ? 'text-sky-700'
@@ -1612,40 +1780,45 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
                               ? isMale ? 'حي يُرزق' : 'حفظها الله'
                               : isMale ? 'رحمه الله' : 'رحمها الله'}
                           </span>
-                          <span className="text-slate-500 font-mono tabular-nums">
-                            {member.birth_date || 'غير مدون'}
-                          </span>
+                          {member.birth_date && (
+                            <span className="text-slate-400 font-mono tabular-nums shrink-0">
+                              {member.birth_date}
+                            </span>
+                          )}
                         </div>
 
-                        <h3 className="text-xs font-bold text-slate-900 truncate" title={member.full_name}>
-                          {member.full_name}
+                        <h3
+                          className={`font-extrabold text-slate-900 leading-tight mt-0.5 truncate ${
+                            isRootNode ? 'text-[12.5px]' : 'text-[14px]'
+                          }`}
+                          title={member.full_name}
+                        >
+                          {displayCardName}
                         </h3>
 
-                        {member.nickname && (
-                          <p className={`text-[11px] font-medium truncate ${isMale ? 'text-sky-700' : 'text-rose-700'}`}>
-                            {member.nickname}
-                          </p>
-                        )}
-
                         {/* Sub-Family Lineage Tag */}
-                        <div className="mt-1">
-                          <SubFamilyBadge member={member} memberMap={memberMap} size="xs" />
+                        <div className="mt-0.5 overflow-hidden">
+                          <SubFamilyBadge
+                            member={member}
+                            memberMap={memberMap}
+                            size="xs"
+                            className="flex-nowrap overflow-hidden"
+                          />
                         </div>
                       </div>
                     </div>
 
-                    {/* Metadata & Descendant Expansion Action Strip */}
-                    <div className="mt-2 pt-1.5 border-t border-slate-100 flex items-center justify-between gap-2 text-[10px] text-slate-600">
-                      <span className="truncate max-w-[105px] text-slate-500">
-                        {member.branch || 'الفرع العام'}
+                    {/* Compact Action & Continuation Strip */}
+                    <div className="mt-1.5 pt-1.5 border-t border-slate-100 flex items-center justify-between gap-1.5 text-[10px] text-slate-600">
+                      <span className="truncate max-w-[66px] text-slate-400">
+                        {member.branch || 'العام'}
                       </span>
 
-                      {/* Expand / Collapse Descendants Button */}
                       {hasChildren ? (
                         <button
                           type="button"
                           onClick={(e) => handleToggleCollapse(member.id, e)}
-                          className={`min-h-[32px] px-2.5 py-1 rounded-xl border flex items-center gap-1.5 text-[11px] font-bold active:scale-95 transition-all whitespace-nowrap shrink-0 ${
+                          className={`min-h-[28px] px-2 py-0.5 rounded-lg border flex items-center gap-1 text-[10px] font-bold active:scale-95 transition-all whitespace-nowrap shrink-0 ${
                             isCollapsed
                               ? 'bg-sky-50 hover:bg-sky-100 border-sky-300 text-sky-800 shadow-xs'
                               : 'bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-700'
@@ -1654,22 +1827,22 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
                         >
                           {isCollapsed ? (
                             <>
-                              <Plus className="w-3 h-3 text-sky-600" />
+                              <Plus className="w-2.5 h-2.5 text-sky-600" />
                               <span className="tabular-nums">
-                                فتح الذرية ({counts.total > counts.direct ? `${counts.direct} · ${counts.total}` : counts.direct})
+                                الذرية ({counts.total > counts.direct ? `${counts.direct}·${counts.total}` : counts.direct})
                               </span>
                             </>
                           ) : (
                             <>
-                              <Minimize2 className="w-3 h-3 text-slate-500" />
+                              <Minimize2 className="w-2.5 h-2.5 text-slate-500" />
                               <span className="tabular-nums">طي ({counts.direct})</span>
                             </>
                           )}
                         </button>
                       ) : (
-                        <span className="text-[10px] text-slate-500 flex items-center gap-1 group-hover:text-sky-600 py-1">
+                        <span className="text-[10px] text-slate-500 flex items-center gap-1 group-hover:text-sky-600 py-0.5">
                           <Eye className="w-3 h-3" />
-                          <span>السجل</span>
+                          <span>التفاصيل</span>
                         </span>
                       )}
                     </div>
@@ -1683,7 +1856,10 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
         /* ---------------------------------------------------- */
         /* COMPACT GENERATIONAL FLOW VIEW (Mobile & Accessibility) */
         /* ---------------------------------------------------- */
-        <div className="w-full h-full flex-1 overflow-y-auto px-4 py-20 pb-28 max-w-5xl mx-auto space-y-8">
+        <div
+          key="flow-view"
+          className="animate-apple-view w-full h-full flex-1 overflow-y-auto px-4 py-20 pb-28 max-w-5xl mx-auto space-y-8"
+        >
           {Array.from({ length: generationTiers.maxGen }, (_, i) => i + 1).map(genNum => {
             const rawMembersInGen = generationTiers.tiers[genNum] || [];
 
@@ -1701,20 +1877,18 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
             return (
               <section key={genNum} className="space-y-3">
                 <div className="flex items-center justify-between border-b border-slate-200 pb-2">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-sky-600" />
-                    <h3 className="text-sm sm:text-base font-bold text-slate-900">
-                      {getGenerationLabel(genNum)}
-                    </h3>
-                  </div>
-                  <span className="text-xs font-mono font-semibold text-sky-800 bg-sky-50 px-2.5 py-0.5 rounded-full border border-sky-200">
+                  <h3 className="text-sm sm:text-base font-bold text-slate-900">
+                    {getGenerationLabel(genNum)}
+                  </h3>
+                  <span className="text-xs font-mono font-semibold text-sky-700 tabular-nums">
                     {filteredMembers.length} فرد
                   </span>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-3">
                   {filteredMembers.map(member => {
                     const isMale = member.gender === 'male';
+                    const displayFlowName = getTreeCardDisplayName(member);
 
                     return (
                       <div
@@ -1723,11 +1897,11 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
                           setFocusedMemberId(member.id);
                           onSelectMember(member);
                         }}
-                        className={`rounded-2xl p-3.5 cursor-pointer border text-right transition-all hover:scale-102 bg-white shadow-xs ${
+                        className={`rounded-2xl p-2.5 sm:p-3 cursor-pointer border text-right transition-all hover:scale-102 active:scale-98 bg-white shadow-xs ${
                           isMale ? 'border-sky-300 hover:border-sky-500' : 'border-rose-300 hover:border-rose-500'
                         }`}
                       >
-                        <div className="flex items-start gap-3">
+                        <div className="flex items-center gap-2.5">
                           <div className="shrink-0 relative">
                             {isMale ? (
                               member.avatar_url ? (
@@ -1735,33 +1909,30 @@ export const TreeView: React.FC<TreeViewProps> = ({ members, onSelectMember, onO
                                   src={member.avatar_url}
                                   alt={member.full_name}
                                   referrerPolicy="no-referrer"
-                                  className="w-11 h-11 rounded-xl object-cover border border-sky-300"
+                                  className="w-9 h-9 rounded-xl object-cover border border-sky-300"
                                 />
                               ) : (
-                                <div className="w-11 h-11 rounded-xl bg-sky-100 border border-sky-300 flex items-center justify-center text-sky-800 font-bold text-base">
-                                  {member.full_name.charAt(0)}
+                                <div className="w-9 h-9 rounded-xl bg-sky-100 border border-sky-300 flex items-center justify-center text-sky-800 font-bold text-sm">
+                                  {displayFlowName.charAt(0)}
                                 </div>
                               )
                             ) : (
-                              <div className="w-11 h-11 rounded-xl bg-rose-50 border border-rose-200 flex items-center justify-center">
-                                <FemaleHeritageBadge size={26} />
+                              <div className="w-9 h-9 rounded-xl bg-rose-50 border border-rose-200 flex items-center justify-center">
+                                <FemaleHeritageBadge size={22} />
                               </div>
                             )}
                           </div>
 
                           <div className="flex-1 min-w-0">
-                            <h4 className="text-sm font-bold text-slate-900 truncate">{member.full_name}</h4>
-                            {member.nickname && (
-                              <p className={`text-xs ${isMale ? 'text-sky-700 font-semibold' : 'text-rose-700 font-semibold'}`}>
-                                {member.nickname}
-                              </p>
-                            )}
-                            <div className="mt-1">
+                            <h4 className="text-[14px] font-extrabold text-slate-900 truncate" title={member.full_name}>
+                              {displayFlowName}
+                            </h4>
+                            <div className="mt-0.5 truncate">
                               <SubFamilyBadge member={member} memberMap={memberMap} size="xs" />
                             </div>
-                            <div className="flex items-center justify-between text-[11px] text-slate-500 mt-1">
-                              <span>{member.branch || 'الفرع العام'}</span>
-                              <span className="font-mono">{member.birth_date || ''}</span>
+                            <div className="flex items-center justify-between text-[10px] text-slate-500 mt-0.5">
+                              <span className="truncate">{member.branch || 'الفرع العام'}</span>
+                              {member.birth_date && <span className="font-mono tabular-nums">{member.birth_date}</span>}
                             </div>
                           </div>
                         </div>

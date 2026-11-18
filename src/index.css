@@ -105,6 +105,44 @@
   background: #94a3b8;
 }
 
+/* Apple-inspired Smooth View & Modal Transitions (Compositor-Only) */
+@keyframes appleViewEnter {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.animate-apple-view {
+  animation: appleViewEnter 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes appleModalEnter {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 16px, 0) scale(0.985);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+.animate-apple-modal {
+  animation: appleModalEnter 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-apple-view,
+  .animate-apple-modal {
+    animation: none !important;
+  }
+}
+
 /* Print Stylesheet for High-Resolution PDF Export */
 @media print {
   body {
